@@ -1,0 +1,73 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Billing / tenancy root. One org can own many restaurants (locations).
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurants Restaurant[]
+  memberships Membership[]
+}
+
+/// Staff user (auth provider TBD). Email is unique across the app.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+}
+
+enum MembershipRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+/// Links a user to an organization with a role (row-level multi-tenant access).
+model Membership {
+  id        String         @id @default(cuid())
+  role      MembershipRole @default(STAFF)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  userId         String
+  organizationId String
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+/// Restaurant (location) operating under an organization.
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  /// IANA timezone, e.g. America/Santiago
+  timezone  String   @default("America/Santiago")
+  /// ISO 4217, e.g. CLP, MXN, COP
+  currency  String   @default("CLP")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}

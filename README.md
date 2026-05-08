@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bocao.app
 
-## Getting Started
+AI-powered operating system for restaurants: WhatsApp, reservations, kitchen ops, and analytics in one place. Product brief: [`docs/briefing-materials.md`](docs/briefing-materials.md). Task list: [`TODO.md`](TODO.md).
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **App:** Next.js 16, React 19, TypeScript, Tailwind CSS v4, shadcn-style UI (`src/components/ui/`)
+- **Database:** PostgreSQL, Prisma ORM (`prisma/schema.prisma`)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js 20+
+- A PostgreSQL database and its connection string (`DATABASE_URL`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. **Install dependencies**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Environment**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   Copy `.env.example` to `.env` and set **`DATABASE_URL`** to your Postgres URL (any host: Neon, Supabase, Railway, local `psql`, etc.). Add other keys when you wire integrations.
 
-## Deploy on Vercel
+3. **Migrations**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run db:migrate
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   On a fresh database, this applies all SQL in `prisma/migrations/`.
+
+4. **Dev server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+## Scripts
+
+| Script                | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| `npm run dev`         | Next.js dev server                                     |
+| `npm run build`       | `prisma generate` + production build                   |
+| `npm run lint`        | ESLint                                                 |
+| `npm run db:migrate`  | Create/apply dev migrations (`prisma migrate dev`)     |
+| `npm run db:push`     | Push schema without migration files (prototyping only) |
+| `npm run db:studio`   | Prisma Studio                                          |
+| `npm run db:generate` | Regenerate Prisma Client                               |
+
+## Health check
+
+`GET /api/health` returns JSON with `database: "up"` | `"down"` (uses `SELECT 1`).
+
+## License
+
+Private — not licensed for public use unless stated otherwise.
