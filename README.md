@@ -4,12 +4,14 @@ AI-powered operating system for restaurants: WhatsApp, reservations, kitchen ops
 
 ## Stack
 
+- **Runtime / package manager:** [Bun](https://bun.sh)
 - **App:** Next.js 16, React 19, TypeScript, Tailwind CSS v4, shadcn-style UI (`src/components/ui/`)
 - **Database:** PostgreSQL, Prisma ORM (`prisma/schema.prisma`)
+- **Auth:** NextAuth.js v5 beta (`next-auth@beta`, Auth.js)
 
 ## Prerequisites
 
-- Node.js 20+
+- [Bun](https://bun.sh/docs/installation) 1.3+ (see `packageManager` in `package.json`)
 - A PostgreSQL database and its connection string (`DATABASE_URL`)
 
 ## Setup
@@ -17,7 +19,7 @@ AI-powered operating system for restaurants: WhatsApp, reservations, kitchen ops
 1. **Install dependencies**
 
    ```bash
-   npm install
+   bun install
    ```
 
 2. **Environment**
@@ -27,15 +29,17 @@ AI-powered operating system for restaurants: WhatsApp, reservations, kitchen ops
 3. **Migrations**
 
    ```bash
-   npm run db:migrate
+   bun run db:migrate
    ```
 
    On a fresh database, this applies all SQL in `prisma/migrations/`.
 
+   For Prisma CLI with the Bun runtime (if you hit Node-related issues), use: `bunx --bun prisma migrate dev`.
+
 4. **Dev server**
 
    ```bash
-   npm run dev
+   bun dev
    ```
 
    Open [http://localhost:3000](http://localhost:3000).
@@ -44,13 +48,13 @@ AI-powered operating system for restaurants: WhatsApp, reservations, kitchen ops
 
 | Script                | Description                                            |
 | --------------------- | ------------------------------------------------------ |
-| `npm run dev`         | Next.js dev server                                     |
-| `npm run build`       | `prisma generate` + production build                   |
-| `npm run lint`        | ESLint                                                 |
-| `npm run db:migrate`  | Create/apply dev migrations (`prisma migrate dev`)     |
-| `npm run db:push`     | Push schema without migration files (prototyping only) |
-| `npm run db:studio`   | Prisma Studio                                          |
-| `npm run db:generate` | Regenerate Prisma Client                               |
+| `bun dev`             | Next.js dev server (`next dev`)                        |
+| `bun run build`       | `prisma generate` + production build                   |
+| `bun run lint`        | ESLint                                                 |
+| `bun run db:migrate`  | Create/apply dev migrations (`prisma migrate dev`)     |
+| `bun run db:push`     | Push schema without migration files (prototyping only) |
+| `bun run db:studio`   | Prisma Studio                                          |
+| `bun run db:generate` | Regenerate Prisma Client                               |
 
 ## Health check
 
