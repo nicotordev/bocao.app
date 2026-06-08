@@ -4,6 +4,8 @@ export type OrdersListFilters = {
   search?: string;
   status?: OrderStatus | "all";
   channel?: OrderChannel | "all";
+  from?: string;
+  to?: string;
 };
 
 export function applyOrdersListFilters(
@@ -28,7 +30,16 @@ export function applyOrdersListFilters(
       !filters?.channel ||
       filters.channel === "all" ||
       order.channel === filters.channel;
+    const matchesFrom =
+      !filters?.from || order.createdAtDate >= filters.from;
+    const matchesTo = !filters?.to || order.createdAtDate <= filters.to;
 
-    return matchesSearch && matchesStatus && matchesChannel;
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesChannel &&
+      matchesFrom &&
+      matchesTo
+    );
   });
 }

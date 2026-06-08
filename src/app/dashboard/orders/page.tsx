@@ -10,6 +10,7 @@ export default async function OrdersPage() {
   const t = await getTranslations("dashboard.orders");
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
+  const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
   const queryClient = getQueryClient();
 
   if (restaurantId) {
@@ -20,6 +21,8 @@ export default async function OrdersPage() {
     actions: {
       newOrder: t("actions.newOrder"),
       export: t("actions.export"),
+      exportSuccess: t("actions.exportSuccess"),
+      exportEmpty: t("actions.exportEmpty"),
       refresh: t("actions.refresh"),
       viewDetail: t("actions.viewDetail"),
       edit: t("actions.edit"),
@@ -80,6 +83,7 @@ export default async function OrdersPage() {
       owner: t("table.owner"),
       actions: t("table.actions"),
       minutes: t("table.minutes"),
+      tableNumber: t("table.tableNumber"),
     },
     kpis: {
       active: t("kpis.active"),
@@ -150,6 +154,7 @@ export default async function OrdersPage() {
       <OrdersPageClient
         labels={labels}
         restaurantId={restaurantId}
+        timezone={timezone}
         restaurants={
           context?.restaurants.map((restaurant) => restaurant.name) ?? []
         }

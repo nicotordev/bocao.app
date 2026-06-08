@@ -221,6 +221,8 @@
       "actions": {
         "newOrder": "Nuevo pedido",
         "export": "Exportar",
+        "exportSuccess": "Pedidos exportados correctamente",
+        "exportEmpty": "No hay pedidos para exportar con los filtros actuales",
         "refresh": "Actualizar",
         "viewDetail": "Ver detalle",
         "edit": "Editar",
@@ -276,7 +278,8 @@
         "wait": "Tiempo espera",
         "owner": "Responsable",
         "actions": "Acciones",
-        "minutes": "min"
+        "minutes": "min",
+        "tableNumber": "Mesa"
       },
       "kpis": {
         "active": "Pedidos activos",

@@ -11,6 +11,8 @@ export type OrdersLabels = {
   actions: {
     newOrder: string;
     export: string;
+    exportSuccess: string;
+    exportEmpty: string;
     refresh: string;
     viewDetail: string;
     edit: string;
@@ -56,6 +58,7 @@ export type OrdersLabels = {
     owner: string;
     actions: string;
     minutes: string;
+    tableNumber: string;
   };
   kpis: {
     active: string;

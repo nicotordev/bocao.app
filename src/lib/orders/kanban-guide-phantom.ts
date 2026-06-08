@@ -24,6 +24,7 @@ export function createKanbanGuidePhantomOrder(
     status: "received",
     total: labels.total,
     createdAt: new Date().toISOString(),
+    createdAtDate: new Date().toISOString().slice(0, 10),
     waitMinutes: 0,
     owner: labels.owner,
     history: "",

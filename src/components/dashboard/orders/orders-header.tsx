@@ -5,12 +5,14 @@ import type { OrdersLabels } from "./types";
 
 type OrdersHeaderProps = {
   labels: OrdersLabels;
+  onExport?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 };
 
 export function OrdersHeader({
   labels,
+  onExport,
   onRefresh,
   isRefreshing = false,
 }: OrdersHeaderProps) {
@@ -31,7 +33,7 @@ export function OrdersHeader({
             {labels.actions.newOrder}
           </Link>
         </Button>
-        <Button variant="secondary" className="gap-2">
+        <Button variant="secondary" className="gap-2" onClick={onExport}>
           <Download className="size-4" aria-hidden />
           {labels.actions.export}
         </Button>

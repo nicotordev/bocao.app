@@ -1,4 +1,5 @@
 import type { Order as PrismaOrder, Customer } from "@/generated/prisma/client";
+import { formatDateInputValue } from "@/lib/orders/date";
 import { formatCurrency } from "@/lib/orders/currency";
 import {
   formatOrderCustomerLabel,
@@ -110,6 +111,7 @@ export function mapDbOrderToUi(
     total: formatCurrency(order.totalCents, currency),
     totalCents: order.totalCents,
     createdAt: formatCreatedAt(order.createdAt, timezone),
+    createdAtDate: formatDateInputValue(order.createdAt, timezone),
     waitMinutes: order.preparationMins ?? getWaitMinutes(order.createdAt),
     owner: order.assignedTo ?? "",
     history: details.history ?? "",

@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { isOrdersDefaultDateRange } from "@/lib/orders/date";
 import type { OrderChannel, OrderStatus, OrdersLabels } from "./types";
 
 export type OrdersFiltersState = {
@@ -31,6 +32,7 @@ export type OrdersFiltersState = {
 type OrdersFiltersProps = {
   labels: OrdersLabels;
   restaurants: string[];
+  timezone: string;
   value: OrdersFiltersState;
   onChange: (value: OrdersFiltersState) => void;
   onClear: () => void;
@@ -55,13 +57,17 @@ const channelOptions: Array<OrderChannel | "all"> = [
   "rappi",
 ];
 
-function countActiveFilters(value: OrdersFiltersState) {
+function countActiveFilters(value: OrdersFiltersState, timezone: string) {
   let count = 0;
 
   if (value.status !== "all") count += 1;
   if (value.channel !== "all") count += 1;
-  if (value.from) count += 1;
-  if (value.to) count += 1;
+  if (
+    !isOrdersDefaultDateRange(value.from, value.to, timezone) &&
+    (value.from || value.to)
+  ) {
+    count += 1;
+  }
 
   return count;
 }
@@ -80,11 +86,12 @@ function isSelectPortalTarget(target: EventTarget | null) {
 export function OrdersFilters({
   labels,
   restaurants,
+  timezone,
   value,
   onChange,
   onClear,
 }: OrdersFiltersProps) {
-  const activeCount = countActiveFilters(value);
+  const activeCount = countActiveFilters(value, timezone);
 
   const update = <K extends keyof OrdersFiltersState>(
     key: K,

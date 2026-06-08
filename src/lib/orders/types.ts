@@ -32,6 +32,7 @@ export type Order = {
   total: string;
   totalCents?: number;
   createdAt: string;
+  createdAtDate: string;
   waitMinutes: number;
   owner: string;
   history: string;

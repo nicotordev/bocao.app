@@ -221,6 +221,8 @@
       "actions": {
         "newOrder": "New order",
         "export": "Export",
+        "exportSuccess": "Orders exported successfully",
+        "exportEmpty": "No orders to export with the current filters",
         "refresh": "Refresh",
         "viewDetail": "View detail",
         "edit": "Edit",
@@ -276,7 +278,8 @@
         "wait": "Wait time",
         "owner": "Owner",
         "actions": "Actions",
-        "minutes": "min"
+        "minutes": "min",
+        "tableNumber": "Table"
       },
       "kpis": {
         "active": "Active orders",

@@ -1,9 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { QueryResultState } from "@/components/query/query-result-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
+import {
+  buildOrdersCsv,
+  buildOrdersCsvFilename,
+  downloadCsvFile,
+} from "@/lib/orders/export-orders-csv";
+import { createDefaultOrdersDateRange } from "@/lib/orders/date";
 import { applyOrdersListFilters } from "@/lib/orders/filters";
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
 import { useOrdersListQuery } from "@/lib/query/orders/orders.queries";
@@ -21,24 +28,30 @@ type OrdersPageClientProps = {
   labels: OrdersLabels;
   restaurantId: string;
   restaurants: string[];
+  timezone: string;
 };
 
 export function OrdersPageClient({
   labels,
   restaurantId,
   restaurants,
+  timezone,
 }: OrdersPageClientProps) {
   const [selectedOrder, setSelectedOrder] = useState<DashboardOrder | null>(
     null,
   );
   const [activeTab, setActiveTab] = useState("orders");
-  const [filters, setFilters] = useState<OrdersFiltersState>({
-    search: "",
-    status: "all",
-    channel: "all",
-    restaurant: restaurants[0] ?? "",
-    from: "",
-    to: "",
+  const [filters, setFilters] = useState<OrdersFiltersState>(() => {
+    const { from, to } = createDefaultOrdersDateRange(timezone);
+
+    return {
+      search: "",
+      status: "all",
+      channel: "all",
+      restaurant: restaurants[0] ?? "",
+      from,
+      to,
+    };
   });
 
   const ordersQuery = useOrdersListQuery(restaurantId);
@@ -51,25 +64,68 @@ export function OrdersPageClient({
       search: filters.search,
       status: filters.status,
       channel: filters.channel,
+      from: filters.from,
+      to: filters.to,
     });
-  }, [allOrders, filters.channel, filters.search, filters.status]);
+  }, [
+    allOrders,
+    filters.channel,
+    filters.from,
+    filters.search,
+    filters.status,
+    filters.to,
+  ]);
 
   const kpiValues = useMemo(() => computeOrdersKpis(allOrders), [allOrders]);
 
-  const clearFilters = () =>
+  const clearFilters = () => {
+    const { from, to } = createDefaultOrdersDateRange(timezone);
+
     setFilters((current) => ({
       ...current,
       search: "",
       status: "all",
       channel: "all",
-      from: "",
-      to: "",
+      from,
+      to,
     }));
+  };
+
+  const handleExport = () => {
+    if (filteredOrders.length === 0) {
+      toast.error(labels.actions.exportEmpty);
+      return;
+    }
+
+    const csv = buildOrdersCsv(filteredOrders, {
+      columns: {
+        id: labels.table.id,
+        customer: labels.table.customer,
+        phone: labels.drawer.phone,
+        table: labels.table.tableNumber,
+        channel: labels.table.channel,
+        status: labels.table.status,
+        total: labels.table.total,
+        time: labels.table.time,
+        wait: labels.table.wait,
+        owner: labels.table.owner,
+        items: labels.drawer.products,
+        notes: labels.drawer.notes,
+      },
+      statuses: labels.statuses,
+      channels: labels.channels,
+      minutes: labels.table.minutes,
+    });
+
+    downloadCsvFile(buildOrdersCsvFilename(), csv);
+    toast.success(labels.actions.exportSuccess);
+  };
 
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
       <OrdersHeader
         labels={labels}
+        onExport={handleExport}
         onRefresh={() => {
           void ordersQuery.refetch();
         }}
@@ -87,6 +143,7 @@ export function OrdersPageClient({
             <OrdersFilters
               labels={labels}
               restaurants={restaurants}
+              timezone={timezone}
               value={filters}
               onChange={setFilters}
               onClear={clearFilters}
