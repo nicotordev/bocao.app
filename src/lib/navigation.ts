@@ -105,9 +105,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
 ] as const;
 
 export function getVisibleNavItems(
-  permissions: ReadonlySet<PermissionKey>,
+  permissions: readonly PermissionKey[],
   roleSlug: SystemRoleSlug,
 ): NavItem[] {
+  const permissionSet = new Set(permissions);
+
   return NAV_ITEMS.filter((item) => {
     if (item.allowedRoles && !item.allowedRoles.includes(roleSlug)) {
       return false;
@@ -117,6 +119,6 @@ export function getVisibleNavItems(
       return true;
     }
 
-    return permissions.has(item.permission);
+    return permissionSet.has(item.permission);
   });
 }

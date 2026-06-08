@@ -54,7 +54,7 @@ export function getNavigationForMembership(
   const permissions = extractPermissionKeys(membership);
   const roleSlug = membership.role.slug as SystemRoleSlug;
 
-  return getVisibleNavItems(permissions, roleSlug);
+  return getVisibleNavItems(Array.from(permissions), roleSlug);
 }
 
 export function hasPermission(
