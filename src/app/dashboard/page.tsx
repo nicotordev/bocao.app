@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { authRoutes } from "@/lib/auth-routes";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,7 +9,7 @@ export default async function DashboardPage() {
   });
 
   if (!session) {
-    redirect("/sign-in");
+    redirect(authRoutes.signIn);
   }
 
   return (

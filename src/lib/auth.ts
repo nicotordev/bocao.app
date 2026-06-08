@@ -19,6 +19,11 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+  },
+
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }) => {
@@ -26,6 +31,7 @@ export const auth = betterAuth({
       },
     }),
     emailOTP({
+      sendVerificationOnSignUp: true,
       async sendVerificationOTP({ email, otp, type }) {
         if (type === "sign-in") {
           queueOtpForEmailAccess(email, otp);

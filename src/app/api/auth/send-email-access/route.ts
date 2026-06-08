@@ -1,5 +1,6 @@
 import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
+import { appRoutes, authRoutes } from "@/lib/auth-routes";
 
 type SendEmailAccessBody = {
   email: string;
@@ -21,9 +22,9 @@ export async function POST(request: Request) {
         body: {
           email,
           name: body.mode === "sign-up" ? body.name : undefined,
-          callbackURL: "/dashboard",
-          newUserCallbackURL: "/dashboard",
-          errorCallbackURL: body.mode === "sign-in" ? "/sign-in" : "/sign-up",
+          callbackURL: appRoutes.dashboard,
+          newUserCallbackURL: appRoutes.dashboard,
+          errorCallbackURL: authRoutes.error,
         },
         headers: request.headers,
       }),

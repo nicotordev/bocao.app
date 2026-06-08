@@ -5,19 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
+import { AuthPageHeader } from "@/components/auth/auth-page-header";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { OtpCodeInput } from "@/components/auth/otp-code-input";
 import { authClient } from "@/lib/auth-client";
+import { appRoutes, authRoutes } from "@/lib/auth-routes";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 
 type AuthMode = "sign-in" | "sign-up";
 type AuthMethod = "password" | "email";
@@ -49,7 +47,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [isResending, setIsResending] = useState(false);
 
   const title = mode === "sign-in" ? "Ingresar" : "Crear cuenta";
-  const alternateHref = mode === "sign-in" ? "/sign-up" : "/sign-in";
+  const alternateHref =
+    mode === "sign-in" ? authRoutes.signUp : authRoutes.signIn;
   const alternateLabel =
     mode === "sign-in" ? "Crear cuenta" : "Ya tengo cuenta";
   const alternateHelp =
@@ -99,13 +98,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         ? await authClient.signIn.email({
             email,
             password,
-            callbackURL: "/dashboard",
+            callbackURL: appRoutes.dashboard,
           })
         : await authClient.signUp.email({
             name,
             email,
             password,
-            callbackURL: "/dashboard",
+            callbackURL: appRoutes.dashboard,
           });
 
     setIsSubmitting(false);
@@ -115,7 +114,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(appRoutes.dashboard);
   }
 
   async function sendEmailAccess({ isResend = false }: { isResend?: boolean } = {}) {
@@ -202,7 +201,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       email,
       otp,
       name: mode === "sign-up" ? name : undefined,
-      callbackURL: "/dashboard",
+      callbackURL: appRoutes.dashboard,
     });
 
     setIsSubmitting(false);
@@ -212,55 +211,37 @@ export function AuthForm({ mode }: AuthFormProps) {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(appRoutes.dashboard);
   }
 
   return (
-    <main className="relative flex min-h-screen">
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-cover bg-center lg:hidden"
-        style={{ backgroundImage: `url('${sideImage}')` }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-black/40 lg:hidden"
-      />
-
-      <section className="relative z-10 flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 lg:flex-none lg:w-176 lg:bg-background lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm rounded-2xl bg-background p-6 shadow-lg ring-1 ring-border/60 sm:p-8 lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0">
-          {isOtpEntryView ? (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold tracking-tight">
-                Ingresa el código
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Enviamos un código de 6 dígitos a{" "}
-                <span className="font-medium text-foreground">{email}</span>
-              </p>
-            </div>
-          ) : (
-            <div>
-              <div className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                <span className="text-lg font-bold text-primary">B</span>
-              </div>
-              <h2 className="mt-8 text-2xl font-bold tracking-tight">{title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {alternateHelp}{" "}
-                <Link
-                  href={alternateHref}
-                  className="font-semibold text-primary hover:opacity-80"
-                >
-                  {alternateLabel}
-                </Link>
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {mode === "sign-in"
-                  ? "Ingresa con contraseña o accede por email con link o código."
-                  : "Crea tu cuenta con contraseña o accede por email con link o código."}
-              </p>
-            </div>
-          )}
+    <AuthShell sideImage={sideImage}>
+      {isOtpEntryView ? (
+        <AuthPageHeader
+          centered
+          title="Ingresa el código"
+          description={
+            <>
+              Enviamos un código de 6 dígitos a{" "}
+              <span className="font-medium text-foreground">{email}</span>
+            </>
+          }
+        />
+      ) : (
+        <AuthPageHeader
+          title={title}
+          footer={{
+            help: alternateHelp,
+            href: alternateHref,
+            label: alternateLabel,
+          }}
+          description={
+            mode === "sign-in"
+              ? "Ingresa con contraseña o accede por email con link o código."
+              : "Crea tu cuenta con contraseña o accede por email con link o código."
+          }
+        />
+      )}
 
           <div className="mt-8 space-y-5">
             {!isOtpEntryView ? (
@@ -352,7 +333,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       </Label>
                     </div>
                     <Link
-                      href="#"
+                      href={authRoutes.forgotPassword}
                       className="text-sm font-medium text-primary hover:opacity-80"
                     >
                       ¿Olvidaste tu contraseña?
@@ -376,28 +357,13 @@ export function AuthForm({ mode }: AuthFormProps) {
 
             {isOtpEntryView ? (
               <form onSubmit={handleVerifyEmailOtp} className="space-y-6">
-                <div className="flex justify-center">
-                  <InputOTP
-                    id="email-auth-code"
-                    maxLength={6}
-                    value={otp}
-                    onChange={setOtp}
-                    disabled={isSubmitting}
-                    autoFocus
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSeparator />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
+                <OtpCodeInput
+                  id="email-auth-code"
+                  value={otp}
+                  onChange={setOtp}
+                  disabled={isSubmitting}
+                  autoFocus
+                />
 
                 <div className="space-y-3">
                   <Button
@@ -478,16 +444,6 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             ) : null}
           </div>
-        </div>
-      </section>
-
-      <aside className="relative z-10 hidden flex-1 lg:block">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${sideImage}')` }}
-        />
-        <div className="absolute inset-0 bg-black/35" />
-      </aside>
-    </main>
+    </AuthShell>
   );
 }

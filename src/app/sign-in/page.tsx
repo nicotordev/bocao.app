@@ -1,5 +1,6 @@
-import { AuthForm } from "@/components/auth/auth-form";
+import { redirect } from "next/navigation";
+import { authRoutes } from "@/lib/auth-routes";
 
-export default function SignInPage() {
-  return <AuthForm mode="sign-in" />;
+export default function LegacySignInPage() {
+  redirect(authRoutes.signIn);
 }
