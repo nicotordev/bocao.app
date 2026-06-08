@@ -24,6 +24,7 @@ import {
   type PrimaryGoalValue,
   type ServiceModeValue,
 } from "@/lib/onboarding/labels";
+import { PRIMARY_GOAL_ICONS } from "@/lib/onboarding/primary-goal-icons";
 import {
   createOnboardingStepOneSchema,
   createOnboardingStepThreeSchema,
@@ -438,6 +439,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
               <div className="space-y-2">
                 {PRIMARY_GOAL_VALUES.map((value) => {
                   const selected = values.primaryGoal === value;
+                  const Icon = PRIMARY_GOAL_ICONS[value];
 
                   return (
                     <button
@@ -449,18 +451,30 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
                         })
                       }
                       className={cn(
-                        "w-full rounded-xl border p-3 text-left transition-colors",
+                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors",
                         selected
                           ? "border-primary bg-primary/10"
                           : "border-border hover:bg-muted/40",
                       )}
                     >
-                      <p className="text-sm font-medium">
-                        {t(`primaryGoals.${value}.label`)}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {t(`primaryGoals.${value}.description`)}
-                      </p>
+                      <span
+                        className={cn(
+                          "flex size-9 shrink-0 items-center justify-center rounded-xl",
+                          selected
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        <Icon className="size-5" aria-hidden />
+                      </span>
+                      <span className="min-w-0">
+                        <p className="text-sm font-medium">
+                          {t(`primaryGoals.${value}.label`)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t(`primaryGoals.${value}.description`)}
+                        </p>
+                      </span>
                     </button>
                   );
                 })}
