@@ -1,4 +1,5 @@
 import type { MenuItemTag } from "@/lib/menu/tag-types";
+import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 
 export type MenuItemOption = {
   id: string;
@@ -8,6 +9,7 @@ export type MenuItemOption = {
   categoryName: string;
   images: string[];
   tags: MenuItemTag[];
+  translations: MenuItemFieldTranslations;
 };
 
 export type MenuItemRecord = MenuItemOption & {

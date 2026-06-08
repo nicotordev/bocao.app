@@ -1,5 +1,9 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags";
+import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags.server";
+import {
+  buildMenuItemTranslations,
+  type MenuItemFieldTranslations,
+} from "@/lib/menu/item-translations";
 import type {
   MenuCategoryRecord,
   MenuItemOption,
@@ -11,19 +15,31 @@ import {
   parseMenuItemTags,
 } from "@/lib/menu/tag-utils";
 import { prisma } from "@/lib/prisma";
+import {
+  deleteDbTranslationsForEntity,
+  listDbTranslations,
+  syncMenuItemTranslations,
+} from "@/lib/translations/repository";
+import {
+  DB_TRANSLATION_ENTITY,
+  type DbTranslationMap,
+} from "@/lib/translations/types";
 
-function mapMenuItemRecord(item: {
-  id: string;
-  name: string;
-  description: string | null;
-  priceCents: number;
-  sortOrder: number;
-  tags: Prisma.JsonValue;
-  images: string[];
-  isAvailable: boolean;
-  categoryId: string;
-  category: { name: string };
-}): MenuItemRecord {
+function mapMenuItemRecord(
+  item: {
+    id: string;
+    name: string;
+    description: string | null;
+    priceCents: number;
+    sortOrder: number;
+    tags: Prisma.JsonValue;
+    images: string[];
+    isAvailable: boolean;
+    categoryId: string;
+    category: { name: string };
+  },
+  translationMap: DbTranslationMap = {},
+): MenuItemRecord {
   return {
     id: item.id,
     name: item.name,
@@ -35,13 +51,31 @@ function mapMenuItemRecord(item: {
     isAvailable: item.isAvailable,
     categoryId: item.categoryId,
     categoryName: item.category.name,
+    translations: buildMenuItemTranslations(item, translationMap),
   };
+}
+
+async function loadMenuItemTranslationMap(
+  restaurantId: string,
+  itemIds: string[],
+) {
+  if (itemIds.length === 0) {
+    return {};
+  }
+
+  return listDbTranslations(
+    restaurantId,
+    DB_TRANSLATION_ENTITY.MENU_ITEM,
+    itemIds,
+  );
 }
 
 export async function listMenuItems(
   restaurantId: string,
 ): Promise<MenuItemOption[]> {
-  const items = await listMenuItemRecords(restaurantId, { availableOnly: true });
+  const items = await listMenuItemRecords(restaurantId, {
+    availableOnly: true,
+  });
 
   return items.map((item) => ({
     id: item.id,
@@ -51,6 +85,7 @@ export async function listMenuItems(
     categoryName: item.categoryName,
     images: item.images,
     tags: item.tags,
+    translations: item.translations,
   }));
 }
 
@@ -76,7 +111,12 @@ export async function listMenuItemRecords(
     ],
   });
 
-  return items.map((item) => mapMenuItemRecord(item));
+  const translationMap = await loadMenuItemTranslationMap(
+    restaurantId,
+    items.map((item) => item.id),
+  );
+
+  return items.map((item) => mapMenuItemRecord(item, translationMap));
 }
 
 export async function listMenuCategories(
@@ -196,6 +236,7 @@ export async function createMenuItem(
     isAvailable: boolean;
     images: string[];
     tags: MenuItemTag[];
+    translations: MenuItemFieldTranslations;
   },
 ): Promise<MenuItemRecord> {
   const category = await prisma.menuCategory.findFirst({
@@ -233,7 +274,13 @@ export async function createMenuItem(
     },
   });
 
-  return mapMenuItemRecord(item);
+  await syncMenuItemTranslations(restaurantId, item.id, input.translations);
+
+  const translationMap = await loadMenuItemTranslationMap(restaurantId, [
+    item.id,
+  ]);
+
+  return mapMenuItemRecord(item, translationMap);
 }
 
 export async function updateMenuItem(
@@ -247,6 +294,7 @@ export async function updateMenuItem(
     isAvailable?: boolean;
     images?: string[];
     tags?: MenuItemTag[];
+    translations?: MenuItemFieldTranslations;
   },
 ): Promise<MenuItemRecord> {
   const existing = await prisma.menuItem.findFirst({
@@ -279,13 +327,19 @@ export async function updateMenuItem(
   const item = await prisma.menuItem.update({
     where: { id: menuItemId },
     data: {
-      ...(input.categoryId !== undefined ? { categoryId: input.categoryId } : {}),
+      ...(input.categoryId !== undefined
+        ? { categoryId: input.categoryId }
+        : {}),
       ...(input.name !== undefined ? { name: input.name.trim() } : {}),
       ...(input.description !== undefined
         ? { description: input.description?.trim() || null }
         : {}),
-      ...(input.priceCents !== undefined ? { priceCents: input.priceCents } : {}),
-      ...(input.isAvailable !== undefined ? { isAvailable: input.isAvailable } : {}),
+      ...(input.priceCents !== undefined
+        ? { priceCents: input.priceCents }
+        : {}),
+      ...(input.isAvailable !== undefined
+        ? { isAvailable: input.isAvailable }
+        : {}),
       ...(input.images !== undefined ? { images: input.images } : {}),
       ...(storedTags !== undefined
         ? { tags: storedTags as Prisma.InputJsonValue }
@@ -298,7 +352,19 @@ export async function updateMenuItem(
     },
   });
 
-  return mapMenuItemRecord(item);
+  if (input.translations) {
+    await syncMenuItemTranslations(
+      restaurantId,
+      menuItemId,
+      input.translations,
+    );
+  }
+
+  const translationMap = await loadMenuItemTranslationMap(restaurantId, [
+    item.id,
+  ]);
+
+  return mapMenuItemRecord(item, translationMap);
 }
 
 export async function updateMenuItemImages(
@@ -320,6 +386,12 @@ export async function deleteMenuItem(
   if (!existing) {
     throw new Error("Menu item not found");
   }
+
+  await deleteDbTranslationsForEntity(
+    restaurantId,
+    DB_TRANSLATION_ENTITY.MENU_ITEM,
+    menuItemId,
+  );
 
   await prisma.menuItem.delete({
     where: { id: menuItemId },

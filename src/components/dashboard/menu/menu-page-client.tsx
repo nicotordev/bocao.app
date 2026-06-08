@@ -12,7 +12,7 @@ import { defaultLocale } from "@/i18n/locales";
 import {
   buildMenuCustomTagLabelMap,
   type MenuCustomTagRecord,
-} from "@/lib/menu/custom-tags";
+} from "@/lib/menu/custom-tags.shared";
 import {
   collectMenuTagSuggestions,
   mergeMenuItemTagsWithCustomDefinitions,
@@ -54,9 +54,8 @@ export function MenuPageClient({
   const [search, setSearch] = useState("");
   const [showUnavailable, setShowUnavailable] = useState(true);
   const [activeItem, setActiveItem] = useState<MenuItemRecord | null>(null);
-  const [activeCategory, setActiveCategory] = useState<MenuCategoryRecord | null>(
-    null,
-  );
+  const [activeCategory, setActiveCategory] =
+    useState<MenuCategoryRecord | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [isRefreshing, startRefresh] = useTransition();
@@ -153,8 +152,12 @@ export function MenuPageClient({
   }
 
   function handleCategoryDeleted(categoryId: string) {
-    setCategories((current) => current.filter((entry) => entry.id !== categoryId));
-    setItems((current) => current.filter((item) => item.categoryId !== categoryId));
+    setCategories((current) =>
+      current.filter((entry) => entry.id !== categoryId),
+    );
+    setItems((current) =>
+      current.filter((item) => item.categoryId !== categoryId),
+    );
   }
 
   async function handleDeleteItem(item: MenuItemRecord) {
@@ -172,8 +175,9 @@ export function MenuPageClient({
         setCategories((cats) =>
           cats.map((category) => ({
             ...category,
-            itemCount: nextItems.filter((entry) => entry.categoryId === category.id)
-              .length,
+            itemCount: nextItems.filter(
+              (entry) => entry.categoryId === category.id,
+            ).length,
           })),
         );
         return nextItems;

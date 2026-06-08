@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { defaultLocale, locales, type Locale } from "@/i18n/locales";
-import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags";
+import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import {
   createCustomMenuTag,
@@ -79,7 +79,9 @@ export function MenuItemTagsField({
   disabled = false,
 }: MenuItemTagsFieldProps) {
   const locale = useLocale() as Locale;
-  const [customDraft, setCustomDraft] = useState(() => emptyCustomDraft(locale));
+  const [customDraft, setCustomDraft] = useState(() =>
+    emptyCustomDraft(locale),
+  );
 
   const customTagsByKey = useMemo(
     () => Object.fromEntries(customTagDefinitions.map((tag) => [tag.key, tag])),
@@ -287,7 +289,9 @@ export function MenuItemTagsField({
             </p>
 
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">{labels.languages}</p>
+              <p className="text-xs text-muted-foreground">
+                {labels.languages}
+              </p>
               <div className="flex flex-wrap gap-3">
                 {localeOptions.map((option) => {
                   const checked = customDraft.enabledLocales.includes(

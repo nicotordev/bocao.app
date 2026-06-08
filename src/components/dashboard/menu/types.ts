@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/locales";
-import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags";
+import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
@@ -130,10 +130,11 @@ export type MenuPageClientProps = {
   localeOptions: MenuLocaleOption[];
 };
 
+import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
+
 export type MenuItemFormValues = {
   categoryId: string;
-  name: string;
-  description: string;
+  translations: MenuItemFieldTranslations;
   price: string;
   isAvailable: boolean;
   images: string[];

@@ -1,4 +1,7 @@
 import type { Locale } from "@/i18n/locales";
+import { defaultLocale, locales } from "@/i18n/locales";
+import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
+import { buildMenuItemTranslationInputs } from "@/lib/menu/item-translations";
 import { prisma } from "@/lib/prisma";
 import {
   buildDbTranslationMap,
@@ -122,6 +125,59 @@ export async function syncMenuCustomTagTranslations(
       locale: { notIn: enabledLocales },
     },
   });
+
+  await upsertDbTranslations(restaurantId, inputs);
+}
+
+export async function syncMenuItemTranslations(
+  restaurantId: string,
+  menuItemId: string,
+  translations: MenuItemFieldTranslations,
+) {
+  const inputs = buildMenuItemTranslationInputs(menuItemId, translations);
+  const nonDefaultLocales = locales.filter((locale) => locale !== defaultLocale);
+
+  if (inputs.length === 0) {
+    await prisma.dbTranslation.deleteMany({
+      where: {
+        restaurantId,
+        entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
+        entityKey: menuItemId,
+      },
+    });
+    return;
+  }
+
+  const enabledNameLocales = new Set(
+    inputs
+      .filter((entry) => entry.field === DB_TRANSLATION_FIELD.NAME)
+      .map((entry) => entry.locale),
+  );
+  const enabledDescriptionLocales = new Set(
+    inputs
+      .filter((entry) => entry.field === DB_TRANSLATION_FIELD.DESCRIPTION)
+      .map((entry) => entry.locale),
+  );
+
+  for (const locale of nonDefaultLocales) {
+    if (!enabledNameLocales.has(locale)) {
+      await deleteDbTranslationsForEntity(
+        restaurantId,
+        DB_TRANSLATION_ENTITY.MENU_ITEM,
+        menuItemId,
+        { locales: [locale], fields: [DB_TRANSLATION_FIELD.NAME] },
+      );
+    }
+
+    if (!enabledDescriptionLocales.has(locale)) {
+      await deleteDbTranslationsForEntity(
+        restaurantId,
+        DB_TRANSLATION_ENTITY.MENU_ITEM,
+        menuItemId,
+        { locales: [locale], fields: [DB_TRANSLATION_FIELD.DESCRIPTION] },
+      );
+    }
+  }
 
   await upsertDbTranslations(restaurantId, inputs);
 }

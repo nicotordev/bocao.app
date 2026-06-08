@@ -2,15 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { MenuPageClient } from "@/components/dashboard/menu/menu-page-client";
 import type { MenuPageLabels } from "@/components/dashboard/menu/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
-import { listMenuCustomTags } from "@/lib/menu/custom-tags";
-import {
-  listMenuCategories,
-  listMenuItemRecords,
-} from "@/lib/menu/repository";
-import {
-  MENU_TAG_CATALOG,
-  MENU_TAG_CATALOG_KEYS,
-} from "@/lib/menu/tag-types";
+import { listMenuCustomTags } from "@/lib/menu/custom-tags.server";
+import { listMenuCategories, listMenuItemRecords } from "@/lib/menu/repository";
+import { MENU_TAG_CATALOG, MENU_TAG_CATALOG_KEYS } from "@/lib/menu/tag-types";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 export default async function MenuPage() {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
   createMenuItemAction,
@@ -39,9 +40,17 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
-import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags";
-import { menuCustomTagsToMap } from "@/lib/menu/custom-tags";
+import {
+  menuCustomTagsToMap,
+  type MenuCustomTagRecord,
+} from "@/lib/menu/custom-tags.shared";
 import { mergeMenuItemTagsWithCustomDefinitions } from "@/lib/menu/tag-utils";
+import { defaultLocale } from "@/i18n/locales";
+import {
+  buildProductTranslationDraft,
+  createEmptyProductTranslations,
+  LocalizedProductFields,
+} from "./localized-product-fields";
 import {
   MenuItemTagsField,
   type MenuCatalogTagOption,
@@ -209,7 +218,9 @@ export function MenuItemDialog({
       <DialogContent className="flex max-h-[min(90vh,720px)] max-w-lg flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle>
-            {isEditing ? labels.itemDialog.editTitle : labels.itemDialog.createTitle}
+            {isEditing
+              ? labels.itemDialog.editTitle
+              : labels.itemDialog.createTitle}
           </DialogTitle>
           <DialogDescription>
             {isEditing
@@ -226,7 +237,9 @@ export function MenuItemDialog({
           ) : null}
 
           <Field>
-            <FieldLabel className="required">{labels.itemDialog.name}</FieldLabel>
+            <FieldLabel className="required">
+              {labels.itemDialog.name}
+            </FieldLabel>
             <Input
               value={form.name}
               onChange={(event) => updateField("name", event.target.value)}
@@ -240,7 +253,9 @@ export function MenuItemDialog({
             <FieldLabel>{labels.itemDialog.description}</FieldLabel>
             <Textarea
               value={form.description}
-              onChange={(event) => updateField("description", event.target.value)}
+              onChange={(event) =>
+                updateField("description", event.target.value)
+              }
               placeholder={labels.itemDialog.descriptionPlaceholder}
               className="min-h-24 rounded-3xl"
             />
@@ -248,7 +263,9 @@ export function MenuItemDialog({
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Field>
-              <FieldLabel className="required">{labels.itemDialog.price}</FieldLabel>
+              <FieldLabel className="required">
+                {labels.itemDialog.price}
+              </FieldLabel>
               <InputGroup>
                 <InputGroupAddon align="inline-start">
                   <InputGroupText>{currency}</InputGroupText>
@@ -264,17 +281,25 @@ export function MenuItemDialog({
             </Field>
 
             <Field>
-              <FieldLabel className="required">{labels.itemDialog.category}</FieldLabel>
+              <FieldLabel className="required">
+                {labels.itemDialog.category}
+              </FieldLabel>
               <Select
                 value={form.categoryId || undefined}
                 onValueChange={(value) => updateField("categoryId", value)}
               >
                 <SelectTrigger className="rounded-3xl">
-                  <SelectValue placeholder={labels.itemDialog.categoryPlaceholder} />
+                  <SelectValue
+                    placeholder={labels.itemDialog.categoryPlaceholder}
+                  />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id} className="rounded-lg">
+                    <SelectItem
+                      key={category.id}
+                      value={category.id}
+                      className="rounded-lg"
+                    >
                       {category.name}
                     </SelectItem>
                   ))}
@@ -289,7 +314,10 @@ export function MenuItemDialog({
               checked={form.isAvailable}
               onCheckedChange={(checked) => updateField("isAvailable", checked)}
             />
-            <FieldLabel htmlFor="menu-item-available" className="cursor-pointer">
+            <FieldLabel
+              htmlFor="menu-item-available"
+              className="cursor-pointer"
+            >
               {labels.itemDialog.available}
             </FieldLabel>
           </div>

@@ -2,6 +2,7 @@ import type { Locale } from "@/i18n/locales";
 
 export const DB_TRANSLATION_ENTITY = {
   MENU_CUSTOM_TAG: "menu_custom_tag",
+  MENU_ITEM: "menu_item",
 } as const;
 
 export type DbTranslationEntityType =
@@ -9,6 +10,8 @@ export type DbTranslationEntityType =
 
 export const DB_TRANSLATION_FIELD = {
   LABEL: "label",
+  NAME: "name",
+  DESCRIPTION: "description",
 } as const;
 
 export type DbTranslationField =
