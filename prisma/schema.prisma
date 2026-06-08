@@ -19,6 +19,7 @@ model Organization {
 
   restaurants Restaurant[]
   memberships Membership[]
+  roles       Role[]
 }
 
 /// Staff user. Email is unique across the app.
@@ -80,27 +81,66 @@ model Verification {
   @@index([identifier])
 }
 
-enum MembershipRole {
-  OWNER
-  MANAGER
-  STAFF
+/// Global permission catalog (seeded from code, not user-defined).
+model Permission {
+  id          String   @id @default(cuid())
+  /// e.g. "menu:read", "orders:write"
+  key         String   @unique
+  description String?
+  /// UI grouping: "menu", "orders", "staff"
+  module      String
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+}
+
+/// Role scoped to an organization. System roles cannot be deleted.
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  memberships     Membership[]
+  rolePermissions RolePermission[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
 }
 
 /// Links a user to an organization with a role (row-level multi-tenant access).
 model Membership {
-  id        String         @id @default(cuid())
-  role      MembershipRole @default(STAFF)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId         String
   organizationId String
+  roleId         String
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   @@unique([userId, organizationId])
   @@index([organizationId])
+  @@index([roleId])
 }
 
 /// Restaurant (location) operating under an organization.
