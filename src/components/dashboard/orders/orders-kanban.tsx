@@ -76,7 +76,9 @@ export function OrdersKanban({
   );
 
   function handleDragStart(event: DragStartEvent) {
-    const order = event.active.data.current?.order as DashboardOrder | undefined;
+    const order = event.active.data.current?.order as
+      | DashboardOrder
+      | undefined;
     setActiveOrder(order ?? null);
   }
 

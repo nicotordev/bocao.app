@@ -38,7 +38,9 @@ export function OrdersKanbanCardView({
         isDragOverlay &&
           "rotate-1 scale-[1.02] border-primary/40 shadow-lg ring-2 ring-primary/20",
         isDragging && !isDragOverlay && "opacity-40",
-        !isDragOverlay && !isDragging && "hover:-translate-y-0.5 hover:shadow-md",
+        !isDragOverlay &&
+          !isDragging &&
+          "hover:-translate-y-0.5 hover:shadow-md",
       )}
     >
       <div className="flex items-start gap-2 p-3">
@@ -77,7 +79,9 @@ export function OrdersKanbanCardView({
               labels={labels.channels}
               whatsappLabel={labels.accessibility.whatsappOrder}
             />
-            <span className="text-sm font-semibold tabular-nums">{order.total}</span>
+            <span className="text-sm font-semibold tabular-nums">
+              {order.total}
+            </span>
           </div>
 
           <p className="mt-2 text-xs text-muted-foreground">
