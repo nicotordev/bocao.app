@@ -16,6 +16,7 @@ type OrdersKanbanColumnProps = {
   labels: OrdersLabels;
   onSelectOrder: (order: DashboardOrder) => void;
   isDisabled?: boolean;
+  guideOrderId?: string | null;
 };
 
 export function OrdersKanbanColumn({
@@ -24,6 +25,7 @@ export function OrdersKanbanColumn({
   labels,
   onSelectOrder,
   isDisabled = false,
+  guideOrderId = null,
 }: OrdersKanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: kanbanColumnId(status),
@@ -35,7 +37,7 @@ export function OrdersKanbanColumn({
     <section
       ref={setNodeRef}
       className={cn(
-        "flex min-h-[28rem] min-w-72 flex-col rounded-3xl border bg-card/70 p-3 transition-colors",
+        "flex min-h-48 min-w-0 flex-col rounded-3xl border bg-card/70 p-3 transition-colors",
         isOver
           ? "border-primary/50 bg-primary/5 ring-2 ring-primary/20"
           : "border-border/70",
@@ -57,6 +59,7 @@ export function OrdersKanbanColumn({
             labels={labels}
             onSelectOrder={onSelectOrder}
             isDisabled={isDisabled}
+            highlightDragHandle={order.id === guideOrderId}
           />
         ))}
 

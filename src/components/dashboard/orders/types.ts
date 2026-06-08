@@ -34,8 +34,9 @@ export type OrdersLabels = {
     from: string;
     to: string;
     all: string;
-    collapse: string;
-    expand: string;
+    menu: string;
+    activeCount: string;
+    noActive: string;
   };
   statuses: Record<import("@/lib/orders/types").OrderStatus | "all", string>;
   channels: Record<import("@/lib/orders/types").OrderChannel | "all", string>;
@@ -69,6 +70,13 @@ export type OrdersLabels = {
   kanban: {
     dragHelp: string;
     dropHere: string;
+    guideTitle: string;
+    guideDescription: string;
+    guideDismiss: string;
+    guidePhantomId: string;
+    guidePhantomCustomer: string;
+    guidePhantomTotal: string;
+    guidePhantomOwner: string;
   };
   timeline: {
     title: string;

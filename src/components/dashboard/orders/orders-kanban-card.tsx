@@ -6,6 +6,7 @@ import { IconGripVertical } from "@tabler/icons-react";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { OrderChannelBadge } from "./order-channel-badge";
+import { isKanbanGuidePhantomOrder } from "@/lib/orders/kanban-guide-phantom";
 import type { DashboardOrder, OrdersLabels } from "./types";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ type OrdersKanbanCardViewProps = {
     attributes: DraggableAttributes;
     listeners: SyntheticListenerMap | undefined;
   };
+  highlightDragHandle?: boolean;
 };
 
 export function OrdersKanbanCardView({
@@ -30,6 +32,7 @@ export function OrdersKanbanCardView({
   isDragging = false,
   isDisabled = false,
   dragHandleProps,
+  highlightDragHandle = false,
 }: OrdersKanbanCardViewProps) {
   return (
     <article
@@ -46,6 +49,8 @@ export function OrdersKanbanCardView({
       <div className="flex items-start gap-2 p-3">
         <button
           type="button"
+          data-sound="swipe"
+          {...(highlightDragHandle ? { "data-kanban-drag-handle": "" } : {})}
           className={cn(
             "mt-0.5 shrink-0 touch-none rounded-lg p-1 text-muted-foreground transition-colors",
             "hover:bg-muted hover:text-foreground",
@@ -68,7 +73,11 @@ export function OrdersKanbanCardView({
           aria-label={`${labels.accessibility.openDetails} ${order.id}`}
           disabled={isDragOverlay}
         >
-          <p className="font-medium leading-tight">{order.id}</p>
+          <p className="font-medium leading-tight">
+            {isKanbanGuidePhantomOrder(order.id)
+              ? labels.kanban.guidePhantomId
+              : order.id}
+          </p>
           <p className="mt-1 truncate text-sm text-muted-foreground">
             {order.customerName}
           </p>
@@ -99,6 +108,7 @@ type OrdersKanbanCardProps = {
   labels: OrdersLabels;
   onSelectOrder: (order: DashboardOrder) => void;
   isDisabled?: boolean;
+  highlightDragHandle?: boolean;
 };
 
 export function OrdersKanbanCard({
@@ -106,6 +116,7 @@ export function OrdersKanbanCard({
   labels,
   onSelectOrder,
   isDisabled = false,
+  highlightDragHandle = false,
 }: OrdersKanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -127,6 +138,7 @@ export function OrdersKanbanCard({
         isDragging={isDragging}
         isDisabled={isDisabled}
         dragHandleProps={{ attributes, listeners }}
+        highlightDragHandle={highlightDragHandle}
       />
     </div>
   );

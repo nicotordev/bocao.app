@@ -30,6 +30,7 @@ export function OrdersPageClient({
   const [selectedOrder, setSelectedOrder] = useState<DashboardOrder | null>(
     null,
   );
+  const [activeTab, setActiveTab] = useState("orders");
   const [filters, setFilters] = useState<OrdersFiltersState>({
     search: "",
     status: "all",
@@ -37,7 +38,6 @@ export function OrdersPageClient({
     restaurant: restaurants[0] ?? "",
     from: "",
     to: "",
-    expanded: false,
   });
 
   const ordersQuery = useOrdersListQuery(restaurantId);
@@ -78,6 +78,7 @@ export function OrdersPageClient({
         isRefreshing={ordersQuery.isFetching && !ordersQuery.isPending}
       />
       <OrdersKpis labels={labels.kpis} />
+      <AiOrderInsights labels={labels.insights} />
 
       <QueryResultState query={ordersQuery}>
         {() => (
@@ -90,53 +91,48 @@ export function OrdersPageClient({
               onClear={clearFilters}
             />
 
-            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
-              <Tabs defaultValue="orders" className="min-w-0">
-                <div className="flex items-center justify-between gap-3">
-                  <TabsList>
-                    <TabsTrigger value="orders">
-                      {labels.tabs.orders}
-                    </TabsTrigger>
-                    <TabsTrigger value="kanban">
-                      {labels.tabs.kanban}
-                    </TabsTrigger>
-                    <TabsTrigger value="timeline">
-                      {labels.tabs.timeline}
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="min-w-0"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <TabsList>
+                  <TabsTrigger value="orders">{labels.tabs.orders}</TabsTrigger>
+                  <TabsTrigger value="kanban">{labels.tabs.kanban}</TabsTrigger>
+                  <TabsTrigger value="timeline">
+                    {labels.tabs.timeline}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-                <TabsContent value="orders" className="mt-4">
-                  <OrdersTable
-                    labels={labels}
-                    orders={filteredOrders}
-                    onSelectOrder={setSelectedOrder}
-                  />
-                </TabsContent>
-                <TabsContent value="kanban" className="mt-4">
-                  <OrdersKanban
-                    labels={labels}
-                    orders={filteredOrders}
-                    onSelectOrder={setSelectedOrder}
-                    isMoving={updateOrderStatusMutation.isPending}
-                    onMoveOrder={(orderId, status) =>
-                      updateOrderStatusMutation.mutate({ orderId, status })
-                    }
-                  />
-                </TabsContent>
-                <TabsContent value="timeline" className="mt-4">
-                  <OrdersTimeline
-                    labels={labels}
-                    orders={filteredOrders}
-                    onSelectOrder={setSelectedOrder}
-                  />
-                </TabsContent>
-              </Tabs>
-
-              <aside className="2xl:sticky 2xl:top-32 2xl:self-start">
-                <AiOrderInsights labels={labels.insights} />
-              </aside>
-            </div>
+              <TabsContent value="orders" className="mt-4">
+                <OrdersTable
+                  labels={labels}
+                  orders={filteredOrders}
+                  onSelectOrder={setSelectedOrder}
+                />
+              </TabsContent>
+              <TabsContent value="kanban" className="mt-4">
+                <OrdersKanban
+                  labels={labels}
+                  orders={filteredOrders}
+                  onSelectOrder={setSelectedOrder}
+                  isMoving={updateOrderStatusMutation.isPending}
+                  showDragGuide={activeTab === "kanban"}
+                  onMoveOrder={(orderId, status) =>
+                    updateOrderStatusMutation.mutate({ orderId, status })
+                  }
+                />
+              </TabsContent>
+              <TabsContent value="timeline" className="mt-4">
+                <OrdersTimeline
+                  labels={labels}
+                  orders={filteredOrders}
+                  onSelectOrder={setSelectedOrder}
+                />
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </QueryResultState>

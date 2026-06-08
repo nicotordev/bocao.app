@@ -234,8 +234,9 @@
         "from": "Desde",
         "to": "Hasta",
         "all": "Todos",
-        "collapse": "Ocultar filtros",
-        "expand": "Mostrar filtros"
+        "menu": "Filtros",
+        "activeCount": "{count} filtros activos",
+        "noActive": "Sin filtros aplicados"
       },
       "statuses": {
         "all": "Todos",
@@ -283,7 +284,14 @@
       },
       "kanban": {
         "dragHelp": "Arrastra pedidos entre estados para actualizar el flujo.",
-        "dropHere": "Suelta pedidos aquí"
+        "dropHere": "Suelta pedidos aquí",
+        "guideTitle": "Arrastra desde aquí",
+        "guideDescription": "Usa el ícono de agarre para mover el pedido entre columnas. El resto de la tarjeta abre el detalle.",
+        "guideDismiss": "Entendido",
+        "guidePhantomId": "DEMO-001",
+        "guidePhantomCustomer": "Pedido de ejemplo",
+        "guidePhantomTotal": "$0",
+        "guidePhantomOwner": "Demo"
       },
       "timeline": {
         "title": "Flujo operativo",

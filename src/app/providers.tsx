@@ -4,6 +4,7 @@ import type { Locale } from "@/i18n/locales";
 import type enMessages from "@/i18n/messages/en.json";
 import { QueryProvider } from "@/lib/query/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { UiSoundProvider } from "@/providers/ui-sound-provider";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export default function Providers({
       <TooltipProvider>
         <IntlProvider locale={locale} messages={messages}>
           {children}
+          <UiSoundProvider />
           <Toaster richColors closeButton position="top-center" />
         </IntlProvider>
       </TooltipProvider>

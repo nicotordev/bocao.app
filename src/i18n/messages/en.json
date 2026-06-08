@@ -234,8 +234,9 @@
         "from": "From",
         "to": "To",
         "all": "All",
-        "collapse": "Hide filters",
-        "expand": "Show filters"
+        "menu": "Filters",
+        "activeCount": "{count} active filters",
+        "noActive": "No filters applied"
       },
       "statuses": {
         "all": "All",
@@ -283,7 +284,14 @@
       },
       "kanban": {
         "dragHelp": "Drag orders across statuses to update the flow.",
-        "dropHere": "Drop orders here"
+        "dropHere": "Drop orders here",
+        "guideTitle": "Drag from here",
+        "guideDescription": "Use the grip handle to move orders between columns. The rest of the card opens order details.",
+        "guideDismiss": "Got it",
+        "guidePhantomId": "DEMO-001",
+        "guidePhantomCustomer": "Sample order",
+        "guidePhantomTotal": "$0",
+        "guidePhantomOwner": "Demo"
       },
       "timeline": {
         "title": "Operational flow",

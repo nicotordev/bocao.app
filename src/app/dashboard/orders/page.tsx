@@ -44,8 +44,9 @@ export default async function OrdersPage() {
       from: t("filters.from"),
       to: t("filters.to"),
       all: t("filters.all"),
-      collapse: t("filters.collapse"),
-      expand: t("filters.expand"),
+      menu: t("filters.menu"),
+      activeCount: t.raw("filters.activeCount"),
+      noActive: t("filters.noActive"),
     },
     statuses: {
       all: t("statuses.all"),
@@ -94,6 +95,13 @@ export default async function OrdersPage() {
     kanban: {
       dragHelp: t("kanban.dragHelp"),
       dropHere: t("kanban.dropHere"),
+      guideTitle: t("kanban.guideTitle"),
+      guideDescription: t("kanban.guideDescription"),
+      guideDismiss: t("kanban.guideDismiss"),
+      guidePhantomId: t("kanban.guidePhantomId"),
+      guidePhantomCustomer: t("kanban.guidePhantomCustomer"),
+      guidePhantomTotal: t("kanban.guidePhantomTotal"),
+      guidePhantomOwner: t("kanban.guidePhantomOwner"),
     },
     timeline: {
       title: t("timeline.title"),
