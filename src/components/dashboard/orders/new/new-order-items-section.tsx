@@ -37,6 +37,7 @@ type NewOrderItemsSectionProps = {
 export function NewOrderItemsSection({
   labels,
   currency,
+  restaurantId,
   menuItems,
   items,
   error,
@@ -109,6 +110,7 @@ export function NewOrderItemsSection({
         onOpenChange={setCustomDialogOpen}
         labels={labels}
         currency={currency}
+        restaurantId={restaurantId}
         onAddCustom={onAddCustom}
       />
     </Card>

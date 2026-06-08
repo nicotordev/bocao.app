@@ -103,6 +103,9 @@ export type NewOrderLabels = {
     invalidImageType: string;
     imageTooLarge: string;
     storageNotConfigured: string;
+    moveEarlier: string;
+    moveLater: string;
+    photoSortOrder: string;
   };
   notes: {
     title: string;

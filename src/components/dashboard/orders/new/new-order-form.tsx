@@ -206,7 +206,12 @@ export function NewOrderForm({
     setErrors((current) => ({ ...current, items: undefined }));
   }
 
-  function addCustomItem(name: string, priceCents: number, quantity: number) {
+  function addCustomItem(
+    name: string,
+    priceCents: number,
+    quantity: number,
+    imageUrls: string[],
+  ) {
     setValues((current) => ({
       ...current,
       items: [
@@ -216,7 +221,7 @@ export function NewOrderForm({
           name,
           quantity,
           priceCents,
-          imageUrls: [],
+          imageUrls: [...imageUrls],
         },
       ],
     }));
@@ -322,6 +327,7 @@ export function NewOrderForm({
         <NewOrderItemsSection
           labels={labels}
           currency={currency}
+          restaurantId={restaurantId}
           menuItems={menuItems}
           items={values.items}
           error={errors.items}

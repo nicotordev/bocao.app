@@ -418,7 +418,10 @@
           "uploadError": "No pudimos subir la foto.",
           "invalidImageType": "El archivo debe ser una imagen válida.",
           "imageTooLarge": "La imagen supera el límite de 5 MB.",
-          "storageNotConfigured": "El almacenamiento de imágenes no está configurado."
+          "storageNotConfigured": "El almacenamiento de imágenes no está configurado.",
+          "moveEarlier": "Mover foto antes",
+          "moveLater": "Mover foto después",
+          "photoSortOrder": "Foto {order}"
         },
         "notes": {
           "title": "Notas",

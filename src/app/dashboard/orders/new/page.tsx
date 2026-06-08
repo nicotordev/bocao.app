@@ -92,6 +92,9 @@ export default async function NewOrderPage() {
       invalidImageType: t("photos.invalidImageType"),
       imageTooLarge: t("photos.imageTooLarge"),
       storageNotConfigured: t("photos.storageNotConfigured"),
+      moveEarlier: t("photos.moveEarlier"),
+      moveLater: t("photos.moveLater"),
+      photoSortOrder: t("photos.photoSortOrder"),
     },
     notes: {
       title: t("notes.title"),
