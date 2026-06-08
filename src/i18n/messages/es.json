@@ -561,18 +561,137 @@
         "removeVertex": "Eliminar vértice"
       }
     },
+    "reservations": {
+      "header": {
+        "title": "Reservas",
+        "subtitle": "Gestiona y organiza las reservas de mesas de tu restaurante."
+      },
+      "actions": {
+        "newReservation": "Nueva reserva",
+        "refresh": "Actualizar",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "confirm": "Confirmar",
+        "seat": "Sentar",
+        "complete": "Completar",
+        "cancel": "Cancelar",
+        "clearFilters": "Limpiar filtros",
+        "addCustomer": "Agregar cliente",
+        "removeCustomer": "Quitar cliente"
+      },
+      "filters": {
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por cliente, notas...",
+        "status": "Estado",
+        "date": "Fecha",
+        "all": "Todos",
+        "noActive": "No hay filtros activos"
+      },
+      "statuses": {
+        "all": "Todos los estados",
+        "PENDING": "Pendiente",
+        "CONFIRMED": "Confirmada",
+        "SEATED": "En mesa",
+        "COMPLETED": "Completada",
+        "CANCELLED": "Cancelada",
+        "NO_SHOW": "Ausente"
+      },
+      "kpis": {
+        "total": "Total hoy",
+        "confirmed": "Confirmadas",
+        "pending": "Pendientes",
+        "guests": "Comensales hoy"
+      },
+      "form": {
+        "guestCount": "Cantidad de personas",
+        "scheduledAt": "Fecha y hora",
+        "status": "Estado de la reserva",
+        "notes": "Notas / Comentarios",
+        "submitCreate": "Crear reserva",
+        "submitEdit": "Guardar cambios",
+        "successCreate": "Reserva creada con éxito",
+        "successCreateMultiple": "{count} reservas creadas con éxito",
+        "successUpdate": "Reserva actualizada con éxito",
+        "successDelete": "Reserva eliminada con éxito",
+        "confirmDelete": "¿Estás seguro de que deseas eliminar esta reserva?",
+        "createDescription": "Selecciona clientes y programa la reserva.",
+        "editDescription": "Modifica los datos de la reserva seleccionada.",
+        "cancel": "Cancelar",
+        "saving": "Guardando...",
+        "save": "Guardar",
+        "create": "Crear",
+        "customer": {
+          "title": "Clientes",
+          "description": "Busca clientes registrados o agrega uno nuevo.",
+          "name": "Nombre",
+          "namePlaceholder": "Nombre del cliente",
+          "phone": "Teléfono",
+          "phonePlaceholder": "+56 9 1234 5678",
+          "email": "Correo",
+          "emailPlaceholder": "cliente@correo.com",
+          "documentId": "Documento",
+          "documentIdPlaceholder": "12.345.678-9",
+          "address": "Dirección",
+          "addressPlaceholder": "Calle, ciudad",
+          "notes": "Notas del cliente",
+          "notesPlaceholder": "Preferencias, alergias, etc.",
+          "searchPlaceholder": "Buscar clientes...",
+          "noResults": "No se encontraron clientes",
+          "selectedHint": "Selecciona uno o más clientes registrados",
+          "emptySelection": "Aún no hay clientes seleccionados.",
+          "picker": {
+            "title": "Nuevo cliente",
+            "description": "Agrega un cliente que aún no está registrado.",
+            "addCustomer": "Agregar cliente",
+            "addSuccess": "Cliente agregado a la reserva"
+          }
+        }
+      },
+      "validation": {
+        "customers": "Selecciona al menos un cliente",
+        "draftCustomerName": "Ingresa el nombre del cliente"
+      },
+      "empty": {
+        "title": "No hay reservas",
+        "description": "No se encontraron reservas para los filtros seleccionados.",
+        "cta": "Crear reserva"
+      }
+    },
     "menu": {
       "header": {
         "title": "Menú",
-        "subtitle": "Administra los productos y sus fotos para pedidos y operación."
+        "subtitle": "Administra categorías, productos, precios, disponibilidad y fotos."
+      },
+      "actions": {
+        "newItem": "Nuevo producto",
+        "newCategory": "Nueva categoría",
+        "refresh": "Actualizar",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "create": "Crear",
+        "saving": "Guardando..."
+      },
+      "filters": {
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por producto o categoría...",
+        "category": "Categoría",
+        "allCategories": "Todas las categorías",
+        "showUnavailable": "Mostrar no disponibles",
+        "clear": "Limpiar filtros"
       },
       "empty": {
         "title": "Sin productos en el menú",
-        "description": "Aún no hay productos cargados para este restaurante."
+        "description": "Aún no hay productos cargados para este restaurante.",
+        "cta": "Crear primer producto",
+        "categoryCta": "Crear primera categoría"
       },
       "item": {
         "photos": "Fotos del producto",
-        "unavailable": "No disponible"
+        "unavailable": "No disponible",
+        "available": "Disponible",
+        "itemCount": "{count} productos"
       },
       "photos": {
         "addPhoto": "Agregar foto",
@@ -588,6 +707,70 @@
       "permissions": {
         "deniedTitle": "Sin acceso al menú",
         "deniedDescription": "Tu rol no puede editar productos del menú."
+      },
+      "itemDialog": {
+        "createTitle": "Nuevo producto",
+        "editTitle": "Editar producto",
+        "createDescription": "Agrega un producto al menú.",
+        "editDescription": "Actualiza los datos de este producto.",
+        "name": "Nombre",
+        "namePlaceholder": "Nombre del producto",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Ingredientes, notas, etc.",
+        "price": "Precio",
+        "category": "Categoría",
+        "categoryPlaceholder": "Selecciona una categoría",
+        "available": "Disponible para pedidos",
+        "tags": "Etiquetas",
+        "tagsCatalog": "Etiquetas comunes",
+        "tagsCustom": "Etiqueta personalizada",
+        "tagsPlaceholder": "Ej: Porción familiar, Edición limitada",
+        "tagsAdd": "Agregar",
+        "tagsRemove": "Quitar etiqueta",
+        "tagsSuggestions": "Etiquetas personalizadas usadas antes",
+        "tagsPickIcon": "Elige un icono",
+        "successCreate": "Producto creado con éxito",
+        "successUpdate": "Producto actualizado con éxito",
+        "successDelete": "Producto eliminado con éxito",
+        "confirmDelete": "¿Estás seguro de que deseas eliminar este producto?"
+      },
+      "categoryDialog": {
+        "createTitle": "Nueva categoría",
+        "editTitle": "Editar categoría",
+        "createDescription": "Organiza tu menú con categorías.",
+        "editDescription": "Actualiza el nombre de la categoría o elimínala.",
+        "name": "Nombre",
+        "namePlaceholder": "Nombre de la categoría",
+        "successCreate": "Categoría creada con éxito",
+        "successUpdate": "Categoría actualizada con éxito",
+        "successDelete": "Categoría eliminada con éxito",
+        "confirmDelete": "¿Estás seguro de que deseas eliminar esta categoría?",
+        "itemCountWarning": "Esta categoría tiene {count} productos. Eliminarla también los borrará. ¿Continuar?"
+      },
+      "validation": {
+        "name": "Ingresa un nombre",
+        "price": "Ingresa un precio válido",
+        "category": "Selecciona una categoría"
+      },
+      "feedback": {
+        "error": "Algo salió mal. Intenta nuevamente."
+      },
+      "tree": {
+        "dragHint": "Arrastra categorías y productos para reordenarlos o mover productos entre categorías.",
+        "searchLocked": "Limpia los filtros para reordenar el árbol del menú.",
+        "emptyCategory": "Suelta productos aquí o agrega uno con Nuevo producto.",
+        "dragCategory": "Arrastrar categoría",
+        "dragItem": "Arrastrar producto"
+      },
+      "tags": {
+        "spicy": "Picante",
+        "hot": "Caliente",
+        "vegetarian": "Vegetariano",
+        "vegan": "Vegano",
+        "glutenFree": "Sin gluten",
+        "containsNuts": "Contiene frutos secos",
+        "chefChoice": "Recomendación del chef",
+        "new": "Nuevo"
       }
     }
   },

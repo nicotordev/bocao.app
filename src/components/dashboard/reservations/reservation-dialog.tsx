@@ -1,0 +1,350 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { CustomerOption } from "@/lib/customers/types";
+import type { CustomerFormDialogLabels } from "@/lib/customers/customer-form-labels";
+import type { Reservation, ReservationStatus } from "@/lib/reservations/types";
+import { ReservationCustomerSection } from "./reservation-customer-section";
+import type {
+  ReservationFormSubmitData,
+  ReservationNewCustomerInput,
+  ReservationSelectedCustomer,
+} from "./reservation-dialog.types";
+
+type ReservationDialogLabels = {
+  form: {
+    guestCount: string;
+    scheduledAt: string;
+    status: string;
+    notes: string;
+    submitCreate: string;
+    submitEdit: string;
+    createDescription: string;
+    editDescription: string;
+    cancel: string;
+    saving: string;
+    save: string;
+    create: string;
+    validation: {
+      customers: string;
+    };
+    customer: CustomerFormDialogLabels["customer"] & {
+      title: string;
+      description: string;
+    };
+  };
+  actions: CustomerFormDialogLabels["actions"];
+  validation: CustomerFormDialogLabels["validation"];
+  statuses: Record<ReservationStatus, string>;
+};
+
+type ReservationDialogProps = {
+  labels: ReservationDialogLabels;
+  customers: CustomerOption[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  reservation: Reservation | null;
+  onSubmit: (data: ReservationFormSubmitData) => void;
+  isSubmitting: boolean;
+};
+
+function createCustomerKey() {
+  return crypto.randomUUID();
+}
+
+function formatForInput(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+export function ReservationDialog({
+  labels,
+  customers,
+  open,
+  onOpenChange,
+  onClose,
+  reservation,
+  onSubmit,
+  isSubmitting,
+}: ReservationDialogProps) {
+  const [selectedCustomers, setSelectedCustomers] = useState<
+    ReservationSelectedCustomer[]
+  >([]);
+  const [guestCount, setGuestCount] = useState(2);
+  const [status, setStatus] = useState<ReservationStatus>("CONFIRMED");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [notes, setNotes] = useState("");
+  const [customerError, setCustomerError] = useState("");
+
+  useEffect(() => {
+    if (reservation) {
+      const linkedCustomer = reservation.customerId
+        ? customers.find((customer) => customer.id === reservation.customerId)
+        : null;
+
+      if (linkedCustomer) {
+        setSelectedCustomers([
+          {
+            key: linkedCustomer.id,
+            id: linkedCustomer.id,
+            name: linkedCustomer.name,
+            phone: linkedCustomer.phone ?? "",
+            email: linkedCustomer.email ?? "",
+            documentId: linkedCustomer.documentId ?? "",
+            address: "",
+            notes: "",
+            source: "existing",
+          },
+        ]);
+      } else if (reservation.guestName.trim()) {
+        setSelectedCustomers([
+          {
+            key: createCustomerKey(),
+            name: reservation.guestName,
+            phone: reservation.guestPhone ?? "",
+            email: "",
+            documentId: "",
+            address: "",
+            notes: "",
+            source: "new",
+          },
+        ]);
+      } else {
+        setSelectedCustomers([]);
+      }
+
+      setGuestCount(reservation.guestCount);
+      setStatus(reservation.status);
+      setScheduledAt(formatForInput(new Date(reservation.scheduledAt)));
+      setNotes(reservation.notes || "");
+    } else {
+      setSelectedCustomers([]);
+      setGuestCount(2);
+      setStatus("CONFIRMED");
+      setScheduledAt(formatForInput(new Date()));
+      setNotes("");
+    }
+
+    setCustomerError("");
+  }, [reservation, open, customers]);
+
+  function syncExistingCustomers(nextExisting: CustomerOption[]) {
+    setSelectedCustomers((current) => {
+      const preservedNewCustomers = current.filter(
+        (customer) => customer.source === "new",
+      );
+      const nextExistingCustomers: ReservationSelectedCustomer[] =
+        nextExisting.map((customer) => ({
+          key: customer.id,
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone ?? "",
+          email: customer.email ?? "",
+          documentId: customer.documentId ?? "",
+          address: "",
+          notes: "",
+          source: "existing",
+        }));
+
+      return [...nextExistingCustomers, ...preservedNewCustomers];
+    });
+    setCustomerError("");
+  }
+
+  function addNewCustomer(customer: ReservationNewCustomerInput) {
+    setSelectedCustomers((current) => [
+      ...current,
+      {
+        key: createCustomerKey(),
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        documentId: customer.documentId,
+        address: customer.address,
+        notes: customer.notes,
+        source: "new",
+      },
+    ]);
+    setCustomerError("");
+  }
+
+  function removeCustomer(key: string) {
+    setSelectedCustomers((current) =>
+      current.filter((customer) => customer.key !== key),
+    );
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (selectedCustomers.length === 0) {
+      setCustomerError(labels.validation.customers);
+      return;
+    }
+
+    if (!scheduledAt) {
+      return;
+    }
+
+    onSubmit({
+      customers: selectedCustomers.map((customer) => ({
+        id: customer.id,
+        name: customer.name.trim(),
+        phone: customer.phone.trim() || undefined,
+        email: customer.email.trim() || undefined,
+        documentId: customer.documentId.trim() || undefined,
+        address: customer.address.trim() || undefined,
+        notes: customer.notes.trim() || undefined,
+      })),
+      guestCount,
+      status,
+      scheduledAt: new Date(scheduledAt).toISOString(),
+      notes: notes.trim() || undefined,
+    });
+  };
+
+  const customerLabels = {
+    customer: labels.form.customer,
+    validation: labels.validation,
+    actions: labels.actions,
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[min(90vh,720px)] max-w-md overflow-y-auto rounded-3xl">
+        <DialogHeader>
+          <DialogTitle>
+            {reservation ? labels.form.submitEdit : labels.form.submitCreate}
+          </DialogTitle>
+          <DialogDescription>
+            {reservation
+              ? labels.form.editDescription
+              : labels.form.createDescription}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          <ReservationCustomerSection
+            labels={customerLabels}
+            customers={customers}
+            selectedCustomers={selectedCustomers}
+            error={customerError}
+            onAddExistingCustomers={syncExistingCustomers}
+            onAddNewCustomer={addNewCustomer}
+            onRemoveCustomer={removeCustomer}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="guestCount">{labels.form.guestCount}</Label>
+            <Input
+              id="guestCount"
+              type="number"
+              min={1}
+              max={100}
+              value={guestCount}
+              onChange={(e) => setGuestCount(parseInt(e.target.value) || 1)}
+              required
+              className="rounded-2xl"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="scheduledAt">{labels.form.scheduledAt}</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                required
+                className="rounded-2xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">{labels.form.status}</Label>
+              <Select
+                value={status}
+                onValueChange={(val) => setStatus(val as ReservationStatus)}
+              >
+                <SelectTrigger id="status" className="rounded-2xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {(
+                    [
+                      "PENDING",
+                      "CONFIRMED",
+                      "SEATED",
+                      "COMPLETED",
+                      "CANCELLED",
+                      "NO_SHOW",
+                    ] as ReservationStatus[]
+                  ).map((s) => (
+                    <SelectItem key={s} value={s} className="rounded-lg">
+                      {labels.statuses[s]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">{labels.form.notes}</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="min-h-[80px] rounded-2xl"
+            />
+          </div>
+
+          <DialogFooter className="flex gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 rounded-2xl sm:flex-initial"
+              disabled={isSubmitting}
+            >
+              {labels.form.cancel}
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 rounded-2xl sm:flex-initial"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? labels.form.saving
+                : reservation
+                  ? labels.form.save
+                  : labels.form.create}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

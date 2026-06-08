@@ -1,8 +1,27 @@
 "use server";
 
 import { getDashboardContext } from "@/lib/dashboard/context";
-import { updateMenuItemImages } from "@/lib/menu/repository";
-import { updateMenuItemImagesSchema } from "@/lib/menu/schemas";
+import {
+  createMenuCategory,
+  createMenuItem,
+  deleteMenuCategory,
+  deleteMenuItem,
+  reorderMenuLayout,
+  updateMenuCategory,
+  updateMenuItem,
+  updateMenuItemImages,
+} from "@/lib/menu/repository";
+import {
+  createMenuCategorySchema,
+  createMenuItemSchema,
+  deleteMenuCategorySchema,
+  deleteMenuItemSchema,
+  reorderMenuLayoutSchema,
+  updateMenuCategorySchema,
+  updateMenuItemImagesSchema,
+  updateMenuItemSchema,
+} from "@/lib/menu/schemas";
+import type { MenuItemTag } from "@/lib/menu/tag-types";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { uploadImageToR2 } from "@/lib/upload/image-upload";
 
@@ -25,6 +44,32 @@ function requireMenuWrite(restaurantId: string) {
     );
 
     if (!canWrite) {
+      throw new Error("FORBIDDEN");
+    }
+
+    return context;
+  });
+}
+
+function requireMenuRead(restaurantId: string) {
+  return getDashboardContext().then((context) => {
+    if (!context) {
+      throw new Error("UNAUTHORIZED");
+    }
+
+    const allowed = context.restaurants.some(
+      (restaurant) => restaurant.id === restaurantId,
+    );
+
+    if (!allowed) {
+      throw new Error("FORBIDDEN");
+    }
+
+    const canRead = context.membership.permissions.includes(
+      PERMISSIONS.MENU_READ,
+    );
+
+    if (!canRead) {
       throw new Error("FORBIDDEN");
     }
 
@@ -95,6 +140,157 @@ export async function updateMenuItemImagesAction(input: {
   return { item };
 }
 
+export async function createMenuCategoryAction(input: {
+  restaurantId: string;
+  name: string;
+}) {
+  const parsed = createMenuCategorySchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  const category = await createMenuCategory(parsed.data.restaurantId, {
+    name: parsed.data.name,
+  });
+
+  return { category };
+}
+
+export async function updateMenuCategoryAction(input: {
+  restaurantId: string;
+  categoryId: string;
+  name?: string;
+  isActive?: boolean;
+}) {
+  const parsed = updateMenuCategorySchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  const category = await updateMenuCategory(
+    parsed.data.restaurantId,
+    parsed.data.categoryId,
+    {
+      name: parsed.data.name,
+      isActive: parsed.data.isActive,
+    },
+  );
+
+  return { category };
+}
+
+export async function deleteMenuCategoryAction(input: {
+  restaurantId: string;
+  categoryId: string;
+}) {
+  const parsed = deleteMenuCategorySchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  await deleteMenuCategory(parsed.data.restaurantId, parsed.data.categoryId);
+
+  return { success: true };
+}
+
+export async function createMenuItemAction(input: {
+  restaurantId: string;
+  categoryId: string;
+  name: string;
+  description?: string;
+  priceCents: number;
+  isAvailable: boolean;
+  images: string[];
+  tags?: MenuItemTag[];
+}) {
+  const parsed = createMenuItemSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  const item = await createMenuItem(parsed.data.restaurantId, parsed.data);
+
+  return { item };
+}
+
+export async function updateMenuItemAction(input: {
+  restaurantId: string;
+  menuItemId: string;
+  categoryId?: string;
+  name?: string;
+  description?: string | null;
+  priceCents?: number;
+  isAvailable?: boolean;
+  images?: string[];
+  tags?: MenuItemTag[];
+}) {
+  const parsed = updateMenuItemSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  const item = await updateMenuItem(
+    parsed.data.restaurantId,
+    parsed.data.menuItemId,
+    parsed.data,
+  );
+
+  return { item };
+}
+
+export async function deleteMenuItemAction(input: {
+  restaurantId: string;
+  menuItemId: string;
+}) {
+  const parsed = deleteMenuItemSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  await deleteMenuItem(parsed.data.restaurantId, parsed.data.menuItemId);
+
+  return { success: true };
+}
+
+export async function reorderMenuLayoutAction(input: {
+  restaurantId: string;
+  categories: Array<{ id: string; sortOrder: number }>;
+  items: Array<{ id: string; categoryId: string; sortOrder: number }>;
+}) {
+  const parsed = reorderMenuLayoutSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw new Error("INVALID_INPUT");
+  }
+
+  await requireMenuWrite(parsed.data.restaurantId);
+
+  await reorderMenuLayout(parsed.data.restaurantId, {
+    categories: parsed.data.categories,
+    items: parsed.data.items,
+  });
+
+  return { success: true };
+}
+
 export async function uploadOrderItemImageAction(formData: FormData) {
   const sessionContext = await getDashboardContext();
 
@@ -154,4 +350,19 @@ export async function uploadOrderItemImageAction(formData: FormData) {
 
     throw new Error("UPLOAD_FAILED");
   }
+}
+
+export async function refreshMenuPageAction(restaurantId: string) {
+  await requireMenuRead(restaurantId);
+
+  const [{ listMenuCategories, listMenuItemRecords }] = await Promise.all([
+    import("@/lib/menu/repository"),
+  ]);
+
+  const [categories, items] = await Promise.all([
+    listMenuCategories(restaurantId),
+    listMenuItemRecords(restaurantId, { availableOnly: false }),
+  ]);
+
+  return { categories, items };
 }

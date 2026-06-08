@@ -561,18 +561,137 @@
         "removeVertex": "Delete vertex"
       }
     },
+    "reservations": {
+      "header": {
+        "title": "Reservations",
+        "subtitle": "Manage and organize your restaurant's table reservations."
+      },
+      "actions": {
+        "newReservation": "New reservation",
+        "refresh": "Refresh",
+        "edit": "Edit",
+        "delete": "Delete",
+        "confirm": "Confirm",
+        "seat": "Seat",
+        "complete": "Complete",
+        "cancel": "Cancel",
+        "clearFilters": "Clear filters",
+        "addCustomer": "Add customer",
+        "removeCustomer": "Remove customer"
+      },
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Search by guest, notes...",
+        "status": "Status",
+        "date": "Date",
+        "all": "All",
+        "noActive": "No active filters"
+      },
+      "statuses": {
+        "all": "All statuses",
+        "PENDING": "Pending",
+        "CONFIRMED": "Confirmed",
+        "SEATED": "Seated",
+        "COMPLETED": "Completed",
+        "CANCELLED": "Cancelled",
+        "NO_SHOW": "No Show"
+      },
+      "kpis": {
+        "total": "Total today",
+        "confirmed": "Confirmed",
+        "pending": "Pending",
+        "guests": "Guests today"
+      },
+      "form": {
+        "guestCount": "Number of guests",
+        "scheduledAt": "Date & Time",
+        "status": "Reservation Status",
+        "notes": "Notes / Comments",
+        "submitCreate": "Create reservation",
+        "submitEdit": "Save changes",
+        "successCreate": "Reservation created successfully",
+        "successCreateMultiple": "{count} reservations created successfully",
+        "successUpdate": "Reservation updated successfully",
+        "successDelete": "Reservation deleted successfully",
+        "confirmDelete": "Are you sure you want to delete this reservation?",
+        "createDescription": "Select customers and schedule the reservation.",
+        "editDescription": "Update the selected reservation details.",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save",
+        "create": "Create",
+        "customer": {
+          "title": "Customers",
+          "description": "Search registered customers or add a new one.",
+          "name": "Name",
+          "namePlaceholder": "Customer name",
+          "phone": "Phone",
+          "phonePlaceholder": "+56 9 1234 5678",
+          "email": "Email",
+          "emailPlaceholder": "customer@email.com",
+          "documentId": "Document ID",
+          "documentIdPlaceholder": "12.345.678-9",
+          "address": "Address",
+          "addressPlaceholder": "Street, city",
+          "notes": "Customer notes",
+          "notesPlaceholder": "Preferences, allergies, etc.",
+          "searchPlaceholder": "Search customers...",
+          "noResults": "No customers found",
+          "selectedHint": "Select one or more registered customers",
+          "emptySelection": "No customers selected yet.",
+          "picker": {
+            "title": "New customer",
+            "description": "Add a customer who is not registered yet.",
+            "addCustomer": "Add customer",
+            "addSuccess": "Customer added to the reservation"
+          }
+        }
+      },
+      "validation": {
+        "customers": "Select at least one customer",
+        "draftCustomerName": "Enter the customer name"
+      },
+      "empty": {
+        "title": "No reservations",
+        "description": "No reservations were found for the selected filters.",
+        "cta": "Create reservation"
+      }
+    },
     "menu": {
       "header": {
         "title": "Menu",
-        "subtitle": "Manage products and their photos for orders and operations."
+        "subtitle": "Manage categories, products, prices, availability, and photos."
+      },
+      "actions": {
+        "newItem": "New product",
+        "newCategory": "New category",
+        "refresh": "Refresh",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Create",
+        "saving": "Saving..."
+      },
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Search by product or category...",
+        "category": "Category",
+        "allCategories": "All categories",
+        "showUnavailable": "Show unavailable",
+        "clear": "Clear filters"
       },
       "empty": {
         "title": "No menu products yet",
-        "description": "There are no products loaded for this restaurant yet."
+        "description": "There are no products loaded for this restaurant yet.",
+        "cta": "Create first product",
+        "categoryCta": "Create first category"
       },
       "item": {
         "photos": "Product photos",
-        "unavailable": "Unavailable"
+        "unavailable": "Unavailable",
+        "available": "Available",
+        "itemCount": "{count} products"
       },
       "photos": {
         "addPhoto": "Add photo",
@@ -588,6 +707,70 @@
       "permissions": {
         "deniedTitle": "No menu access",
         "deniedDescription": "Your role can't edit menu products."
+      },
+      "itemDialog": {
+        "createTitle": "New product",
+        "editTitle": "Edit product",
+        "createDescription": "Add a product to the menu.",
+        "editDescription": "Update this product's details.",
+        "name": "Name",
+        "namePlaceholder": "Product name",
+        "description": "Description",
+        "descriptionPlaceholder": "Ingredients, notes, etc.",
+        "price": "Price",
+        "category": "Category",
+        "categoryPlaceholder": "Select a category",
+        "available": "Available for orders",
+        "tags": "Tags",
+        "tagsCatalog": "Common tags",
+        "tagsCustom": "Custom tag",
+        "tagsPlaceholder": "e.g. Family size, Limited edition",
+        "tagsAdd": "Add",
+        "tagsRemove": "Remove tag",
+        "tagsSuggestions": "Previously used custom tags",
+        "tagsPickIcon": "Choose an icon",
+        "successCreate": "Product created successfully",
+        "successUpdate": "Product updated successfully",
+        "successDelete": "Product deleted successfully",
+        "confirmDelete": "Are you sure you want to delete this product?"
+      },
+      "categoryDialog": {
+        "createTitle": "New category",
+        "editTitle": "Edit category",
+        "createDescription": "Organize your menu with categories.",
+        "editDescription": "Update the category name or remove it.",
+        "name": "Name",
+        "namePlaceholder": "Category name",
+        "successCreate": "Category created successfully",
+        "successUpdate": "Category updated successfully",
+        "successDelete": "Category deleted successfully",
+        "confirmDelete": "Are you sure you want to delete this category?",
+        "itemCountWarning": "This category has {count} products. Deleting it will remove them too. Continue?"
+      },
+      "validation": {
+        "name": "Enter a name",
+        "price": "Enter a valid price",
+        "category": "Select a category"
+      },
+      "feedback": {
+        "error": "Something went wrong. Please try again."
+      },
+      "tree": {
+        "dragHint": "Drag categories and products to reorder them or move products between categories.",
+        "searchLocked": "Clear filters to reorder the menu tree.",
+        "emptyCategory": "Drop products here or add one with New product.",
+        "dragCategory": "Drag category",
+        "dragItem": "Drag product"
+      },
+      "tags": {
+        "spicy": "Spicy",
+        "hot": "Hot",
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "glutenFree": "Gluten-free",
+        "containsNuts": "Contains nuts",
+        "chefChoice": "Chef's choice",
+        "new": "New"
       }
     }
   },

@@ -15,12 +15,13 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { NewOrderLabels, NewOrderNewCustomerInput } from "./types";
+import type { CustomerFormDialogLabels } from "@/lib/customers/customer-form-labels";
+import type { NewOrderNewCustomerInput } from "./types";
 
 type NewCustomerDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  labels: NewOrderLabels;
+  labels: CustomerFormDialogLabels;
   onAddCustomer: (customer: NewOrderNewCustomerInput) => void;
 };
 

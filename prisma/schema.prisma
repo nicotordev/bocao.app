@@ -311,6 +311,9 @@ model MenuItem {
   name         String
   description  String?
   priceCents   Int
+  sortOrder    Int      @default(0)
+  /// Product labels with optional icon, stored as JSON objects
+  tags         Json     @default("[]")
   /// Public image URLs for this menu item
   images       String[] @default([])
   isAvailable  Boolean  @default(true)

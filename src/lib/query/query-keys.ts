@@ -21,4 +21,10 @@ export const queryKeys = {
     home: (restaurantId: string) =>
       [...queryKeys.dashboard.all, "home", restaurantId] as const,
   },
+  reservations: {
+    all: ["reservations"] as const,
+    lists: () => [...queryKeys.reservations.all, "list"] as const,
+    list: (restaurantId: string, filters?: any) =>
+      [...queryKeys.reservations.lists(), restaurantId, filters ?? {}] as const,
+  },
 } as const;
