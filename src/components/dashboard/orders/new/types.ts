@@ -1,4 +1,5 @@
 import type { CustomerOption } from "@/lib/customers/types";
+import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
 import type { MenuItemOption } from "@/lib/menu/types";
 import type { OrderChannel } from "@/lib/orders/types";
 
@@ -61,6 +62,11 @@ export type NewOrderLabels = {
     tableNumber: string;
     tableNumberPlaceholder: string;
     emptySelection: string;
+    tablePickerHint: string;
+    tablePickerFree: string;
+    tablePickerOccupied: string;
+    tablePickerSelected: string;
+    configureFloorPlan: string;
   };
   channel: {
     title: string;
@@ -146,4 +152,7 @@ export type NewOrderPageClientProps = {
   canCreate: boolean;
   menuItems: MenuItemOption[];
   customers: CustomerOption[];
+  floorPlanSurface: DiningSurfaceRecord | null;
+  occupiedTableNumbers: TableOccupancy;
+  initialTableNumber?: string;
 };

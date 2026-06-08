@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "DiningSurface" ADD COLUMN "floor" INTEGER NOT NULL DEFAULT 1;

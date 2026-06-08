@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import {
-  hasUserMembership,
+  getDashboardContext,
   requireDashboardSession,
 } from "@/lib/dashboard/context";
 import { appRoutes, authRoutes } from "@/lib/auth-routes";
@@ -16,9 +16,9 @@ export default async function OnboardingLayout({
     redirect(authRoutes.signIn);
   }
 
-  const completed = await hasUserMembership(session.user.id);
+  const context = await getDashboardContext();
 
-  if (completed) {
+  if (context) {
     redirect(appRoutes.dashboard);
   }
 

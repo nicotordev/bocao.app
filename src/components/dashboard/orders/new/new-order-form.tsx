@@ -38,7 +38,14 @@ function createCustomerKey() {
 
 type NewOrderFormProps = Pick<
   NewOrderPageClientProps,
-  "labels" | "restaurantId" | "currency" | "menuItems" | "customers"
+  | "labels"
+  | "restaurantId"
+  | "currency"
+  | "menuItems"
+  | "customers"
+  | "floorPlanSurface"
+  | "occupiedTableNumbers"
+  | "initialTableNumber"
 >;
 
 export function NewOrderForm({
@@ -47,6 +54,9 @@ export function NewOrderForm({
   currency,
   menuItems,
   customers,
+  floorPlanSurface,
+  occupiedTableNumbers,
+  initialTableNumber,
 }: NewOrderFormProps) {
   const router = useRouter();
   const createOrderMutation = useCreateOrderMutation(restaurantId);
@@ -54,7 +64,7 @@ export function NewOrderForm({
     selectedCustomers: [],
     draftCustomerName: "",
     draftCustomerPhone: "",
-    tableNumber: "",
+    tableNumber: initialTableNumber ?? "",
     channel: "dineIn",
     notes: "",
     items: [],
@@ -309,6 +319,8 @@ export function NewOrderForm({
           labels={labels}
           customers={customers}
           channel={values.channel}
+          floorPlanSurface={floorPlanSurface}
+          occupiedTableNumbers={occupiedTableNumbers}
           values={{
             selectedCustomers: values.selectedCustomers,
             draftCustomerName: values.draftCustomerName,

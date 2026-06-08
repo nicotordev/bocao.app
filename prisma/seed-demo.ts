@@ -22,6 +22,64 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter });
 
+async function seedDemoFloorPlan(restaurantId: string) {
+  const boundary = [
+    { x: 0.08, y: 0.12 },
+    { x: 0.92, y: 0.12 },
+    { x: 0.92, y: 0.88 },
+    { x: 0.08, y: 0.88 },
+  ];
+
+  const tableSeeds = [
+    { number: "1", positionX: 0.22, positionY: 0.28, shape: "ROUND" as const },
+    { number: "2", positionX: 0.38, positionY: 0.28, shape: "ROUND" as const },
+    { number: "3", positionX: 0.54, positionY: 0.28, shape: "ROUND" as const },
+    { number: "4", positionX: 0.7, positionY: 0.28, shape: "ROUND" as const },
+    { number: "6", positionX: 0.22, positionY: 0.52, shape: "SQUARE" as const },
+    { number: "8", positionX: 0.46, positionY: 0.52, shape: "RECT" as const, width: 0.12, height: 0.07 },
+    { number: "10", positionX: 0.7, positionY: 0.52, shape: "SQUARE" as const },
+    { number: "12", positionX: 0.46, positionY: 0.74, shape: "ROUND" as const },
+  ];
+
+  const surface = await prisma.diningSurface.upsert({
+    where: { id: `${restaurantId}-surface-main` },
+    update: {
+      name: "Salón principal",
+      floor: 1,
+      surfaceAreaM2: 45,
+      boundary,
+    },
+    create: {
+      id: `${restaurantId}-surface-main`,
+      restaurantId,
+      name: "Salón principal",
+      floor: 1,
+      surfaceAreaM2: 45,
+      boundary,
+    },
+  });
+
+  await prisma.diningTable.deleteMany({
+    where: { surfaceId: surface.id },
+  });
+
+  await prisma.diningTable.createMany({
+    data: tableSeeds.map((table, index) => ({
+      id: `${restaurantId}-table-${table.number}`,
+      surfaceId: surface.id,
+      number: table.number,
+      shape: table.shape,
+      capacity: table.shape === "RECT" ? 6 : 4,
+      positionX: table.positionX,
+      positionY: table.positionY,
+      rotation: 0,
+      width: table.width ?? 0.08,
+      height: table.height ?? 0.08,
+      sortOrder: index,
+    })),
+  });
+}
+
 async function seedPermissions() {
   for (const permission of PERMISSION_CATALOG) {
     await prisma.permission.upsert({
@@ -156,6 +214,8 @@ async function seedDemoOrganization() {
       });
     }
   }
+
+  await seedDemoFloorPlan(primaryRestaurantId);
 
   for (const orderSeed of DEMO_ORDERS) {
     const customerNames = [

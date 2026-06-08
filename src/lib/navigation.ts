@@ -5,6 +5,7 @@ export type NavItemId =
   | "dashboard"
   | "orders"
   | "reservations"
+  | "floorPlan"
   | "whatsapp"
   | "menu"
   | "kitchen"
@@ -50,6 +51,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: "reservations",
     group: "operaciones",
     permission: PERMISSIONS.RESERVATIONS_READ,
+  },
+  {
+    id: "floorPlan",
+    label: "Plano de mesas",
+    href: "/dashboard/floor-plan",
+    icon: "floorPlan",
+    group: "operaciones",
+    permission: PERMISSIONS.ORDERS_READ,
   },
   {
     id: "whatsapp",

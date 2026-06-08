@@ -184,6 +184,12 @@ enum ReservationStatus {
   NO_SHOW
 }
 
+enum DiningTableShape {
+  ROUND
+  SQUARE
+  RECT
+}
+
 /// Restaurant (location) operating under an organization.
 model Restaurant {
   id           String        @id @default(cuid())
@@ -209,8 +215,55 @@ model Restaurant {
   orders         Order[]
   reservations   Reservation[]
   demoProfile    RestaurantDemoProfile?
+  diningSurfaces DiningSurface[]
 
   @@index([organizationId])
+}
+
+/// Configurable dining area with a custom polygon boundary and table layout.
+model DiningSurface {
+  id             String   @id @default(cuid())
+  restaurantId   String
+  name           String   @default("Salón principal")
+  /// Floor level number, e.g. 1 = ground floor, 2 = second floor.
+  floor          Int      @default(1)
+  /// Real-world area in square meters entered by the user.
+  surfaceAreaM2  Float
+  /// Polygon vertices as normalized coordinates [{x,y}] in 0..1 space.
+  boundary       Json
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  restaurant Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tables     DiningTable[]
+
+  @@index([restaurantId])
+}
+
+/// Table placed on a dining surface with a visible number for operations.
+model DiningTable {
+  id        String           @id @default(cuid())
+  surfaceId String
+  /// Operational label shown on the floor plan, e.g. "12".
+  number    String
+  shape     DiningTableShape @default(ROUND)
+  capacity  Int              @default(4)
+  /// Normalized position (0..1) within the surface bounding box.
+  positionX Float
+  positionY Float
+  rotation  Float            @default(0)
+  /// Normalized size relative to canvas width/height.
+  width     Float            @default(0.08)
+  height    Float            @default(0.08)
+  sortOrder Int              @default(0)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  surface DiningSurface @relation(fields: [surfaceId], references: [id], onDelete: Cascade)
+
+  @@unique([surfaceId, number])
+  @@index([surfaceId])
 }
 
 model Customer {

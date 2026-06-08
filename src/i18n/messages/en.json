@@ -376,7 +376,12 @@
           "newHint": "You can also add new customers before submitting the order.",
           "tableNumber": "Table number",
           "tableNumberPlaceholder": "e.g. 12",
-          "emptySelection": "No customers added to this order yet."
+          "emptySelection": "No customers added to this order yet.",
+          "tablePickerHint": "Click an available table to assign it to this order.",
+          "tablePickerFree": "Available",
+          "tablePickerOccupied": "Occupied",
+          "tablePickerSelected": "Selected",
+          "configureFloorPlan": "Configure the table floor plan to pick tables visually."
         },
         "channel": {
           "title": "Channel",
@@ -452,6 +457,92 @@
           "deniedTitle": "You can't create orders",
           "deniedDescription": "Your role can view orders but not create new ones. Ask an admin if you need access."
         }
+      }
+    },
+    "floorPlan": {
+      "header": {
+        "title": "Table floor plan",
+        "subtitle": "Design your dining surface and run dine-in service with visual table numbers."
+      },
+      "empty": {
+        "title": "No floor plan configured yet",
+        "description": "Create the dining surface, define its custom shape in square meters, and place numbered tables.",
+        "cta": "Create floor plan"
+      },
+      "manager": {
+        "editLayout": "Edit layout",
+        "legendFree": "Available",
+        "legendOccupied": "Active order",
+        "legendSelected": "Selected",
+        "surfaceArea": "Surface area",
+        "tableCount": "Tables",
+        "floor": "Floor",
+        "newOrderForTable": "New order for this table",
+        "expandCanvas": "Expand canvas",
+        "collapseCanvas": "Exit fullscreen",
+        "openSettingsPanel": "Surface & tables"
+      },
+      "builder": {
+        "title": "Surface builder",
+        "description": "Draw the room shape, enter real square meters, and place numbered tables.",
+        "surfaceName": "Surface name",
+        "surfaceNamePlaceholder": "Main dining room",
+        "floor": "Floor number",
+        "floorPlaceholder": "-1 to 99",
+        "floorHint": "Negative numbers are basement levels below the venue (e.g. -1).",
+        "surfaceNameBasement": "Basement {level}",
+        "surfaceNameGround": "Ground floor",
+        "surfaceNameFloor": "Floor {floor}",
+        "addSurface": "Add surface",
+        "surfaceAreaM2": "Surface area (m²)",
+        "surfaceAreaPlaceholder": "45",
+        "toolBoundary": "Room shape",
+        "toolTables": "Tables",
+        "dragTableLabel": "Drag the table onto the floor plan",
+        "dragGuideTitle": "Drag from here",
+        "dragGuideDescription": "Grab the round table and drop it on the surface to add a numbered table.",
+        "dragGuideDismiss": "Got it",
+        "tablesModeGuideTitle": "Start with Tables mode",
+        "tablesModeGuideDescription": "Select Tables to place tables on the floor plan. You can also drag one from the panel or use the right-click menu.",
+        "tablesModeGuideDismiss": "Got it",
+        "removeTable": "Remove table",
+        "tableNumber": "Table number",
+        "tableCapacity": "Capacity",
+        "tableShapeRound": "Round",
+        "tableShapeSquare": "Square",
+        "tableShapeRect": "Rectangle",
+        "resetBoundary": "Reset shape",
+        "undoVertex": "Undo vertex",
+        "removeVertex": "Delete vertex",
+        "save": "Save floor plan",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "boundaryHint": "Left-click the canvas to add vertices. Click a blue point to select it, then Delete or double-click to remove it. Drag points to adjust the shape.",
+        "tablesHint": "Switch to Tables mode, then drag the round table from the panel onto the surface.",
+        "selectedTableHint": "Select a table on the canvas to edit its number, capacity, and shape.",
+        "minBoundary": "The surface needs at least 3 vertices.",
+        "previousShape": "Previous table shape",
+        "nextShape": "Next table shape",
+        "decreaseCapacity": "Decrease capacity",
+        "increaseCapacity": "Increase capacity"
+      },
+      "feedback": {
+        "saveSuccess": "Floor plan saved successfully.",
+        "saveError": "We couldn't save the floor plan. Try again.",
+        "floorLimit": "Floor number must be between -5 and 99."
+      },
+      "permissions": {
+        "deniedTitle": "No floor plan access",
+        "deniedDescription": "Your role can't view or edit the table floor plan."
+      },
+      "contextMenu": {
+        "addTable": "Add table",
+        "addSurface": "Add surface",
+        "floorUp": "Go up one floor",
+        "floorDown": "Go down one floor",
+        "tablesModeHint": "Switch to Tables mode to place tables or drag one from the panel.",
+        "activateTablesMode": "Activate Tables mode",
+        "removeVertex": "Delete vertex"
       }
     },
     "menu": {

@@ -376,7 +376,12 @@
           "newHint": "También puedes agregar clientes nuevos antes de confirmar el pedido.",
           "tableNumber": "Número de mesa",
           "tableNumberPlaceholder": "ej. 12",
-          "emptySelection": "Aún no hay clientes en este pedido."
+          "emptySelection": "Aún no hay clientes en este pedido.",
+          "tablePickerHint": "Haz clic en una mesa libre para asignarla al pedido.",
+          "tablePickerFree": "Libre",
+          "tablePickerOccupied": "Ocupada",
+          "tablePickerSelected": "Seleccionada",
+          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente."
         },
         "channel": {
           "title": "Canal",
@@ -452,6 +457,92 @@
           "deniedTitle": "No puedes crear pedidos",
           "deniedDescription": "Tu rol puede ver pedidos pero no crear nuevos. Pide acceso a un administrador si lo necesitas."
         }
+      }
+    },
+    "floorPlan": {
+      "header": {
+        "title": "Plano de mesas",
+        "subtitle": "Diseña la superficie del salón y opera pedidos presenciales con mesas visuales."
+      },
+      "empty": {
+        "title": "Aún no hay un plano configurado",
+        "description": "Crea la superficie del salón, define su forma en m² y coloca las mesas con número.",
+        "cta": "Crear plano de mesas"
+      },
+      "manager": {
+        "editLayout": "Editar plano",
+        "legendFree": "Libre",
+        "legendOccupied": "Con pedido activo",
+        "legendSelected": "Seleccionada",
+        "surfaceArea": "Superficie",
+        "tableCount": "Mesas",
+        "floor": "Piso",
+        "newOrderForTable": "Nuevo pedido para esta mesa",
+        "expandCanvas": "Agrandar lienzo",
+        "collapseCanvas": "Salir de pantalla completa",
+        "openSettingsPanel": "Superficie y mesas"
+      },
+      "builder": {
+        "title": "Creador de superficie",
+        "description": "Dibuja la forma del salón, indica los m² reales y coloca mesas numeradas.",
+        "surfaceName": "Nombre de la superficie",
+        "surfaceNamePlaceholder": "Salón principal",
+        "floor": "Número de piso",
+        "floorPlaceholder": "-1 a 99",
+        "floorHint": "Los números negativos son sótanos debajo del local (ej. -1).",
+        "surfaceNameBasement": "Sótano {level}",
+        "surfaceNameGround": "Planta baja",
+        "surfaceNameFloor": "Piso {floor}",
+        "addSurface": "Agregar superficie",
+        "surfaceAreaM2": "Superficie (m²)",
+        "surfaceAreaPlaceholder": "45",
+        "toolBoundary": "Forma del salón",
+        "toolTables": "Mesas",
+        "dragTableLabel": "Arrastra la mesa hacia el plano",
+        "dragGuideTitle": "Arrastra desde aquí",
+        "dragGuideDescription": "Toma la mesa redonda y suéltala sobre la superficie para agregar una mesa numerada.",
+        "dragGuideDismiss": "Entendido",
+        "tablesModeGuideTitle": "Primero activa el modo Mesas",
+        "tablesModeGuideDescription": "Selecciona Mesas para colocar mesas en el plano. También puedes arrastrar una desde el panel o usar el click derecho.",
+        "tablesModeGuideDismiss": "Entendido",
+        "removeTable": "Quitar mesa",
+        "tableNumber": "Número de mesa",
+        "tableCapacity": "Capacidad",
+        "tableShapeRound": "Redonda",
+        "tableShapeSquare": "Cuadrada",
+        "tableShapeRect": "Rectangular",
+        "resetBoundary": "Reiniciar forma",
+        "undoVertex": "Deshacer vértice",
+        "removeVertex": "Eliminar vértice",
+        "save": "Guardar plano",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "boundaryHint": "Clic izquierdo en el lienzo para agregar vértices. Clic en un punto azul para seleccionarlo; Delete o doble clic para eliminarlo. Arrastra los puntos para ajustar la forma.",
+        "tablesHint": "Activa el modo Mesas y arrastra la mesa redonda desde el panel hacia la superficie.",
+        "selectedTableHint": "Selecciona una mesa en el plano para editar número, capacidad y forma.",
+        "minBoundary": "La superficie necesita al menos 3 vértices.",
+        "previousShape": "Forma anterior",
+        "nextShape": "Forma siguiente",
+        "decreaseCapacity": "Reducir capacidad",
+        "increaseCapacity": "Aumentar capacidad"
+      },
+      "feedback": {
+        "saveSuccess": "Plano de mesas guardado correctamente.",
+        "saveError": "No pudimos guardar el plano. Intenta nuevamente.",
+        "floorLimit": "El número de piso debe estar entre -5 y 99."
+      },
+      "permissions": {
+        "deniedTitle": "Sin acceso al plano",
+        "deniedDescription": "Tu rol no puede ver ni editar el plano de mesas."
+      },
+      "contextMenu": {
+        "addTable": "Agregar mesa",
+        "addSurface": "Agregar superficie",
+        "floorUp": "Subir un piso",
+        "floorDown": "Bajar un piso",
+        "tablesModeHint": "Activa el modo Mesas para colocar mesas o arrastra una desde el panel.",
+        "activateTablesMode": "Activar modo Mesas",
+        "removeVertex": "Eliminar vértice"
       }
     },
     "menu": {

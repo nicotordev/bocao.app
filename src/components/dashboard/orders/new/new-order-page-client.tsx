@@ -17,6 +17,9 @@ export function NewOrderPageClient({
   canCreate,
   menuItems,
   customers,
+  floorPlanSurface,
+  occupiedTableNumbers,
+  initialTableNumber,
 }: NewOrderPageClientProps) {
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
@@ -29,6 +32,9 @@ export function NewOrderPageClient({
           currency={currency}
           menuItems={menuItems}
           customers={customers}
+          floorPlanSurface={floorPlanSurface}
+          occupiedTableNumbers={occupiedTableNumbers}
+          initialTableNumber={initialTableNumber}
         />
       ) : (
         <Card>

@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { Plus, X } from "lucide-react";
 import { useMemo } from "react";
+import { FloorPlanTablePicker } from "@/components/dashboard/floor-plan/floor-plan-table-picker";
 import type { CustomerOption } from "@/lib/customers/types";
+import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +37,8 @@ type NewOrderCustomerSectionProps = {
   labels: NewOrderLabels;
   customers: CustomerOption[];
   channel: NewOrderFormValues["channel"];
+  floorPlanSurface: DiningSurfaceRecord | null;
+  occupiedTableNumbers: TableOccupancy;
   values: Pick<
     NewOrderFormValues,
     "selectedCustomers" | "draftCustomerName" | "draftCustomerPhone" | "tableNumber"
@@ -57,6 +62,8 @@ export function NewOrderCustomerSection({
   labels,
   customers,
   channel,
+  floorPlanSurface,
+  occupiedTableNumbers,
   values,
   errors,
   onAddExistingCustomers,
@@ -92,13 +99,46 @@ export function NewOrderCustomerSection({
               <FieldLabel htmlFor="table-number">
                 {labels.customer.tableNumber}
               </FieldLabel>
-              <Input
-                id="table-number"
-                value={values.tableNumber}
-                onChange={(event) => onTableNumberChange(event.target.value)}
-                placeholder={labels.customer.tableNumberPlaceholder}
-                aria-invalid={Boolean(errors.tableNumber)}
-              />
+              {floorPlanSurface ? (
+                <>
+                  <FloorPlanTablePicker
+                    surface={floorPlanSurface}
+                    occupiedTableNumbers={occupiedTableNumbers}
+                    selectedTableNumber={values.tableNumber}
+                    onSelectTable={onTableNumberChange}
+                    labels={{
+                      legendFree: labels.customer.tablePickerFree,
+                      legendOccupied: labels.customer.tablePickerOccupied,
+                      legendSelected: labels.customer.tablePickerSelected,
+                      pickHint: labels.customer.tablePickerHint,
+                    }}
+                  />
+                  <Input
+                    id="table-number"
+                    value={values.tableNumber}
+                    onChange={(event) => onTableNumberChange(event.target.value)}
+                    placeholder={labels.customer.tableNumberPlaceholder}
+                    aria-invalid={Boolean(errors.tableNumber)}
+                    className="mt-3"
+                  />
+                </>
+              ) : (
+                <>
+                  <Input
+                    id="table-number"
+                    value={values.tableNumber}
+                    onChange={(event) => onTableNumberChange(event.target.value)}
+                    placeholder={labels.customer.tableNumberPlaceholder}
+                    aria-invalid={Boolean(errors.tableNumber)}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {labels.customer.configureFloorPlan}{" "}
+                    <Link href="/dashboard/floor-plan" className="underline">
+                      /dashboard/floor-plan
+                    </Link>
+                  </p>
+                </>
+              )}
               {errors.tableNumber ? (
                 <p className="text-sm text-destructive">{errors.tableNumber}</p>
               ) : null}

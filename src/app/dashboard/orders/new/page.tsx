@@ -3,10 +3,21 @@ import { NewOrderPageClient } from "@/components/dashboard/orders/new/new-order-
 import type { NewOrderLabels } from "@/components/dashboard/orders/new/types";
 import { listCustomers } from "@/lib/customers/repository";
 import { getDashboardContext } from "@/lib/dashboard/context";
+import {
+  getFloorPlan,
+  getOccupiedTableNumbers,
+} from "@/lib/floor-plan/repository";
 import { listMenuItems } from "@/lib/menu/repository";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
-export default async function NewOrderPage() {
+type NewOrderPageProps = {
+  searchParams: Promise<{
+    table?: string;
+  }>;
+};
+
+export default async function NewOrderPage({ searchParams }: NewOrderPageProps) {
+  const params = await searchParams;
   const t = await getTranslations("dashboard.orders.new");
   const tChannels = await getTranslations("dashboard.orders.channels");
   const context = await getDashboardContext();
@@ -17,6 +28,10 @@ export default async function NewOrderPage() {
 
   const menuItems = restaurantId ? await listMenuItems(restaurantId) : [];
   const customers = restaurantId ? await listCustomers(restaurantId) : [];
+  const floorPlan = restaurantId ? await getFloorPlan(restaurantId) : null;
+  const occupiedTableNumbers = restaurantId
+    ? await getOccupiedTableNumbers(restaurantId)
+    : {};
 
   const labels: NewOrderLabels = {
     header: {
@@ -50,6 +65,11 @@ export default async function NewOrderPage() {
       tableNumber: t("customer.tableNumber"),
       tableNumberPlaceholder: t("customer.tableNumberPlaceholder"),
       emptySelection: t("customer.emptySelection"),
+      tablePickerHint: t("customer.tablePickerHint"),
+      tablePickerFree: t("customer.tablePickerFree"),
+      tablePickerOccupied: t("customer.tablePickerOccupied"),
+      tablePickerSelected: t("customer.tablePickerSelected"),
+      configureFloorPlan: t("customer.configureFloorPlan"),
     },
     channel: {
       title: t("channel.title"),
@@ -94,7 +114,7 @@ export default async function NewOrderPage() {
       storageNotConfigured: t("photos.storageNotConfigured"),
       moveEarlier: t("photos.moveEarlier"),
       moveLater: t("photos.moveLater"),
-      photoSortOrder: t("photos.photoSortOrder"),
+      photoSortOrder: t.raw("photos.photoSortOrder"),
     },
     notes: {
       title: t("notes.title"),
@@ -142,6 +162,9 @@ export default async function NewOrderPage() {
       canCreate={canCreate}
       menuItems={menuItems}
       customers={customers}
+      floorPlanSurface={floorPlan?.surfaces[0] ?? null}
+      occupiedTableNumbers={occupiedTableNumbers}
+      initialTableNumber={params.table?.trim()}
     />
   );
 }
