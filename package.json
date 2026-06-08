@@ -21,6 +21,8 @@
     "@better-auth/prisma-adapter": "^1.6.14",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "7.8.0",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
     "@tabler/icons-react": "^3.44.0",
     "better-auth": "^1.6.14",
     "class-variance-authority": "^0.7.1",
@@ -36,8 +38,10 @@
     "react": "19.2.4",
     "react-day-picker": "^10.0.0",
     "react-dom": "19.2.4",
+    "react-icons": "^5.6.0",
     "react-resizable-panels": "^4.11.0",
     "recharts": "3.8.0",
+    "resend": "^6.12.4",
     "shadcn": "^4.7.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
@@ -64,6 +68,10 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "@prisma/engines",
+    "esbuild",
+    "msw",
+    "prisma",
     "sharp",
     "unrs-resolver"
   ]
