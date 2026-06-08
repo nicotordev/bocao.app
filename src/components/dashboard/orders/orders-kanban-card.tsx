@@ -3,40 +3,36 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { IconGripVertical } from "@tabler/icons-react";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { OrderChannelBadge } from "./order-channel-badge";
 import type { DashboardOrder, OrdersLabels } from "./types";
 import { cn } from "@/lib/utils";
 
-type OrdersKanbanCardProps = {
+type OrdersKanbanCardViewProps = {
   order: DashboardOrder;
   labels: OrdersLabels;
   onSelectOrder: (order: DashboardOrder) => void;
   isDragOverlay?: boolean;
+  isDragging?: boolean;
   isDisabled?: boolean;
+  dragHandleProps?: {
+    attributes: DraggableAttributes;
+    listeners: SyntheticListenerMap | undefined;
+  };
 };
 
-export function OrdersKanbanCard({
+export function OrdersKanbanCardView({
   order,
   labels,
   onSelectOrder,
   isDragOverlay = false,
+  isDragging = false,
   isDisabled = false,
-}: OrdersKanbanCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: order.id,
-      data: { type: "order", order },
-      disabled: isDisabled || isDragOverlay,
-    });
-
-  const style = transform
-    ? { transform: CSS.Translate.toString(transform) }
-    : undefined;
-
+  dragHandleProps,
+}: OrdersKanbanCardViewProps) {
   return (
     <article
-      ref={isDragOverlay ? undefined : setNodeRef}
-      style={isDragOverlay ? undefined : style}
       className={cn(
         "rounded-2xl border border-border bg-background/90 text-left shadow-sm transition-[box-shadow,opacity,transform]",
         isDragOverlay &&
@@ -55,9 +51,9 @@ export function OrdersKanbanCard({
             isDisabled && "cursor-not-allowed opacity-50",
           )}
           aria-label={labels.kanban.dragHelp}
-          disabled={isDisabled || isDragOverlay}
-          {...listeners}
-          {...attributes}
+          disabled={isDisabled || isDragOverlay || !dragHandleProps}
+          {...dragHandleProps?.attributes}
+          {...dragHandleProps?.listeners}
           onClick={(event) => event.stopPropagation()}
         >
           <IconGripVertical className="size-4" aria-hidden />
@@ -65,7 +61,7 @@ export function OrdersKanbanCard({
 
         <button
           type="button"
-          className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+          className="min-w-0 flex-1 rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => onSelectOrder(order)}
           aria-label={`${labels.accessibility.openDetails} ${order.id}`}
           disabled={isDragOverlay}
@@ -91,5 +87,43 @@ export function OrdersKanbanCard({
         </button>
       </div>
     </article>
+  );
+}
+
+type OrdersKanbanCardProps = {
+  order: DashboardOrder;
+  labels: OrdersLabels;
+  onSelectOrder: (order: DashboardOrder) => void;
+  isDisabled?: boolean;
+};
+
+export function OrdersKanbanCard({
+  order,
+  labels,
+  onSelectOrder,
+  isDisabled = false,
+}: OrdersKanbanCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: order.id,
+      data: { type: "order", order },
+      disabled: isDisabled,
+    });
+
+  const style = transform
+    ? { transform: CSS.Translate.toString(transform) }
+    : undefined;
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <OrdersKanbanCardView
+        order={order}
+        labels={labels}
+        onSelectOrder={onSelectOrder}
+        isDragging={isDragging}
+        isDisabled={isDisabled}
+        dragHandleProps={{ attributes, listeners }}
+      />
+    </div>
   );
 }

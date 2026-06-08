@@ -118,6 +118,7 @@ export function OrdersPageClient({
                     labels={labels}
                     orders={filteredOrders}
                     onSelectOrder={setSelectedOrder}
+                    isMoving={updateOrderStatusMutation.isPending}
                     onMoveOrder={(orderId, status) =>
                       updateOrderStatusMutation.mutate({ orderId, status })
                     }
