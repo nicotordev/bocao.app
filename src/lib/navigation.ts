@@ -1,19 +1,5 @@
 import type { PermissionKey, SystemRoleSlug } from "@/lib/rbac/permissions";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
-import type { TablerIcon } from "@tabler/icons-react";
-import {
-  IconBrandWhatsapp,
-  IconCalendarEvent,
-  IconChartBar,
-  IconChefHat,
-  IconClipboardList,
-  IconLayoutDashboard,
-  IconSettings,
-  IconSparkles,
-  IconToolsKitchen2,
-  IconUsers,
-  IconUsersGroup,
-} from "@tabler/icons-react";
 
 export type NavItemId =
   | "dashboard"
@@ -32,7 +18,7 @@ export type NavItem = {
   id: NavItemId;
   label: string;
   href: string;
-  icon: TablerIcon;
+  icon: NavItemId;
   permission: PermissionKey | null;
   allowedRoles?: readonly SystemRoleSlug[];
 };
@@ -42,42 +28,42 @@ export const NAV_ITEMS: readonly NavItem[] = [
     id: "dashboard",
     label: "Dashboard",
     href: "/dashboard",
-    icon: IconLayoutDashboard,
+    icon: "dashboard",
     permission: null,
   },
   {
     id: "orders",
     label: "Pedidos",
     href: "/dashboard/orders",
-    icon: IconClipboardList,
+    icon: "orders",
     permission: PERMISSIONS.ORDERS_READ,
   },
   {
     id: "reservations",
     label: "Reservas",
     href: "/dashboard/reservations",
-    icon: IconCalendarEvent,
+    icon: "reservations",
     permission: PERMISSIONS.RESERVATIONS_READ,
   },
   {
     id: "whatsapp",
     label: "WhatsApp Inbox",
     href: "/dashboard/whatsapp",
-    icon: IconBrandWhatsapp,
+    icon: "whatsapp",
     permission: PERMISSIONS.WHATSAPP_READ,
   },
   {
     id: "menu",
     label: "Menú",
     href: "/dashboard/menu",
-    icon: IconToolsKitchen2,
+    icon: "menu",
     permission: PERMISSIONS.MENU_READ,
   },
   {
     id: "kitchen",
     label: "Cocina",
     href: "/dashboard/kitchen",
-    icon: IconChefHat,
+    icon: "kitchen",
     permission: PERMISSIONS.ORDERS_READ,
     allowedRoles: ["owner", "manager", "staff"],
   },
@@ -85,35 +71,35 @@ export const NAV_ITEMS: readonly NavItem[] = [
     id: "customers",
     label: "Clientes / CRM",
     href: "/dashboard/customers",
-    icon: IconUsers,
+    icon: "customers",
     permission: PERMISSIONS.CUSTOMERS_READ,
   },
   {
     id: "marketing",
     label: "Marketing IA",
     href: "/dashboard/marketing",
-    icon: IconSparkles,
+    icon: "marketing",
     permission: PERMISSIONS.MARKETING_READ,
   },
   {
     id: "analytics",
     label: "Analítica",
     href: "/dashboard/analytics",
-    icon: IconChartBar,
+    icon: "analytics",
     permission: PERMISSIONS.ANALYTICS_READ,
   },
   {
     id: "team",
     label: "Equipo",
     href: "/dashboard/team",
-    icon: IconUsersGroup,
+    icon: "team",
     permission: PERMISSIONS.STAFF_READ,
   },
   {
     id: "settings",
     label: "Configuración",
     href: "/dashboard/settings",
-    icon: IconSettings,
+    icon: "settings",
     permission: PERMISSIONS.SETTINGS_READ,
   },
 ] as const;

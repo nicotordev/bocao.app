@@ -1,10 +1,9 @@
-import { Toaster } from "@/components/ui/sonner";
-import { IntlProvider } from "@/providers/intl-provider";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans, Outfit } from "next/font/google";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
+import Providers from "./providers";
 
 const outfitHeading = Outfit({
   subsets: ["latin"],
@@ -59,10 +58,9 @@ export default async function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <IntlProvider locale={locale} messages={messages}>
+        <Providers locale={locale} messages={messages}>
           {children}
-        </IntlProvider>
-        <Toaster richColors closeButton position="top-center" />
+        </Providers>
       </body>
     </html>
   );

@@ -18,6 +18,13 @@
     "title": "Bocao",
     "description": "Sistema operativo para restaurantes con IA"
   },
+  "query": {
+    "errorTitle": "No se pudieron cargar los datos",
+    "errorDescription": "Ocurrió un problema al obtener la información. Intenta nuevamente.",
+    "retry": "Reintentar",
+    "refreshing": "Actualizando datos…",
+    "stale": "Mostrando datos en caché — se actualizarán en breve."
+  },
   "home": {
     "title": "Bienvenido a Bocao",
     "description": "Sistema operativo para restaurantes impulsado por inteligencia artificial.",
@@ -199,7 +206,132 @@
     "greetingFallback": "equipo",
     "summary": "Resumen operativo de {restaurant}",
     "summaryFallback": "tu restaurante",
-    "dateFormat": "EEEE d 'de' MMMM"
+    "dateFormat": "EEEE d 'de' MMMM",
+    "orders": {
+      "header": {
+        "title": "Pedidos",
+        "subtitle": "Administra y monitorea todos los pedidos en tiempo real."
+      },
+      "actions": {
+        "newOrder": "Nuevo pedido",
+        "export": "Exportar",
+        "refresh": "Actualizar",
+        "viewDetail": "Ver detalle",
+        "edit": "Editar",
+        "print": "Imprimir",
+        "duplicate": "Duplicar",
+        "changeStatus": "Cambiar estado",
+        "cancel": "Cancelar",
+        "clearFilters": "Limpiar"
+      },
+      "filters": {
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por pedido, cliente o teléfono",
+        "status": "Estado",
+        "channel": "Canal",
+        "date": "Fecha",
+        "restaurant": "Restaurante",
+        "from": "Desde",
+        "to": "Hasta",
+        "all": "Todos",
+        "collapse": "Ocultar filtros",
+        "expand": "Mostrar filtros"
+      },
+      "statuses": {
+        "all": "Todos",
+        "received": "Recibido",
+        "confirmed": "Confirmado",
+        "preparing": "En preparación",
+        "ready": "Listo",
+        "delivered": "Entregado",
+        "cancelled": "Cancelado"
+      },
+      "channels": {
+        "all": "Todos",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "dineIn": "Presencial",
+        "uberEats": "Uber Eats",
+        "rappi": "Rappi"
+      },
+      "tabs": {
+        "orders": "Pedidos",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "table": {
+        "id": "ID",
+        "customer": "Cliente",
+        "channel": "Canal",
+        "status": "Estado",
+        "total": "Total",
+        "time": "Hora",
+        "wait": "Tiempo espera",
+        "owner": "Responsable",
+        "actions": "Acciones",
+        "minutes": "min"
+      },
+      "kpis": {
+        "active": "Pedidos activos",
+        "preparing": "En preparación",
+        "ready": "Listos para entrega",
+        "sales": "Ventas del día",
+        "activeTrend": "+12% vs ayer",
+        "preparingTrend": "3 por sobre meta",
+        "readyTrend": "Salida estable",
+        "salesTrend": "+8% ticket promedio"
+      },
+      "kanban": {
+        "dragHelp": "Arrastra pedidos entre estados para actualizar el flujo.",
+        "dropHere": "Suelta pedidos aquí"
+      },
+      "timeline": {
+        "title": "Flujo operativo",
+        "subtitle": "Eventos recientes de cocina, IA y despacho.",
+        "eventReceived": "Pedido recibido",
+        "eventConfirmedAi": "Confirmado por IA",
+        "eventPreparing": "En preparación",
+        "eventReady": "Listo",
+        "eventDelivered": "Entregado"
+      },
+      "drawer": {
+        "title": "Pedido",
+        "description": "Detalle operativo del pedido seleccionado.",
+        "general": "Información general",
+        "customer": "Cliente",
+        "products": "Productos",
+        "summary": "Resumen",
+        "timeline": "Timeline",
+        "notes": "Notas internas",
+        "number": "Número",
+        "date": "Fecha",
+        "phone": "Teléfono",
+        "history": "Historial",
+        "subtotal": "Subtotal",
+        "taxes": "Impuestos",
+        "total": "Total"
+      },
+      "insights": {
+        "title": "Insights IA",
+        "subtitle": "Señales accionables para el turno actual.",
+        "items": {
+          "0": "Las hamburguesas representan 34% de los pedidos hoy.",
+          "1": "El tiempo promedio aumentó 12% en los últimos 45 minutos.",
+          "2": "WhatsApp generó 68% de las órdenes activas.",
+          "3": "El ticket promedio subió 8% frente al lunes anterior."
+        }
+      },
+      "empty": {
+        "title": "No hay pedidos con estos filtros",
+        "description": "Ajusta la búsqueda o crea un pedido manual para mantener la operación centralizada en Bocao.",
+        "cta": "Crear pedido"
+      },
+      "accessibility": {
+        "openActions": "Abrir acciones del pedido",
+        "openDetails": "Abrir detalle del pedido",
+        "whatsappOrder": "Pedido originado desde WhatsApp"
+      }
+    }
   },
   "actions": {
     "onboarding": {

@@ -122,7 +122,7 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
       id: membership.id,
       roleSlug: membership.role.slug as SystemRoleSlug,
       roleName: membership.role.name,
-      permissions,
+      permissions: Array.from(permissions),
     },
     navigation: getNavigationForMembership(membershipWithPermissions),
   };

@@ -2,6 +2,20 @@
 
 import Link from "next/link";
 import type { NavItem } from "@/lib/navigation";
+import {
+  IconBrandWhatsapp,
+  IconCalendarEvent,
+  IconChartBar,
+  IconChefHat,
+  IconClipboardList,
+  IconLayoutDashboard,
+  IconSettings,
+  IconSparkles,
+  IconToolsKitchen2,
+  IconUsers,
+  IconUsersGroup,
+  type TablerIcon,
+} from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import {
   SidebarMenuButton,
@@ -13,8 +27,22 @@ type DashboardNavItemProps = {
   isActive: boolean;
 };
 
+const navIcons = {
+  dashboard: IconLayoutDashboard,
+  orders: IconClipboardList,
+  reservations: IconCalendarEvent,
+  whatsapp: IconBrandWhatsapp,
+  menu: IconToolsKitchen2,
+  kitchen: IconChefHat,
+  customers: IconUsers,
+  marketing: IconSparkles,
+  analytics: IconChartBar,
+  team: IconUsersGroup,
+  settings: IconSettings,
+} satisfies Record<NavItem["icon"], TablerIcon>;
+
 export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
-  const Icon = item.icon;
+  const Icon = navIcons[item.icon];
 
   return (
     <SidebarMenuItem>

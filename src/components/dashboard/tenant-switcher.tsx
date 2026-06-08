@@ -1,8 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
 import { IconBuildingStore, IconChevronDown } from "@tabler/icons-react";
-import { switchRestaurant } from "@/app/actions/switch-restaurant";
+import { useSwitchRestaurantMutation } from "@/lib/query/restaurant/restaurant.mutations";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,10 @@ export function TenantSwitcher({
   activeRestaurant,
   className,
 }: TenantSwitcherProps) {
-  const [isPending, startTransition] = useTransition();
+  const switchRestaurantMutation = useSwitchRestaurantMutation();
 
   const handleSelect = (restaurantId: string) => {
-    startTransition(async () => {
-      await switchRestaurant(restaurantId);
-    });
+    switchRestaurantMutation.mutate(restaurantId);
   };
 
   return (
@@ -41,7 +38,7 @@ export function TenantSwitcher({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          disabled={isPending}
+          disabled={switchRestaurantMutation.isPending}
           className={cn(
             "h-auto min-h-10 w-full justify-between gap-2 border-sidebar-border bg-sidebar/60 px-3 py-2 text-left font-normal hover:bg-sidebar-accent",
             className,

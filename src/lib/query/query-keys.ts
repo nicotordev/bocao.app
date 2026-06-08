@@ -1,0 +1,24 @@
+import type { OrdersListFilters } from "@/lib/orders/filters";
+
+export const queryKeys = {
+  restaurants: {
+    all: ["restaurants"] as const,
+    detail: (restaurantId: string) =>
+      [...queryKeys.restaurants.all, restaurantId] as const,
+  },
+  orders: {
+    all: ["orders"] as const,
+    lists: () => [...queryKeys.orders.all, "list"] as const,
+    list: (restaurantId: string, filters?: OrdersListFilters) =>
+      [...queryKeys.orders.lists(), restaurantId, filters ?? {}] as const,
+    details: () => [...queryKeys.orders.all, "detail"] as const,
+    detail: (restaurantId: string, orderId: string) =>
+      [...queryKeys.orders.details(), restaurantId, orderId] as const,
+  },
+  dashboard: {
+    all: ["dashboard"] as const,
+    context: () => [...queryKeys.dashboard.all, "context"] as const,
+    home: (restaurantId: string) =>
+      [...queryKeys.dashboard.all, "home", restaurantId] as const,
+  },
+} as const;

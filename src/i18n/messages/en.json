@@ -18,6 +18,13 @@
     "title": "Bocao",
     "description": "AI-powered restaurant operating system"
   },
+  "query": {
+    "errorTitle": "Could not load data",
+    "errorDescription": "Something went wrong while fetching. Please try again.",
+    "retry": "Try again",
+    "refreshing": "Refreshing data…",
+    "stale": "Showing cached data — it will refresh shortly."
+  },
   "home": {
     "title": "Welcome to Bocao",
     "description": "AI-powered restaurant operating system.",
@@ -199,7 +206,132 @@
     "greetingFallback": "team",
     "summary": "Operational summary for {restaurant}",
     "summaryFallback": "your restaurant",
-    "dateFormat": "EEEE, MMMM d"
+    "dateFormat": "EEEE, MMMM d",
+    "orders": {
+      "header": {
+        "title": "Orders",
+        "subtitle": "Manage and monitor every order in real time."
+      },
+      "actions": {
+        "newOrder": "New order",
+        "export": "Export",
+        "refresh": "Refresh",
+        "viewDetail": "View detail",
+        "edit": "Edit",
+        "print": "Print",
+        "duplicate": "Duplicate",
+        "changeStatus": "Change status",
+        "cancel": "Cancel",
+        "clearFilters": "Clear"
+      },
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Search by order, customer, or phone",
+        "status": "Status",
+        "channel": "Channel",
+        "date": "Date",
+        "restaurant": "Restaurant",
+        "from": "From",
+        "to": "To",
+        "all": "All",
+        "collapse": "Hide filters",
+        "expand": "Show filters"
+      },
+      "statuses": {
+        "all": "All",
+        "received": "Received",
+        "confirmed": "Confirmed",
+        "preparing": "Preparing",
+        "ready": "Ready",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled"
+      },
+      "channels": {
+        "all": "All",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "dineIn": "In person",
+        "uberEats": "Uber Eats",
+        "rappi": "Rappi"
+      },
+      "tabs": {
+        "orders": "Orders",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "table": {
+        "id": "ID",
+        "customer": "Customer",
+        "channel": "Channel",
+        "status": "Status",
+        "total": "Total",
+        "time": "Time",
+        "wait": "Wait time",
+        "owner": "Owner",
+        "actions": "Actions",
+        "minutes": "min"
+      },
+      "kpis": {
+        "active": "Active orders",
+        "preparing": "Preparing",
+        "ready": "Ready for delivery",
+        "sales": "Daily sales",
+        "activeTrend": "+12% vs yesterday",
+        "preparingTrend": "3 above target",
+        "readyTrend": "Stable handoff",
+        "salesTrend": "+8% average ticket"
+      },
+      "kanban": {
+        "dragHelp": "Drag orders across statuses to update the flow.",
+        "dropHere": "Drop orders here"
+      },
+      "timeline": {
+        "title": "Operational flow",
+        "subtitle": "Recent kitchen, AI, and delivery events.",
+        "eventReceived": "Order received",
+        "eventConfirmedAi": "Confirmed by AI",
+        "eventPreparing": "Preparing",
+        "eventReady": "Ready",
+        "eventDelivered": "Delivered"
+      },
+      "drawer": {
+        "title": "Order",
+        "description": "Operational detail for the selected order.",
+        "general": "General information",
+        "customer": "Customer",
+        "products": "Products",
+        "summary": "Summary",
+        "timeline": "Timeline",
+        "notes": "Internal notes",
+        "number": "Number",
+        "date": "Date",
+        "phone": "Phone",
+        "history": "History",
+        "subtotal": "Subtotal",
+        "taxes": "Taxes",
+        "total": "Total"
+      },
+      "insights": {
+        "title": "AI insights",
+        "subtitle": "Actionable signals for the current shift.",
+        "items": {
+          "0": "Burgers represent 34% of orders today.",
+          "1": "Average wait time increased 12% in the last 45 minutes.",
+          "2": "WhatsApp generated 68% of active orders.",
+          "3": "Average ticket rose 8% versus last Monday."
+        }
+      },
+      "empty": {
+        "title": "No orders match these filters",
+        "description": "Adjust the search or create a manual order to keep the operation centralized in Bocao.",
+        "cta": "Create order"
+      },
+      "accessibility": {
+        "openActions": "Open order actions",
+        "openDetails": "Open order detail",
+        "whatsappOrder": "Order originated from WhatsApp"
+      }
+    }
   },
   "actions": {
     "onboarding": {

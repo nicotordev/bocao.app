@@ -26,7 +26,7 @@ export type DashboardMembership = {
   id: string;
   roleSlug: SystemRoleSlug;
   roleName: string;
-  permissions: ReadonlySet<PermissionKey>;
+  permissions: PermissionKey[];
 };
 
 export type DashboardContext = {
