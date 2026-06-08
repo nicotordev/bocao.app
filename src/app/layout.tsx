@@ -3,7 +3,7 @@ import { IntlProvider } from "@/providers/intl-provider";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans, Outfit } from "next/font/google";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
 
 const outfitHeading = Outfit({
@@ -43,6 +43,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const messages = await getMessages();
 
   return (
     <html
@@ -58,7 +59,9 @@ export default async function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <IntlProvider>{children}</IntlProvider>
+        <IntlProvider locale={locale} messages={messages}>
+          {children}
+        </IntlProvider>
         <Toaster richColors closeButton position="top-center" />
       </body>
     </html>
