@@ -9,11 +9,28 @@ datasource db {
   provider = "postgresql"
 }
 
+enum BusinessType {
+  RESTAURANT
+  BAR
+  CAFE
+  DARK_KITCHEN
+  OTHER
+}
+
+enum PrimaryGoal {
+  ORDERS
+  RESERVATIONS
+  WHATSAPP
+  MENU
+}
+
 /// Billing / tenancy root. One org can own many restaurants (locations).
 model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  /// ISO 3166-1 alpha-2, e.g. CL, MX
+  country   String   @default("CL")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -171,6 +188,11 @@ enum ReservationStatus {
 model Restaurant {
   id        String   @id @default(cuid())
   name      String
+  city      String?
+  phone     String?
+  businessType BusinessType?
+  primaryGoal  PrimaryGoal?
+  serviceModes OrderType[] @default([])
   /// IANA timezone, e.g. America/Santiago
   timezone  String   @default("America/Santiago")
   /// ISO 4217, e.g. CLP, MXN, COP

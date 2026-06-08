@@ -1,4 +1,4 @@
-import { OnboardingEmptyState } from "@/components/dashboard/onboarding-empty-state";
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { requireDashboardSession } from "@/lib/dashboard/context";
 
 export default async function OnboardingPage() {
@@ -9,7 +9,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <OnboardingEmptyState
+    <OnboardingWizard
       user={{
         id: session.user.id,
         name: session.user.name,
