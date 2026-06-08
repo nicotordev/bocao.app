@@ -370,10 +370,17 @@
           "namePlaceholder": "e.g. Valentina Rojas",
           "phone": "Phone",
           "phonePlaceholder": "+56 9 0000 0000",
+          "email": "Email",
+          "emailPlaceholder": "e.g. valentina@email.com",
+          "documentId": "ID document",
+          "documentIdPlaceholder": "e.g. 12.345.678-9",
+          "address": "Address",
+          "addressPlaceholder": "e.g. 123 Main St, Santiago",
+          "notes": "Customer notes",
+          "notesPlaceholder": "Preferences, allergies, or other useful details...",
           "searchPlaceholder": "Search customers",
           "noResults": "No customers found",
           "selectedHint": "Select existing customers from the search field.",
-          "newHint": "You can also add new customers before submitting the order.",
           "tableNumber": "Table number",
           "tableNumberPlaceholder": "e.g. 12",
           "emptySelection": "No customers added to this order yet.",
@@ -381,7 +388,13 @@
           "tablePickerFree": "Available",
           "tablePickerOccupied": "Occupied",
           "tablePickerSelected": "Selected",
-          "configureFloorPlan": "Configure the table floor plan to pick tables visually."
+          "configureFloorPlan": "Configure the table floor plan to pick tables visually.",
+          "picker": {
+            "title": "Add customer",
+            "description": "Fill in customer details. Only the name is required.",
+            "addCustomer": "Add to order",
+            "addSuccess": "Customer added successfully"
+          }
         },
         "channel": {
           "title": "Channel",

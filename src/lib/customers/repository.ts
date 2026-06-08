@@ -11,6 +11,7 @@ export async function listCustomers(
       name: true,
       phone: true,
       email: true,
+      documentId: true,
     },
     orderBy: [{ name: "asc" }],
   });
@@ -32,6 +33,7 @@ export async function getCustomer(
       name: true,
       phone: true,
       email: true,
+      documentId: true,
     },
   });
 }

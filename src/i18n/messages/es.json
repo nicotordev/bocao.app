@@ -370,10 +370,17 @@
           "namePlaceholder": "ej. Valentina Rojas",
           "phone": "Teléfono",
           "phonePlaceholder": "+56 9 0000 0000",
+          "email": "Correo electrónico",
+          "emailPlaceholder": "ej. valentina@correo.cl",
+          "documentId": "Documento de identidad",
+          "documentIdPlaceholder": "ej. 12.345.678-9",
+          "address": "Dirección",
+          "addressPlaceholder": "ej. Av. Providencia 1234, Santiago",
+          "notes": "Notas del cliente",
+          "notesPlaceholder": "Preferencias, alergias u otra información útil...",
           "searchPlaceholder": "Buscar clientes",
           "noResults": "No se encontraron clientes",
           "selectedHint": "Selecciona clientes existentes desde el buscador.",
-          "newHint": "También puedes agregar clientes nuevos antes de confirmar el pedido.",
           "tableNumber": "Número de mesa",
           "tableNumberPlaceholder": "ej. 12",
           "emptySelection": "Aún no hay clientes en este pedido.",
@@ -381,7 +388,13 @@
           "tablePickerFree": "Libre",
           "tablePickerOccupied": "Ocupada",
           "tablePickerSelected": "Seleccionada",
-          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente."
+          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente.",
+          "picker": {
+            "title": "Agregar cliente",
+            "description": "Completa los datos del cliente. Solo el nombre es obligatorio.",
+            "addCustomer": "Agregar al pedido",
+            "addSuccess": "Cliente agregado correctamente"
+          }
         },
         "channel": {
           "title": "Canal",

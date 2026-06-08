@@ -57,15 +57,21 @@ export function NewOrderItemsSection({
           <CardDescription>{labels.items.description}</CardDescription>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" className="gap-2" onClick={() => setMenuDialogOpen(true)}>
+          <Button
+            type="button"
+            className="gap-2"
+            onClick={() => setMenuDialogOpen(true)}
+          >
             <Plus className="size-4" aria-hidden />
             {labels.actions.addItem}
           </Button>
           <Button
             type="button"
             variant="secondary"
+            className="gap-2"
             onClick={() => setCustomDialogOpen(true)}
           >
+            <Plus className="size-4" aria-hidden /> 
             {labels.items.picker.customProduct}
           </Button>
         </div>
@@ -89,7 +95,9 @@ export function NewOrderItemsSection({
                 currency={currency}
                 item={item}
                 onRemove={() => onRemove(item.id)}
-                onUpdateQuantity={(quantity) => onUpdateQuantity(item.id, quantity)}
+                onUpdateQuantity={(quantity) =>
+                  onUpdateQuantity(item.id, quantity)
+                }
               />
             ))}
           </ul>

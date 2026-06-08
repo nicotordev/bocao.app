@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Plus, X } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FloorPlanTablePicker } from "@/components/dashboard/floor-plan/floor-plan-table-picker";
 import type { CustomerOption } from "@/lib/customers/types";
 import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
@@ -26,12 +26,21 @@ import {
   useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { NewCustomerDialog } from "./new-customer-dialog";
 import type {
   NewOrderFormValues,
   NewOrderLabels,
+  NewOrderNewCustomerInput,
   NewOrderSelectedCustomer,
 } from "./types";
+import { cn } from "@/lib/utils";
 
 type NewOrderCustomerSectionProps = {
   labels: NewOrderLabels;
@@ -39,22 +48,14 @@ type NewOrderCustomerSectionProps = {
   channel: NewOrderFormValues["channel"];
   floorPlanSurface: DiningSurfaceRecord | null;
   occupiedTableNumbers: TableOccupancy;
-  values: Pick<
-    NewOrderFormValues,
-    "selectedCustomers" | "draftCustomerName" | "draftCustomerPhone" | "tableNumber"
-  >;
+  values: Pick<NewOrderFormValues, "selectedCustomers" | "tableNumber">;
   errors: {
     customers?: string;
     tableNumber?: string;
-    draftCustomerName?: string;
   };
   onAddExistingCustomers: (customers: CustomerOption[]) => void;
+  onAddNewCustomer: (customer: NewOrderNewCustomerInput) => void;
   onRemoveCustomer: (key: string) => void;
-  onDraftChange: (
-    field: "draftCustomerName" | "draftCustomerPhone",
-    value: string,
-  ) => void;
-  onAddDraftCustomer: () => void;
   onTableNumberChange: (value: string) => void;
 };
 
@@ -67,11 +68,11 @@ export function NewOrderCustomerSection({
   values,
   errors,
   onAddExistingCustomers,
+  onAddNewCustomer,
   onRemoveCustomer,
-  onDraftChange,
-  onAddDraftCustomer,
   onTableNumberChange,
 }: NewOrderCustomerSectionProps) {
+  const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const isDineIn = channel === "dineIn";
   const selectedExisting = useMemo(
     () =>
@@ -81,145 +82,200 @@ export function NewOrderCustomerSection({
           id: customer.id!,
           name: customer.name,
           phone: customer.phone || null,
-          email: null,
+          email: customer.email || null,
+          documentId: customer.documentId || null,
         })),
     [values.selectedCustomers],
   );
+  const tableNumbers = useMemo(() => {
+    if (!floorPlanSurface) {
+      return [];
+    }
+
+    return [...floorPlanSurface.tables]
+      .map((table) => table.number)
+      .sort((left, right) => {
+        const leftNumber = Number.parseInt(left, 10);
+        const rightNumber = Number.parseInt(right, 10);
+
+        if (!Number.isNaN(leftNumber) && !Number.isNaN(rightNumber)) {
+          return leftNumber - rightNumber;
+        }
+
+        return left.localeCompare(right, undefined, { numeric: true });
+      });
+  }, [floorPlanSurface]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{labels.customer.title}</CardTitle>
-        <CardDescription>{labels.customer.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <FieldGroup>
-          {isDineIn ? (
-            <Field data-invalid={Boolean(errors.tableNumber)}>
-              <FieldLabel htmlFor="table-number">
-                {labels.customer.tableNumber}
-              </FieldLabel>
-              {floorPlanSurface ? (
-                <>
-                  <FloorPlanTablePicker
-                    surface={floorPlanSurface}
-                    occupiedTableNumbers={occupiedTableNumbers}
-                    selectedTableNumber={values.tableNumber}
-                    onSelectTable={onTableNumberChange}
-                    labels={{
-                      legendFree: labels.customer.tablePickerFree,
-                      legendOccupied: labels.customer.tablePickerOccupied,
-                      legendSelected: labels.customer.tablePickerSelected,
-                      pickHint: labels.customer.tablePickerHint,
-                    }}
-                  />
-                  <Input
-                    id="table-number"
-                    value={values.tableNumber}
-                    onChange={(event) => onTableNumberChange(event.target.value)}
-                    placeholder={labels.customer.tableNumberPlaceholder}
-                    aria-invalid={Boolean(errors.tableNumber)}
-                    className="mt-3"
-                  />
-                </>
-              ) : (
-                <>
-                  <Input
-                    id="table-number"
-                    value={values.tableNumber}
-                    onChange={(event) => onTableNumberChange(event.target.value)}
-                    placeholder={labels.customer.tableNumberPlaceholder}
-                    aria-invalid={Boolean(errors.tableNumber)}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    {labels.customer.configureFloorPlan}{" "}
-                    <Link href="/dashboard/floor-plan" className="underline">
-                      /dashboard/floor-plan
-                    </Link>
-                  </p>
-                </>
-              )}
-              {errors.tableNumber ? (
-                <p className="text-sm text-destructive">{errors.tableNumber}</p>
-              ) : null}
-            </Field>
-          ) : null}
-
-          {customers.length > 0 ? (
-            <ExistingCustomerPicker
-              labels={labels}
-              customers={customers}
-              selectedExisting={selectedExisting}
-              onAddExistingCustomers={onAddExistingCustomers}
-            />
-          ) : null}
-
-          <div className="rounded-3xl border border-border bg-muted/20 p-4">
-            <p className="text-sm text-muted-foreground">{labels.customer.newHint}</p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
-              <Field data-invalid={Boolean(errors.draftCustomerName)}>
-                <FieldLabel htmlFor="draft-customer-name">
-                  {labels.customer.name}
-                </FieldLabel>
-                <Input
-                  id="draft-customer-name"
-                  value={values.draftCustomerName}
-                  onChange={(event) =>
-                    onDraftChange("draftCustomerName", event.target.value)
-                  }
-                  placeholder={labels.customer.namePlaceholder}
-                  aria-invalid={Boolean(errors.draftCustomerName)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="draft-customer-phone">
-                  {labels.customer.phone}
-                </FieldLabel>
-                <Input
-                  id="draft-customer-phone"
-                  type="tel"
-                  value={values.draftCustomerPhone}
-                  onChange={(event) =>
-                    onDraftChange("draftCustomerPhone", event.target.value)
-                  }
-                  placeholder={labels.customer.phonePlaceholder}
-                />
-              </Field>
-              <Button
-                type="button"
-                variant="secondary"
-                className="gap-2"
-                onClick={onAddDraftCustomer}
-              >
-                <Plus className="size-4" aria-hidden />
-                {labels.actions.addCustomer}
-              </Button>
-            </div>
-            {errors.draftCustomerName ? (
-              <p className="mt-2 text-sm text-destructive">
-                {errors.draftCustomerName}
-              </p>
-            ) : null}
+    <>
+      <Card>
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle>{labels.customer.title}</CardTitle>
+            <CardDescription>{labels.customer.description}</CardDescription>
           </div>
+          <Button
+            type="button"
+            className="gap-2"
+            onClick={() => setCustomerDialogOpen(true)}
+          >
+            <Plus className="size-4" aria-hidden />
+            {labels.actions.addCustomer}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            {isDineIn ? (
+              <Field data-invalid={Boolean(errors.tableNumber)}>
+                <FieldLabel htmlFor="table-number">
+                  {labels.customer.tableNumber}
+                </FieldLabel>
+                {floorPlanSurface ? (
+                  <>
+                    <FloorPlanTablePicker
+                      surface={floorPlanSurface}
+                      occupiedTableNumbers={occupiedTableNumbers}
+                      selectedTableNumber={values.tableNumber}
+                      onSelectTable={onTableNumberChange}
+                      labels={{
+                        legendFree: labels.customer.tablePickerFree,
+                        legendOccupied: labels.customer.tablePickerOccupied,
+                        legendSelected: labels.customer.tablePickerSelected,
+                        pickHint: labels.customer.tablePickerHint,
+                      }}
+                    />
+                    <TableNumberSelect
+                      id="table-number"
+                      className="mt-3"
+                      value={values.tableNumber}
+                      tableNumbers={tableNumbers}
+                      occupiedTableNumbers={occupiedTableNumbers}
+                      placeholder={labels.customer.tableNumberPlaceholder}
+                      occupiedLabel={labels.customer.tablePickerOccupied}
+                      invalid={Boolean(errors.tableNumber)}
+                      onChange={onTableNumberChange}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <TableNumberSelect
+                      id="table-number"
+                      value={values.tableNumber}
+                      tableNumbers={tableNumbers}
+                      occupiedTableNumbers={occupiedTableNumbers}
+                      placeholder={labels.customer.tableNumberPlaceholder}
+                      occupiedLabel={labels.customer.tablePickerOccupied}
+                      invalid={Boolean(errors.tableNumber)}
+                      disabled
+                      onChange={onTableNumberChange}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      {labels.customer.configureFloorPlan}{" "}
+                      <Link href="/dashboard/floor-plan" className="underline">
+                        /dashboard/floor-plan
+                      </Link>
+                    </p>
+                  </>
+                )}
+                {errors.tableNumber ? (
+                  <p className="text-sm text-destructive">{errors.tableNumber}</p>
+                ) : null}
+              </Field>
+            ) : null}
 
-          {errors.customers ? (
-            <p className="text-sm text-destructive">{errors.customers}</p>
-          ) : null}
+            {customers.length > 0 ? (
+              <ExistingCustomerPicker
+                labels={labels}
+                customers={customers}
+                selectedExisting={selectedExisting}
+                onAddExistingCustomers={onAddExistingCustomers}
+              />
+            ) : null}
 
-          {values.selectedCustomers.length > 0 ? (
-            <SelectedCustomersList
-              labels={labels}
-              customers={values.selectedCustomers}
-              onRemove={onRemoveCustomer}
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {labels.customer.emptySelection}
-            </p>
-          )}
-        </FieldGroup>
-      </CardContent>
-    </Card>
+            {errors.customers ? (
+              <p className="text-sm text-destructive">{errors.customers}</p>
+            ) : null}
+
+            {values.selectedCustomers.length > 0 ? (
+              <SelectedCustomersList
+                labels={labels}
+                customers={values.selectedCustomers}
+                onRemove={onRemoveCustomer}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {labels.customer.emptySelection}
+              </p>
+            )}
+          </FieldGroup>
+        </CardContent>
+      </Card>
+
+      <NewCustomerDialog
+        open={customerDialogOpen}
+        onOpenChange={setCustomerDialogOpen}
+        labels={labels}
+        onAddCustomer={onAddNewCustomer}
+      />
+    </>
+  );
+}
+
+function TableNumberSelect({
+  id,
+  value,
+  tableNumbers,
+  occupiedTableNumbers,
+  placeholder,
+  occupiedLabel,
+  invalid = false,
+  disabled = false,
+  className,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  tableNumbers: string[];
+  occupiedTableNumbers: TableOccupancy;
+  placeholder: string;
+  occupiedLabel: string;
+  invalid?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onChange: (value: string) => void;
+}) {
+  const isDisabled = disabled || tableNumbers.length === 0;
+
+  return (
+    <Select
+      value={value || undefined}
+      onValueChange={onChange}
+      disabled={isDisabled}
+    >
+      <SelectTrigger
+        id={id}
+        className={cn("w-full", className)}
+        aria-invalid={invalid}
+      >
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {tableNumbers.map((tableNumber) => {
+          const isOccupied = occupiedTableNumbers[tableNumber] ?? false;
+
+          return (
+            <SelectItem
+              key={tableNumber}
+              value={tableNumber}
+              disabled={isOccupied}
+            >
+              {tableNumber}
+              {isOccupied ? ` · ${occupiedLabel}` : ""}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -264,9 +320,11 @@ function ExistingCustomerPicker({
               <ComboboxItem key={customer.id} value={customer}>
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate font-medium">{customer.name}</span>
-                  {customer.phone ? (
+                  {customer.phone || customer.documentId ? (
                     <span className="truncate text-xs text-muted-foreground">
-                      {customer.phone}
+                      {[customer.documentId, customer.phone]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   ) : null}
                 </span>
@@ -299,8 +357,10 @@ function SelectedCustomersList({
           >
             <div className="min-w-0">
               <p className="font-medium">{customer.name}</p>
-              {customer.phone ? (
-                <p className="text-xs text-muted-foreground">{customer.phone}</p>
+              {formatCustomerSubtitle(customer) ? (
+                <p className="text-xs text-muted-foreground">
+                  {formatCustomerSubtitle(customer)}
+                </p>
               ) : null}
             </div>
             <Button
@@ -317,4 +377,11 @@ function SelectedCustomersList({
       </div>
     </div>
   );
+}
+
+function formatCustomerSubtitle(customer: NewOrderSelectedCustomer) {
+  return [customer.documentId, customer.phone, customer.email]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(" · ");
 }

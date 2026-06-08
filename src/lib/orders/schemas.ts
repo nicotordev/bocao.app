@@ -33,6 +33,10 @@ export const createOrderCustomerSchema = z.object({
   id: z.string().cuid().optional(),
   name: z.string().trim().min(1),
   phone: z.string().trim().optional(),
+  email: z.string().trim().optional(),
+  documentId: z.string().trim().optional(),
+  address: z.string().trim().optional(),
+  notes: z.string().trim().optional(),
 });
 
 export const createOrderBodySchema = z

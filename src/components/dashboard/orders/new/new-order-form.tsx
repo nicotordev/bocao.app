@@ -15,6 +15,7 @@ import type {
   NewOrderFormValues,
   NewOrderLabels,
   NewOrderLineItem,
+  NewOrderNewCustomerInput,
   NewOrderPageClientProps,
   NewOrderSelectedCustomer,
 } from "./types";
@@ -22,7 +23,6 @@ import type {
 type FormErrors = {
   customers?: string;
   tableNumber?: string;
-  draftCustomerName?: string;
   items?: string;
 };
 
@@ -62,8 +62,6 @@ export function NewOrderForm({
   const createOrderMutation = useCreateOrderMutation(restaurantId);
   const [values, setValues] = useState<NewOrderFormValues>({
     selectedCustomers: [],
-    draftCustomerName: "",
-    draftCustomerPhone: "",
     tableNumber: initialTableNumber ?? "",
     channel: "dineIn",
     notes: "",
@@ -79,6 +77,10 @@ export function NewOrderForm({
         id: customer.id,
         name: customer.name.trim(),
         phone: customer.phone.trim() || undefined,
+        email: customer.email.trim() || undefined,
+        documentId: customer.documentId.trim() || undefined,
+        address: customer.address.trim() || undefined,
+        notes: customer.notes.trim() || undefined,
       })),
       tableNumber:
         values.channel === "dineIn"
@@ -129,6 +131,10 @@ export function NewOrderForm({
           id: customer.id,
           name: customer.name,
           phone: customer.phone ?? "",
+          email: customer.email ?? "",
+          documentId: customer.documentId ?? "",
+          address: "",
+          notes: "",
           source: "existing",
         }));
 
@@ -149,34 +155,25 @@ export function NewOrderForm({
     }));
   }
 
-  function addDraftCustomer() {
-    const name = values.draftCustomerName.trim();
-
-    if (!name) {
-      setErrors((current) => ({
-        ...current,
-        draftCustomerName: labels.validation.draftCustomerName,
-      }));
-      return;
-    }
-
+  function addNewCustomer(customer: NewOrderNewCustomerInput) {
     setValues((current) => ({
       ...current,
       selectedCustomers: [
         ...current.selectedCustomers,
         {
           key: createCustomerKey(),
-          name,
-          phone: current.draftCustomerPhone.trim(),
+          name: customer.name,
+          phone: customer.phone,
+          email: customer.email,
+          documentId: customer.documentId,
+          address: customer.address,
+          notes: customer.notes,
           source: "new",
         },
       ],
-      draftCustomerName: "",
-      draftCustomerPhone: "",
     }));
     setErrors((current) => ({
       ...current,
-      draftCustomerName: undefined,
       customers: undefined,
     }));
   }
@@ -323,15 +320,12 @@ export function NewOrderForm({
           occupiedTableNumbers={occupiedTableNumbers}
           values={{
             selectedCustomers: values.selectedCustomers,
-            draftCustomerName: values.draftCustomerName,
-            draftCustomerPhone: values.draftCustomerPhone,
             tableNumber: values.tableNumber,
           }}
           errors={errors}
           onAddExistingCustomers={syncExistingCustomers}
+          onAddNewCustomer={addNewCustomer}
           onRemoveCustomer={removeCustomer}
-          onDraftChange={(field, value) => updateField(field, value)}
-          onAddDraftCustomer={addDraftCustomer}
           onTableNumberChange={(tableNumber) =>
             updateField("tableNumber", tableNumber)
           }

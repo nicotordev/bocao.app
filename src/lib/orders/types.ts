@@ -75,6 +75,10 @@ export type CreateOrderCustomerInput = {
   id?: string;
   name: string;
   phone?: string;
+  email?: string;
+  documentId?: string;
+  address?: string;
+  notes?: string;
 };
 
 export type CreateOrderInput = {

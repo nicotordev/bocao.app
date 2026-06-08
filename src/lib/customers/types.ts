@@ -3,4 +3,5 @@ export type CustomerOption = {
   name: string;
   phone: string | null;
   email: string | null;
+  documentId: string | null;
 };

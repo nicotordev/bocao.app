@@ -17,13 +17,24 @@ export type NewOrderSelectedCustomer = {
   id?: string;
   name: string;
   phone: string;
+  email: string;
+  documentId: string;
+  address: string;
+  notes: string;
   source: "existing" | "new";
+};
+
+export type NewOrderNewCustomerInput = {
+  name: string;
+  phone: string;
+  email: string;
+  documentId: string;
+  address: string;
+  notes: string;
 };
 
 export type NewOrderFormValues = {
   selectedCustomers: NewOrderSelectedCustomer[];
-  draftCustomerName: string;
-  draftCustomerPhone: string;
   tableNumber: string;
   channel: OrderChannel;
   notes: string;
@@ -55,10 +66,17 @@ export type NewOrderLabels = {
     namePlaceholder: string;
     phone: string;
     phonePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    documentId: string;
+    documentIdPlaceholder: string;
+    address: string;
+    addressPlaceholder: string;
+    notes: string;
+    notesPlaceholder: string;
     searchPlaceholder: string;
     noResults: string;
     selectedHint: string;
-    newHint: string;
     tableNumber: string;
     tableNumberPlaceholder: string;
     emptySelection: string;
@@ -67,6 +85,12 @@ export type NewOrderLabels = {
     tablePickerOccupied: string;
     tablePickerSelected: string;
     configureFloorPlan: string;
+    picker: {
+      title: string;
+      description: string;
+      addCustomer: string;
+      addSuccess: string;
+    };
   };
   channel: {
     title: string;
