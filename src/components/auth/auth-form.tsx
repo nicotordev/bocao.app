@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 import { AuthPageHeader } from "@/components/auth/auth-page-header";
@@ -24,15 +25,17 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
-const METHOD_LABELS: Record<AuthMethod, string> = {
-  password: "Contraseña",
-  email: "Email",
-};
+const AUTH_METHODS = [
+  "password",
+  "email",
+] as const satisfies readonly AuthMethod[];
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [method, setMethod] = useState<AuthMethod>("password");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,13 +49,22 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
 
-  const title = mode === "sign-in" ? "Ingresar" : "Crear cuenta";
   const alternateHref =
     mode === "sign-in" ? authRoutes.signUp : authRoutes.signIn;
-  const alternateLabel =
-    mode === "sign-in" ? "Crear cuenta" : "Ya tengo cuenta";
   const alternateHelp =
-    mode === "sign-in" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?";
+    mode === "sign-in" ? t("signInPage.noAccount") : t("signUpPage.hasAccount");
+  const alternateLabel =
+    mode === "sign-in"
+      ? t("signInPage.createAccount")
+      : t("signUpPage.signInLink");
+  const pageTitle =
+    mode === "sign-in" ? t("signInPage.title") : t("signUpPage.title");
+  const pageDescription =
+    mode === "sign-in"
+      ? t("signInPage.description")
+      : t("signUpPage.description");
+  const pageSubmit =
+    mode === "sign-in" ? t("signInPage.submit") : t("signUpPage.submit");
   const sideImage =
     mode === "sign-up"
       ? "/img/auth/pexels-thien-binh-451964862-17264367.webp"
@@ -110,14 +122,16 @@ export function AuthForm({ mode }: AuthFormProps) {
     setIsSubmitting(false);
 
     if (result.error) {
-      setError(result.error.message ?? "No se pudo completar la operación");
+      setError(result.error.message ?? t("errors.operationFailed"));
       return;
     }
 
     router.push(appRoutes.dashboard);
   }
 
-  async function sendEmailAccess({ isResend = false }: { isResend?: boolean } = {}) {
+  async function sendEmailAccess({
+    isResend = false,
+  }: { isResend?: boolean } = {}) {
     if (isResend && resendCooldown > 0) {
       return;
     }
@@ -153,9 +167,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     if (!response.ok) {
       const errorMessage =
         data?.error ??
-        (isResend
-          ? "No se pudo reenviar el código"
-          : "No se pudo enviar el acceso por email");
+        (isResend ? t("errors.resendFailed") : t("errors.sendAccessFailed"));
 
       if (isResend) {
         toast.error(errorMessage);
@@ -169,14 +181,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     if (isResend) {
       setOtp("");
-      toast.success("Te enviamos un nuevo código a tu email");
+      toast.success(t("emailOtp.newCodeSent"));
       return;
     }
 
     setEmailSent(true);
-    setMessage(
-      "Te enviamos un email con un link y un código de 6 dígitos para ingresar.",
-    );
+    setMessage(t("emailOtp.sentMessage"));
   }
 
   async function handleResendCode() {
@@ -190,9 +200,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     await sendEmailAccess();
   }
 
-  async function handleVerifyEmailOtp(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleVerifyEmailOtp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     resetFeedback();
     setIsSubmitting(true);
@@ -207,7 +215,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     setIsSubmitting(false);
 
     if (result.error) {
-      setError(result.error.message ?? "Código inválido o expirado");
+      setError(result.error.message ?? t("errors.invalidCode"));
       return;
     }
 
@@ -219,231 +227,209 @@ export function AuthForm({ mode }: AuthFormProps) {
       {isOtpEntryView ? (
         <AuthPageHeader
           centered
-          title="Ingresa el código"
-          description={
-            <>
-              Enviamos un código de 6 dígitos a{" "}
-              <span className="font-medium text-foreground">{email}</span>
-            </>
-          }
+          title={t("emailOtp.title")}
+          description={t("emailOtp.description", { email })}
         />
       ) : (
         <AuthPageHeader
-          title={title}
+          title={pageTitle}
           footer={{
             help: alternateHelp,
             href: alternateHref,
             label: alternateLabel,
           }}
-          description={
-            mode === "sign-in"
-              ? "Ingresa con contraseña o accede por email con link o código."
-              : "Crea tu cuenta con contraseña o accede por email con link o código."
-          }
+          description={pageDescription}
         />
       )}
 
-          <div className="mt-8 space-y-5">
-            {!isOtpEntryView ? (
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(METHOD_LABELS) as AuthMethod[]).map((option) => (
-                  <Button
-                    variant={method === option ? "default" : "outline"}
-                    key={option}
-                    type="button"
-                    onClick={() => handleMethodChange(option)}
-                    size="sm"
-                    className="w-full"
-                  >
-                    {METHOD_LABELS[option]}
-                  </Button>
-                ))}
-              </div>
-            ) : null}
-
-            {!isOtpEntryView && message ? (
-              <Alert variant="success">
-                <AlertTitle>Éxito</AlertTitle>
-                <AlertDescription>{message}</AlertDescription>
-              </Alert>
-            ) : null}
-
-            {error ? (
-              <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            ) : null}
-
-            {method === "password" ? (
-              <form onSubmit={handlePasswordSubmit} className="space-y-5">
-                {mode === "sign-up" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      placeholder="Tu nombre"
-                      required
-                    />
-                  </div>
-                ) : null}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="tu@empresa.com"
-                    type="email"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input
-                    id="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="••••••••"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    minLength={8}
-                  />
-                </div>
-
-                {mode === "sign-in" ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="remember-me"
-                        checked={rememberMe}
-                        onCheckedChange={(checked) =>
-                          setRememberMe(checked === true)
-                        }
-                      />
-                      <Label
-                        htmlFor="remember-me"
-                        className="text-sm font-normal"
-                      >
-                        Recordarme
-                      </Label>
-                    </div>
-                    <Link
-                      href={authRoutes.forgotPassword}
-                      className="text-sm font-medium text-primary hover:opacity-80"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
-                  </div>
-                ) : null}
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  {isSubmitting
-                    ? "Procesando..."
-                    : mode === "sign-in"
-                      ? "Entrar"
-                      : "Crear cuenta"}
-                </Button>
-              </form>
-            ) : null}
-
-            {isOtpEntryView ? (
-              <form onSubmit={handleVerifyEmailOtp} className="space-y-6">
-                <OtpCodeInput
-                  id="email-auth-code"
-                  value={otp}
-                  onChange={setOtp}
-                  disabled={isSubmitting}
-                  autoFocus
-                />
-
-                <div className="space-y-3">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting || otp.length !== 6}
-                    className="w-full"
-                  >
-                    {isSubmitting ? "Confirmando..." : "Confirmar"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={isSubmitting || isResending || resendCooldown > 0}
-                    onClick={() => {
-                      void handleResendCode();
-                    }}
-                    className="w-full"
-                  >
-                    {isResending
-                      ? "Reenviando..."
-                      : resendCooldown > 0
-                        ? `Reenviar código (${resendCooldown}s)`
-                        : "Reenviar código"}
-                  </Button>
-                </div>
-              </form>
-            ) : null}
-
-            {method === "email" && !emailSent ? (
-              <form onSubmit={handleSendEmailAccess} className="space-y-5">
-                {mode === "sign-up" ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="email-auth-name">Nombre</Label>
-                    <Input
-                      id="email-auth-name"
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      placeholder="Tu nombre"
-                      required
-                    />
-                  </div>
-                ) : null}
-                <div className="space-y-2">
-                  <Label htmlFor="email-auth-email">Email</Label>
-                  <Input
-                    id="email-auth-email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="tu@empresa.com"
-                    type="email"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  {isSubmitting ? "Enviando..." : "Enviar acceso por email"}
-                </Button>
-              </form>
-            ) : null}
-
-            {!isOtpEntryView ? (
-              <div className="space-y-4 pt-2">
-                <div className="relative">
-                  <Separator />
-                  <span className="bg-background text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-xs font-medium">
-                    O continúa con
-                  </span>
-                </div>
-                <Button variant="outline" type="button" className="w-full gap-3">
-                  <FcGoogle className="size-5 shrink-0" aria-hidden />
-                  Google
-                </Button>
-              </div>
-            ) : null}
+      <div className="mt-8 space-y-5">
+        {!isOtpEntryView ? (
+          <div className="grid grid-cols-2 gap-2">
+            {AUTH_METHODS.map((option) => (
+              <Button
+                variant={method === option ? "default" : "outline"}
+                key={option}
+                type="button"
+                onClick={() => handleMethodChange(option)}
+                size="sm"
+                className="w-full"
+              >
+                {t(`methods.${option}`)}
+              </Button>
+            ))}
           </div>
+        ) : null}
+
+        {!isOtpEntryView && message ? (
+          <Alert variant="success">
+            <AlertTitle>{tCommon("success")}</AlertTitle>
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {error ? (
+          <Alert variant="destructive">
+            <AlertTitle>{tCommon("error")}</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {method === "password" ? (
+          <form onSubmit={handlePasswordSubmit} className="space-y-5">
+            {mode === "sign-up" ? (
+              <div className="space-y-2">
+                <Label htmlFor="name">{t("name")}</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder={t("placeholders.name")}
+                  required
+                />
+              </div>
+            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="email">{tCommon("email")}</Label>
+              <Input
+                id="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder={t("placeholders.email")}
+                type="email"
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("password")}</Label>
+              <Input
+                id="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={t("placeholders.password")}
+                type="password"
+                autoComplete="current-password"
+                required
+                minLength={8}
+              />
+            </div>
+
+            {mode === "sign-in" ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) =>
+                      setRememberMe(checked === true)
+                    }
+                  />
+                  <Label htmlFor="remember-me" className="text-sm font-normal">
+                    {t("signInPage.rememberMe")}
+                  </Label>
+                </div>
+                <Link
+                  href={authRoutes.forgotPassword}
+                  className="text-sm font-medium text-primary hover:opacity-80"
+                >
+                  {t("signInPage.forgotPassword")}
+                </Link>
+              </div>
+            ) : null}
+
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? tCommon("processing") : pageSubmit}
+            </Button>
+          </form>
+        ) : null}
+
+        {isOtpEntryView ? (
+          <form onSubmit={handleVerifyEmailOtp} className="space-y-6">
+            <OtpCodeInput
+              id="email-auth-code"
+              value={otp}
+              onChange={setOtp}
+              disabled={isSubmitting}
+              autoFocus
+            />
+
+            <div className="space-y-3">
+              <Button
+                type="submit"
+                disabled={isSubmitting || otp.length !== 6}
+                className="w-full"
+              >
+                {isSubmitting ? tCommon("confirming") : tCommon("confirm")}
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                disabled={isSubmitting || isResending || resendCooldown > 0}
+                onClick={() => {
+                  void handleResendCode();
+                }}
+                className="w-full"
+              >
+                {isResending
+                  ? tCommon("resending")
+                  : resendCooldown > 0
+                    ? t("emailOtp.resendCodeCooldown", {
+                        seconds: resendCooldown,
+                      })
+                    : t("emailOtp.resendCode")}
+              </Button>
+            </div>
+          </form>
+        ) : null}
+
+        {method === "email" && !emailSent ? (
+          <form onSubmit={handleSendEmailAccess} className="space-y-5">
+            {mode === "sign-up" ? (
+              <div className="space-y-2">
+                <Label htmlFor="email-auth-name">{t("name")}</Label>
+                <Input
+                  id="email-auth-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder={t("placeholders.name")}
+                  required
+                />
+              </div>
+            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="email-auth-email">{tCommon("email")}</Label>
+              <Input
+                id="email-auth-email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder={t("placeholders.email")}
+                type="email"
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? tCommon("sending") : t("emailOtp.sendAccess")}
+            </Button>
+          </form>
+        ) : null}
+
+        {!isOtpEntryView ? (
+          <div className="space-y-4 pt-2">
+            <div className="relative">
+              <Separator />
+              <span className="bg-background text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-3 text-xs font-medium">
+                {t("orContinueWith")}
+              </span>
+            </div>
+            <Button variant="outline" type="button" className="w-full gap-3">
+              <FcGoogle className="size-5 shrink-0" aria-hidden />
+              {t("google")}
+            </Button>
+          </div>
+        ) : null}
+      </div>
     </AuthShell>
   );
 }

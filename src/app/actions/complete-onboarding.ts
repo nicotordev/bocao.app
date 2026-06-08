@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { ACTIVE_RESTAURANT_COOKIE } from "@/lib/dashboard/constants";
 import {
@@ -7,8 +8,8 @@ import {
   requireDashboardSession,
 } from "@/lib/dashboard/context";
 import {
+  createOnboardingSchema,
   getPrimaryGoalRedirectPath,
-  onboardingSchema,
   type OnboardingFormValues,
 } from "@/lib/onboarding/schema";
 import { createUniqueOrganizationSlug } from "@/lib/onboarding/slug";
@@ -20,7 +21,9 @@ export type CompleteOnboardingResult =
   | { success: true; redirectTo: string }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
 
-function normalizeOptionalString(value: string | undefined): string | undefined {
+function normalizeOptionalString(
+  value: string | undefined,
+): string | undefined {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }
@@ -28,24 +31,33 @@ function normalizeOptionalString(value: string | undefined): string | undefined 
 export async function completeOnboarding(
   input: OnboardingFormValues,
 ): Promise<CompleteOnboardingResult> {
+  const t = await getTranslations("actions.onboarding");
+  const tValidation = await getTranslations("onboarding.validation");
+
   const session = await requireDashboardSession();
 
   if (!session) {
-    return { success: false, error: "Debes iniciar sesión para continuar" };
+    return { success: false, error: t("mustSignIn") };
   }
 
   const alreadyOnboarded = await hasUserMembership(session.user.id);
 
   if (alreadyOnboarded) {
-    return { success: false, error: "Tu cuenta ya completó el onboarding" };
+    return { success: false, error: t("alreadyCompleted") };
   }
+
+  const onboardingSchema = createOnboardingSchema({
+    minChars: tValidation("minChars"),
+    maxChars80: tValidation("maxChars80"),
+    maxChars24: tValidation("maxChars24"),
+  });
 
   const parsed = onboardingSchema.safeParse(input);
 
   if (!parsed.success) {
     return {
       success: false,
-      error: "Revisa los datos del formulario",
+      error: t("invalidForm"),
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -54,7 +66,10 @@ export async function completeOnboarding(
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const slug = await createUniqueOrganizationSlug(tx, data.organizationName);
+      const slug = await createUniqueOrganizationSlug(
+        tx,
+        data.organizationName,
+      );
 
       const organization = await tx.organization.create({
         data: {
@@ -113,7 +128,7 @@ export async function completeOnboarding(
     console.error("[onboarding] failed to complete setup", error);
     return {
       success: false,
-      error: "No pudimos crear tu restaurante. Intenta nuevamente.",
+      error: t("createFailed"),
     };
   }
 }

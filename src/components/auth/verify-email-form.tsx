@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { appRoutes, authRoutes } from "@/lib/auth-routes";
@@ -23,6 +24,8 @@ interface VerifyEmailFormProps {
 
 export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -58,12 +61,12 @@ export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
     setIsResending(false);
 
     if (result.error) {
-      toast.error(result.error.message ?? "No se pudo enviar el código");
+      toast.error(result.error.message ?? t("verifyEmail.sendFailed"));
       return;
     }
 
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
-    toast.success("Te enviamos un código de verificación");
+    toast.success(t("verifyEmail.codeSent"));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -76,42 +79,42 @@ export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
     setIsSubmitting(false);
 
     if (result.error) {
-      setError(result.error.message ?? "Código inválido o expirado");
+      setError(result.error.message ?? t("errors.invalidCode"));
       return;
     }
 
-    toast.success("Email verificado correctamente");
+    toast.success(t("verifyEmail.success"));
     router.push(appRoutes.dashboard);
   }
 
   return (
     <AuthShell sideImage={sideImage}>
       <AuthPageHeader
-        title="Verifica tu email"
-        description="Ingresa el código de 6 dígitos que enviamos a tu correo."
+        title={t("verifyEmail.title")}
+        description={t("verifyEmail.description")}
         footer={{
-          help: "¿Ya verificaste tu cuenta?",
+          help: t("verifyEmail.alreadyVerified"),
           href: authRoutes.signIn,
-          label: "Ingresar",
+          label: t("signIn"),
         }}
       />
 
       <div className="mt-8 space-y-5">
         {error ? (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{tCommon("error")}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="verify-email-address">Email</Label>
+            <Label htmlFor="verify-email-address">{tCommon("email")}</Label>
             <Input
               id="verify-email-address"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="tu@empresa.com"
+              placeholder={t("placeholders.email")}
               type="email"
               autoComplete="email"
               required
@@ -119,7 +122,7 @@ export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="verify-email-code">Código</Label>
+            <Label htmlFor="verify-email-code">{t("code")}</Label>
             <OtpCodeInput
               id="verify-email-code"
               value={otp}
@@ -133,23 +136,27 @@ export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
             disabled={isSubmitting || otp.length !== 6}
             className="w-full"
           >
-            {isSubmitting ? "Verificando..." : "Verificar email"}
+            {isSubmitting
+              ? t("verifyEmail.verifying")
+              : t("verifyEmail.submit")}
           </Button>
 
           <Button
             variant="outline"
             type="button"
-            disabled={isSubmitting || isResending || resendCooldown > 0 || !email}
+            disabled={
+              isSubmitting || isResending || resendCooldown > 0 || !email
+            }
             onClick={() => {
               void sendVerificationCode();
             }}
             className="w-full"
           >
             {isResending
-              ? "Enviando..."
+              ? tCommon("sending")
               : resendCooldown > 0
-                ? `Reenviar código (${resendCooldown}s)`
-                : "Enviar código"}
+                ? t("emailOtp.resendCodeCooldown", { seconds: resendCooldown })
+                : t("verifyEmail.sendCode")}
           </Button>
         </form>
 
@@ -158,7 +165,7 @@ export function VerifyEmailForm({ initialEmail = "" }: VerifyEmailFormProps) {
             href={authRoutes.signIn}
             className="font-medium text-primary hover:opacity-80"
           >
-            Volver a ingresar
+            {t("backToSignIn")}
           </Link>
         </p>
       </div>

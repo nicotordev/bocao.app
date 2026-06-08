@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { enUS, es } from "date-fns/locale";
+import { getLocale, getTranslations } from "next-intl/server";
 import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentOrdersList } from "@/components/dashboard/recent-orders-list";
@@ -11,10 +12,19 @@ import { getDashboardHomeData } from "@/lib/dashboard/data";
 import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardPage() {
+  const t = await getTranslations("dashboard");
+  const locale = await getLocale();
+  const dateFnsLocale = locale === "es" ? es : enUS;
+
   const context = await getDashboardContext();
   const data = getDashboardHomeData(context?.activeRestaurant ?? null);
 
-  const todayLabel = format(new Date(), "EEEE d 'de' MMMM", { locale: es });
+  const todayLabel = format(new Date(), t("dateFormat"), {
+    locale: dateFnsLocale,
+  });
+
+  const firstName =
+    context?.user.name.split(" ").filter(Boolean)[0] ?? t("greetingFallback");
 
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
@@ -24,11 +34,13 @@ export default async function DashboardPage() {
             {todayLabel}
           </Badge>
           <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-            Buenos días, {context?.user.name.split(" ")[0] ?? "equipo"}
+            {t("greeting", { name: firstName })}
           </h2>
           <p className="text-sm text-muted-foreground md:text-base">
-            Resumen operativo de{" "}
-            {context?.activeRestaurant?.name ?? "tu restaurante"}
+            {t("summary", {
+              restaurant:
+                context?.activeRestaurant?.name ?? t("summaryFallback"),
+            })}
           </p>
         </div>
       </section>

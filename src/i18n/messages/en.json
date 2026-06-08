@@ -2,7 +2,17 @@
   "common": {
     "welcome": "Welcome",
     "language": "Language",
-    "save": "Save"
+    "save": "Save",
+    "error": "Error",
+    "success": "Success",
+    "email": "Email",
+    "cancel": "Cancel",
+    "processing": "Processing...",
+    "sending": "Sending...",
+    "confirming": "Confirming...",
+    "resending": "Resending...",
+    "confirm": "Confirm",
+    "saving": "Saving..."
   },
   "metadata": {
     "title": "Bocao",
@@ -12,5 +22,194 @@
     "title": "Welcome to Bocao",
     "description": "AI-powered restaurant operating system.",
     "clientExample": "This text comes from a Client Component using useTranslations()."
+  },
+  "auth": {
+    "name": "Name",
+    "password": "Password",
+    "code": "Code",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "google": "Google",
+    "orContinueWith": "Or continue with",
+    "backToSignIn": "Back to sign in",
+    "signIn": "Sign in",
+    "placeholders": {
+      "name": "Your name",
+      "email": "you@company.com",
+      "password": "••••••••"
+    },
+    "methods": {
+      "password": "Password",
+      "email": "Email"
+    },
+    "signInPage": {
+      "title": "Sign in",
+      "description": "Sign in with a password or access via email with a link or code.",
+      "submit": "Sign in",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account"
+    },
+    "signUpPage": {
+      "title": "Create account",
+      "description": "Create your account with a password or access via email with a link or code.",
+      "submit": "Create account",
+      "hasAccount": "Already have an account?",
+      "signInLink": "I already have an account"
+    },
+    "emailOtp": {
+      "title": "Enter the code",
+      "description": "We sent a 6-digit code to {email}",
+      "sentMessage": "We sent you an email with a link and a 6-digit code to sign in.",
+      "sendAccess": "Send email access",
+      "resendCode": "Resend code",
+      "resendCodeCooldown": "Resend code ({seconds}s)",
+      "newCodeSent": "We sent a new code to your email"
+    },
+    "errors": {
+      "operationFailed": "Could not complete the operation",
+      "resendFailed": "Could not resend the code",
+      "sendAccessFailed": "Could not send email access",
+      "invalidCode": "Invalid or expired code",
+      "INVALID_TOKEN": "The access link is invalid or has already been used.",
+      "failed_to_create_user": "Could not create the account.",
+      "new_user_signup_disabled": "Registration with this method is not available.",
+      "generic": "A problem occurred while completing authentication."
+    },
+    "errorPage": {
+      "title": "We couldn't complete sign in",
+      "description": "Review the message and try again."
+    },
+    "forgotPassword": {
+      "title": "Forgot your password?",
+      "description": "Enter your email and we'll send you a 6-digit code.",
+      "remembered": "Remembered your password?",
+      "submit": "Send code",
+      "codeSent": "We sent you a code to reset your password",
+      "sendFailed": "Could not send the code"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "descriptionWithEmail": "Enter the code sent to {email} and your new password.",
+      "descriptionWithoutEmail": "Enter your email, the code, and your new password.",
+      "hasAccount": "Already have an account?",
+      "submit": "Reset password",
+      "goHome": "Go to home",
+      "passwordMismatch": "Passwords do not match",
+      "resetFailed": "Could not reset the password",
+      "success": "Password updated successfully",
+      "newCodeSent": "We sent you a new code"
+    },
+    "verifyEmail": {
+      "title": "Verify your email",
+      "description": "Enter the 6-digit code we sent to your email.",
+      "alreadyVerified": "Already verified your account?",
+      "submit": "Verify email",
+      "verifying": "Verifying...",
+      "sendCode": "Send code",
+      "sendFailed": "Could not send the code",
+      "codeSent": "We sent you a verification code",
+      "success": "Email verified successfully"
+    }
+  },
+  "onboarding": {
+    "greeting": "Hi {name}.",
+    "stepProgress": "Step {current} of {total}",
+    "continue": "Continue",
+    "back": "Back",
+    "createRestaurant": "Create restaurant",
+    "success": "Your restaurant is ready!",
+    "steps": {
+      "1": {
+        "title": "Your business",
+        "description": "Tell us about your company to create your space in Bocao."
+      },
+      "2": {
+        "title": "Your venue",
+        "description": "Set up the first restaurant you'll operate."
+      },
+      "3": {
+        "title": "Your operations",
+        "description": "Choose where you want to start in the dashboard."
+      }
+    },
+    "fields": {
+      "organizationName": "Business name",
+      "organizationNamePlaceholder": "e.g. Bocao Group",
+      "country": "Country",
+      "countryPlaceholder": "Select a country",
+      "countryHint": "We use the country to suggest currency and timezone.",
+      "restaurantName": "Venue name",
+      "restaurantNamePlaceholder": "e.g. Bocao Downtown",
+      "city": "City (optional)",
+      "cityPlaceholder": "e.g. Santiago",
+      "phone": "Phone (optional)",
+      "phonePlaceholder": "+1 555 123 4567",
+      "currency": "Currency",
+      "currencyPlaceholder": "Currency",
+      "timezone": "Timezone",
+      "timezonePlaceholder": "Timezone",
+      "primaryGoal": "Initial product goal",
+      "primaryGoalHint": "We'll take you straight to the module you want to set up first.",
+      "businessType": "Business type (optional)",
+      "businessTypePlaceholder": "Select a type",
+      "serviceModes": "Service modes (optional)"
+    },
+    "primaryGoals": {
+      "ORDERS": {
+        "label": "Orders",
+        "description": "Manage dine-in, takeaway, and delivery orders"
+      },
+      "RESERVATIONS": {
+        "label": "Reservations",
+        "description": "Organize tables and reservation schedule"
+      },
+      "WHATSAPP": {
+        "label": "WhatsApp",
+        "description": "Serve customers and take orders via chat"
+      },
+      "MENU": {
+        "label": "Menu",
+        "description": "Digitize and manage your menu"
+      }
+    },
+    "businessTypes": {
+      "RESTAURANT": "Restaurant",
+      "BAR": "Bar",
+      "CAFE": "Café",
+      "DARK_KITCHEN": "Dark kitchen",
+      "OTHER": "Other"
+    },
+    "serviceModes": {
+      "DINE_IN": "Dine-in",
+      "TAKEOUT": "Takeaway",
+      "DELIVERY": "Delivery"
+    },
+    "validation": {
+      "minChars": "Enter at least 2 characters",
+      "maxChars80": "Maximum 80 characters",
+      "maxChars24": "Maximum 24 characters"
+    }
+  },
+  "dashboard": {
+    "greeting": "Good morning, {name}",
+    "greetingFallback": "team",
+    "summary": "Operational summary for {restaurant}",
+    "summaryFallback": "your restaurant",
+    "dateFormat": "EEEE, MMMM d"
+  },
+  "actions": {
+    "onboarding": {
+      "mustSignIn": "You must sign in to continue",
+      "alreadyCompleted": "Your account has already completed onboarding",
+      "invalidForm": "Please review the form data",
+      "createFailed": "We couldn't create your restaurant. Please try again."
+    },
+    "restaurant": {
+      "invalid": "Invalid restaurant",
+      "invalidSession": "Invalid session",
+      "noAccess": "You don't have access to this restaurant"
+    }
   }
 }

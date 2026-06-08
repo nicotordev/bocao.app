@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { AuthPageHeader } from "@/components/auth/auth-page-header";
@@ -16,16 +17,16 @@ import {
   type CountryCode,
 } from "@/lib/onboarding/countries";
 import {
-  BUSINESS_TYPE_OPTIONS,
-  PRIMARY_GOAL_OPTIONS,
-  SERVICE_MODE_OPTIONS,
+  BUSINESS_TYPE_VALUES,
+  PRIMARY_GOAL_VALUES,
+  SERVICE_MODE_VALUES,
   type PrimaryGoalValue,
   type ServiceModeValue,
 } from "@/lib/onboarding/labels";
 import {
-  onboardingStepOneSchema,
-  onboardingStepThreeSchema,
-  onboardingStepTwoSchema,
+  createOnboardingStepOneSchema,
+  createOnboardingStepThreeSchema,
+  createOnboardingStepTwoSchema,
   type OnboardingFormValues,
 } from "@/lib/onboarding/schema";
 import { cn } from "@/lib/utils";
@@ -46,23 +47,37 @@ import { Spinner } from "@/components/ui/spinner";
 const onboardingBackgroundImage =
   "/img/auth/pexels-thien-binh-451964862-17264367.webp";
 
-const STEPS = [
-  {
-    id: 1,
-    title: "Tu negocio",
-    description: "Cuéntanos sobre tu empresa para crear tu espacio en Bocao.",
-  },
-  {
-    id: 2,
-    title: "Tu local",
-    description: "Configura el primer restaurante que vas a operar.",
-  },
-  {
-    id: 3,
-    title: "Tu operación",
-    description: "Elige por dónde quieres empezar dentro del dashboard.",
-  },
-] as const;
+const STEP_IDS = [1, 2, 3] as const;
+
+type StepId = (typeof STEP_IDS)[number];
+
+function getStepTitle(
+  t: ReturnType<typeof useTranslations<"onboarding">>,
+  stepId: StepId,
+) {
+  switch (stepId) {
+    case 1:
+      return t("steps.1.title");
+    case 2:
+      return t("steps.2.title");
+    case 3:
+      return t("steps.3.title");
+  }
+}
+
+function getStepDescription(
+  t: ReturnType<typeof useTranslations<"onboarding">>,
+  stepId: StepId,
+) {
+  switch (stepId) {
+    case 1:
+      return t("steps.1.description");
+    case 2:
+      return t("steps.2.description");
+    case 3:
+      return t("steps.3.description");
+  }
+}
 
 type OnboardingWizardProps = {
   user: DashboardUser;
@@ -107,13 +122,35 @@ function FieldMessage({ message }: { message?: string }) {
 
 export function OnboardingWizard({ user }: OnboardingWizardProps) {
   const router = useRouter();
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
   const [step, setStep] = useState(1);
   const [values, setValues] = useState<OnboardingFormValues>(defaultValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentStep = STEPS[step - 1];
+  const validationMessages = useMemo(
+    () => ({
+      minChars: t("validation.minChars"),
+      maxChars80: t("validation.maxChars80"),
+      maxChars24: t("validation.maxChars24"),
+    }),
+    [t],
+  );
+
+  const stepOneSchema = useMemo(
+    () => createOnboardingStepOneSchema(validationMessages),
+    [validationMessages],
+  );
+  const stepTwoSchema = useMemo(
+    () => createOnboardingStepTwoSchema(validationMessages),
+    [validationMessages],
+  );
+  const stepThreeSchema = useMemo(
+    () => createOnboardingStepThreeSchema(validationMessages),
+    [validationMessages],
+  );
 
   const firstName = useMemo(
     () => user.name.split(" ").filter(Boolean)[0] ?? user.name,
@@ -137,7 +174,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
 
   const validateStep = (currentStepNumber: number): boolean => {
     if (currentStepNumber === 1) {
-      const result = onboardingStepOneSchema.safeParse(values);
+      const result = stepOneSchema.safeParse(values);
       if (!result.success) {
         setErrors(mapZodErrors(result.error.flatten().fieldErrors));
         return false;
@@ -146,7 +183,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     }
 
     if (currentStepNumber === 2) {
-      const result = onboardingStepTwoSchema.safeParse(values);
+      const result = stepTwoSchema.safeParse(values);
       if (!result.success) {
         setErrors(mapZodErrors(result.error.flatten().fieldErrors));
         return false;
@@ -154,7 +191,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       return true;
     }
 
-    const result = onboardingStepThreeSchema.safeParse(values);
+    const result = stepThreeSchema.safeParse(values);
     if (!result.success) {
       setErrors(mapZodErrors(result.error.flatten().fieldErrors));
       return false;
@@ -168,7 +205,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       return;
     }
 
-    setStep((current) => Math.min(current + 1, STEPS.length));
+    setStep((current) => Math.min(current + 1, STEP_IDS.length));
   };
 
   const handleBack = () => {
@@ -207,7 +244,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       return;
     }
 
-    toast.success("¡Tu restaurante está listo!");
+    toast.success(t("success"));
     router.push(result.redirectTo);
     router.refresh();
   };
@@ -215,40 +252,41 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   return (
     <AuthShell sideImage={onboardingBackgroundImage}>
       <AuthPageHeader
-        title={currentStep.title}
+        title={getStepTitle(t, step as StepId)}
         description={
           <>
-            Hola {firstName}. {currentStep.description}
+            {t("greeting", { name: firstName })}{" "}
+            {getStepDescription(t, step as StepId)}
           </>
         }
       />
 
       <div className="mt-8 space-y-5">
         <div className="grid grid-cols-3 gap-2">
-          {STEPS.map((item) => (
+          {STEP_IDS.map((item) => (
             <div
-              key={item.id}
+              key={item}
               className={cn(
                 "rounded-xl border px-2 py-2 text-center text-xs font-medium transition-colors",
-                step === item.id
+                step === item
                   ? "border-primary bg-primary text-primary-foreground"
-                  : step > item.id
+                  : step > item
                     ? "border-border bg-muted/40 text-foreground"
                     : "border-border bg-background text-muted-foreground",
               )}
             >
-              {item.title}
+              {getStepTitle(t, item)}
             </div>
           ))}
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Paso {step} de {STEPS.length}
+          {t("stepProgress", { current: step, total: STEP_IDS.length })}
         </p>
 
         {formError ? (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{tCommon("error")}</AlertTitle>
             <AlertDescription>{formError}</AlertDescription>
           </Alert>
         ) : null}
@@ -256,21 +294,23 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         {step === 1 ? (
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="organizationName">Nombre del negocio</Label>
+              <Label htmlFor="organizationName">
+                {t("fields.organizationName")}
+              </Label>
               <Input
                 id="organizationName"
                 value={values.organizationName}
                 onChange={(event) =>
                   updateValues({ organizationName: event.target.value })
                 }
-                placeholder="Ej. Grupo Bocao"
+                placeholder={t("fields.organizationNamePlaceholder")}
                 aria-invalid={!!errors.organizationName}
               />
               <FieldMessage message={errors.organizationName} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country">País</Label>
+              <Label htmlFor="country">{t("fields.country")}</Label>
               <Select
                 value={values.country}
                 onValueChange={(value) =>
@@ -278,7 +318,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
                 }
               >
                 <SelectTrigger id="country" className="w-full">
-                  <SelectValue placeholder="Selecciona un país" />
+                  <SelectValue placeholder={t("fields.countryPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {COUNTRY_OPTIONS.map((country) => (
@@ -289,7 +329,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Usamos el país para sugerir moneda y zona horaria.
+                {t("fields.countryHint")}
               </p>
               <FieldMessage message={errors.country} />
             </div>
@@ -299,48 +339,52 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         {step === 2 ? (
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="restaurantName">Nombre del local</Label>
+              <Label htmlFor="restaurantName">
+                {t("fields.restaurantName")}
+              </Label>
               <Input
                 id="restaurantName"
                 value={values.restaurantName}
                 onChange={(event) =>
                   updateValues({ restaurantName: event.target.value })
                 }
-                placeholder="Ej. Bocao Providencia"
+                placeholder={t("fields.restaurantNamePlaceholder")}
                 aria-invalid={!!errors.restaurantName}
               />
               <FieldMessage message={errors.restaurantName} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city">Ciudad (opcional)</Label>
+              <Label htmlFor="city">{t("fields.city")}</Label>
               <Input
                 id="city"
                 value={values.city ?? ""}
                 onChange={(event) => updateValues({ city: event.target.value })}
-                placeholder="Ej. Santiago"
+                placeholder={t("fields.cityPlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono (opcional)</Label>
+              <Label htmlFor="phone">{t("fields.phone")}</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={values.phone ?? ""}
-                onChange={(event) => updateValues({ phone: event.target.value })}
-                placeholder="+56 9 1234 5678"
+                onChange={(event) =>
+                  updateValues({ phone: event.target.value })
+                }
+                placeholder={t("fields.phonePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency">Moneda</Label>
+              <Label htmlFor="currency">{t("fields.currency")}</Label>
               <Select
                 value={values.currency}
                 onValueChange={(value) => updateValues({ currency: value })}
               >
                 <SelectTrigger id="currency" className="w-full">
-                  <SelectValue placeholder="Moneda" />
+                  <SelectValue placeholder={t("fields.currencyPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {CURRENCY_OPTIONS.map((currency) => (
@@ -354,13 +398,13 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="timezone">Zona horaria</Label>
+              <Label htmlFor="timezone">{t("fields.timezone")}</Label>
               <Select
                 value={values.timezone}
                 onValueChange={(value) => updateValues({ timezone: value })}
               >
                 <SelectTrigger id="timezone" className="w-full">
-                  <SelectValue placeholder="Zona horaria" />
+                  <SelectValue placeholder={t("fields.timezonePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {TIMEZONE_OPTIONS.map((timezone) => (
@@ -378,21 +422,21 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         {step === 3 ? (
           <div className="space-y-5">
             <div className="space-y-2">
-              <Label>Objetivo inicial del producto</Label>
+              <Label>{t("fields.primaryGoal")}</Label>
               <p className="text-xs text-muted-foreground">
-                Te llevaremos directo al módulo que quieres configurar primero.
+                {t("fields.primaryGoalHint")}
               </p>
               <div className="space-y-2">
-                {PRIMARY_GOAL_OPTIONS.map((option) => {
-                  const selected = values.primaryGoal === option.value;
+                {PRIMARY_GOAL_VALUES.map((value) => {
+                  const selected = values.primaryGoal === value;
 
                   return (
                     <button
-                      key={option.value}
+                      key={value}
                       type="button"
                       onClick={() =>
                         updateValues({
-                          primaryGoal: option.value as PrimaryGoalValue,
+                          primaryGoal: value as PrimaryGoalValue,
                         })
                       }
                       className={cn(
@@ -402,9 +446,11 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
                           : "border-border hover:bg-muted/40",
                       )}
                     >
-                      <p className="text-sm font-medium">{option.label}</p>
+                      <p className="text-sm font-medium">
+                        {t(`primaryGoals.${value}.label`)}
+                      </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {option.description}
+                        {t(`primaryGoals.${value}.description`)}
                       </p>
                     </button>
                   );
@@ -414,7 +460,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessType">Tipo de negocio (opcional)</Label>
+              <Label htmlFor="businessType">{t("fields.businessType")}</Label>
               <Select
                 value={values.businessType}
                 onValueChange={(value) =>
@@ -424,12 +470,14 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
                 }
               >
                 <SelectTrigger id="businessType" className="w-full">
-                  <SelectValue placeholder="Selecciona un tipo" />
+                  <SelectValue
+                    placeholder={t("fields.businessTypePlaceholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {BUSINESS_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {BUSINESS_TYPE_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {t(`businessTypes.${value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -437,23 +485,25 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Modalidades de servicio (opcional)</Label>
+              <Label>{t("fields.serviceModes")}</Label>
               <div className="space-y-2">
-                {SERVICE_MODE_OPTIONS.map((option) => {
-                  const checked = values.serviceModes.includes(option.value);
+                {SERVICE_MODE_VALUES.map((value) => {
+                  const checked = values.serviceModes.includes(value);
 
                   return (
                     <label
-                      key={option.value}
+                      key={value}
                       className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5"
                     >
                       <Checkbox
                         checked={checked}
-                        onCheckedChange={(value) =>
-                          toggleServiceMode(option.value, value === true)
+                        onCheckedChange={(checkedValue) =>
+                          toggleServiceMode(value, checkedValue === true)
                         }
                       />
-                      <span className="text-sm">{option.label}</span>
+                      <span className="text-sm">
+                        {t(`serviceModes.${value}`)}
+                      </span>
                     </label>
                   );
                 })}
@@ -463,14 +513,14 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
         ) : null}
 
         <div className="flex flex-col gap-3">
-          {step < STEPS.length ? (
+          {step < STEP_IDS.length ? (
             <Button
               type="button"
               onClick={handleNext}
               disabled={isSubmitting}
               className="w-full"
             >
-              Continuar
+              {t("continue")}
               <IconArrowRight className="size-4" aria-hidden />
             </Button>
           ) : (
@@ -483,7 +533,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
               className="w-full"
             >
               {isSubmitting ? <Spinner /> : null}
-              Crear restaurante
+              {t("createRestaurant")}
             </Button>
           )}
 
@@ -495,7 +545,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
             className="w-full"
           >
             <IconArrowLeft className="size-4" aria-hidden />
-            Atrás
+            {t("back")}
           </Button>
         </div>
       </div>

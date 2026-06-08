@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { appRoutes, authRoutes } from "@/lib/auth-routes";
@@ -21,8 +22,12 @@ interface ResetPasswordFormProps {
   initialEmail?: string;
 }
 
-export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps) {
+export function ResetPasswordForm({
+  initialEmail = "",
+}: ResetPasswordFormProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
@@ -59,12 +64,12 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
     setIsResending(false);
 
     if (result.error) {
-      toast.error(result.error.message ?? "No se pudo reenviar el código");
+      toast.error(result.error.message ?? t("errors.resendFailed"));
       return;
     }
 
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
-    toast.success("Te enviamos un nuevo código");
+    toast.success(t("resetPassword.newCodeSent"));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -72,7 +77,7 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      setError(t("resetPassword.passwordMismatch"));
       return;
     }
 
@@ -87,46 +92,46 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
     setIsSubmitting(false);
 
     if (result.error) {
-      setError(result.error.message ?? "No se pudo restablecer la contraseña");
+      setError(result.error.message ?? t("resetPassword.resetFailed"));
       return;
     }
 
-    toast.success("Contraseña actualizada correctamente");
+    toast.success(t("resetPassword.success"));
     router.push(authRoutes.signIn);
   }
 
   return (
     <AuthShell sideImage={sideImage}>
       <AuthPageHeader
-        title="Restablecer contraseña"
+        title={t("resetPassword.title")}
         description={
           email
-            ? `Ingresa el código enviado a ${email} y tu nueva contraseña.`
-            : "Ingresa tu email, el código y tu nueva contraseña."
+            ? t("resetPassword.descriptionWithEmail", { email })
+            : t("resetPassword.descriptionWithoutEmail")
         }
         footer={{
-          help: "¿Ya tienes cuenta?",
+          help: t("resetPassword.hasAccount"),
           href: authRoutes.signIn,
-          label: "Ingresar",
+          label: t("signIn"),
         }}
       />
 
       <div className="mt-8 space-y-5">
         {error ? (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{tCommon("error")}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="reset-password-email">Email</Label>
+            <Label htmlFor="reset-password-email">{tCommon("email")}</Label>
             <Input
               id="reset-password-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="tu@empresa.com"
+              placeholder={t("placeholders.email")}
               type="email"
               autoComplete="email"
               required
@@ -134,7 +139,7 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reset-password-code">Código</Label>
+            <Label htmlFor="reset-password-code">{t("code")}</Label>
             <OtpCodeInput
               id="reset-password-code"
               value={otp}
@@ -145,12 +150,12 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reset-password-new">Nueva contraseña</Label>
+            <Label htmlFor="reset-password-new">{t("newPassword")}</Label>
             <Input
               id="reset-password-new"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
+              placeholder={t("placeholders.password")}
               type="password"
               autoComplete="new-password"
               required
@@ -159,12 +164,14 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="reset-password-confirm">Confirmar contraseña</Label>
+            <Label htmlFor="reset-password-confirm">
+              {t("confirmPassword")}
+            </Label>
             <Input
               id="reset-password-confirm"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="••••••••"
+              placeholder={t("placeholders.password")}
               type="password"
               autoComplete="new-password"
               required
@@ -177,23 +184,25 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
             disabled={isSubmitting || otp.length !== 6}
             className="w-full"
           >
-            {isSubmitting ? "Guardando..." : "Restablecer contraseña"}
+            {isSubmitting ? tCommon("saving") : t("resetPassword.submit")}
           </Button>
 
           <Button
             variant="outline"
             type="button"
-            disabled={isSubmitting || isResending || resendCooldown > 0 || !email}
+            disabled={
+              isSubmitting || isResending || resendCooldown > 0 || !email
+            }
             onClick={() => {
               void requestResetCode();
             }}
             className="w-full"
           >
             {isResending
-              ? "Reenviando..."
+              ? tCommon("resending")
               : resendCooldown > 0
-                ? `Reenviar código (${resendCooldown}s)`
-                : "Reenviar código"}
+                ? t("emailOtp.resendCodeCooldown", { seconds: resendCooldown })
+                : t("emailOtp.resendCode")}
           </Button>
         </form>
 
@@ -202,7 +211,7 @@ export function ResetPasswordForm({ initialEmail = "" }: ResetPasswordFormProps)
             href={appRoutes.dashboard}
             className="font-medium text-primary hover:opacity-80"
           >
-            Ir al inicio
+            {t("resetPassword.goHome")}
           </Link>
         </p>
       </div>

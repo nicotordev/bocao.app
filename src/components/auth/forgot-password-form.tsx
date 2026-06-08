@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { authRoutes } from "@/lib/auth-routes";
@@ -17,6 +18,8 @@ const sideImage = "/img/auth/pexels-danielnouri-8253285.webp";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,11 +34,11 @@ export function ForgotPasswordForm() {
     setIsSubmitting(false);
 
     if (result.error) {
-      setError(result.error.message ?? "No se pudo enviar el código");
+      setError(result.error.message ?? t("forgotPassword.sendFailed"));
       return;
     }
 
-    toast.success("Te enviamos un código para restablecer tu contraseña");
+    toast.success(t("forgotPassword.codeSent"));
     router.push(
       `${authRoutes.resetPassword}?email=${encodeURIComponent(email)}`,
     );
@@ -44,31 +47,31 @@ export function ForgotPasswordForm() {
   return (
     <AuthShell sideImage={sideImage}>
       <AuthPageHeader
-        title="¿Olvidaste tu contraseña?"
-        description="Ingresa tu email y te enviaremos un código de 6 dígitos."
+        title={t("forgotPassword.title")}
+        description={t("forgotPassword.description")}
         footer={{
-          help: "¿Recordaste tu contraseña?",
+          help: t("forgotPassword.remembered"),
           href: authRoutes.signIn,
-          label: "Volver a ingresar",
+          label: t("backToSignIn"),
         }}
       />
 
       <div className="mt-8 space-y-5">
         {error ? (
           <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{tCommon("error")}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="forgot-password-email">Email</Label>
+            <Label htmlFor="forgot-password-email">{tCommon("email")}</Label>
             <Input
               id="forgot-password-email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="tu@empresa.com"
+              placeholder={t("placeholders.email")}
               type="email"
               autoComplete="email"
               required
@@ -76,7 +79,7 @@ export function ForgotPasswordForm() {
           </div>
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Enviando..." : "Enviar código"}
+            {isSubmitting ? tCommon("sending") : t("forgotPassword.submit")}
           </Button>
         </form>
 
@@ -85,7 +88,7 @@ export function ForgotPasswordForm() {
             href={authRoutes.signIn}
             className="font-medium text-primary hover:opacity-80"
           >
-            Cancelar
+            {tCommon("cancel")}
           </Link>
         </p>
       </div>

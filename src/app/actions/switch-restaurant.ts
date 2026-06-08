@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -17,16 +18,18 @@ export type SwitchRestaurantResult =
 export async function switchRestaurant(
   restaurantId: string,
 ): Promise<SwitchRestaurantResult> {
+  const t = await getTranslations("actions.restaurant");
+
   const parsed = switchRestaurantSchema.safeParse({ restaurantId });
 
   if (!parsed.success) {
-    return { success: false, error: "Restaurante inválido" };
+    return { success: false, error: t("invalid") };
   }
 
   const context = await getDashboardContext();
 
   if (!context) {
-    return { success: false, error: "Sesión no válida" };
+    return { success: false, error: t("invalidSession") };
   }
 
   const allowed = context.restaurants.some(
@@ -34,7 +37,7 @@ export async function switchRestaurant(
   );
 
   if (!allowed) {
-    return { success: false, error: "No tienes acceso a este restaurante" };
+    return { success: false, error: t("noAccess") };
   }
 
   const cookieStore = await cookies();

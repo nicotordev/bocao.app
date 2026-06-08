@@ -80,13 +80,18 @@ Priority order (implemented in `src/middleware/resolve-locale.ts`):
 2. **Accept-Language** — browser language header (e.g. `en-US` → `en`)
 3. **Default** — `es`
 
-`src/i18n/request.ts` reads the cookie and headers on each request, resolves the locale, and dynamically imports only the matching JSON file:
+`src/i18n/request.ts` reads the cookie and headers on each request, resolves the locale, and loads only the matching JSON file through a statically analyzable loader map:
 
 ```ts
-messages: (await import(`./messages/${locale}.json`)).default
+const messageLoaders = {
+  es: () => import("./messages/es.json"),
+  en: () => import("./messages/en.json"),
+};
+
+messages: (await messageLoaders[locale]()).default
 ```
 
-Only one language bundle is loaded per request, keeping the bundle small and SSR-friendly.
+Only one language bundle is loaded per request, keeping the bundle small and SSR-friendly. Avoid template-literal imports such as `import(\`./messages/${locale}.json\`)`: in Next.js 16.2 with Turbopack, that pattern can break HMR for translation file edits after the first update.
 
 ---
 
@@ -106,13 +111,31 @@ Example values: `locale=es`, `locale=en`.
 
 ## Provider
 
-`src/providers/intl-provider.tsx` wraps the app with `NextIntlClientProvider`, passing the resolved locale and messages from the server. It is used in the root layout so both Server and Client Components can access translations.
+`src/providers/intl-provider.tsx` is a **Client Component** that wraps the app with `NextIntlClientProvider`. The root layout (Server Component) resolves `locale` and `messages` on the server and passes them as serializable props — this ensures client hooks like `useTranslations()` receive the provider context correctly.
 
 ```tsx
-// src/app/layout.tsx
+// src/app/layout.tsx (Server Component)
+const locale = await getLocale();
+const messages = await getMessages();
+
 <body>
-  <IntlProvider>{children}</IntlProvider>
+  <IntlProvider locale={locale} messages={messages}>
+    {children}
+  </IntlProvider>
 </body>
+```
+
+```tsx
+// src/providers/intl-provider.tsx (Client Component)
+"use client";
+
+export function IntlProvider({ children, locale, messages }) {
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {children}
+    </NextIntlClientProvider>
+  );
+}
 ```
 
 ---
