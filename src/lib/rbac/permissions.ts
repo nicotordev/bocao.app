@@ -18,6 +18,10 @@ export const PERMISSIONS = {
   BILLING_READ: "billing:read",
   BILLING_MANAGE: "billing:manage",
   ANALYTICS_READ: "analytics:read",
+  CUSTOMERS_READ: "customers:read",
+  CUSTOMERS_WRITE: "customers:write",
+  MARKETING_READ: "marketing:read",
+  MARKETING_WRITE: "marketing:write",
   SETTINGS_READ: "settings:read",
   SETTINGS_WRITE: "settings:write",
 } as const;
@@ -134,6 +138,26 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
     description: "View analytics and reports",
   },
   {
+    key: PERMISSIONS.CUSTOMERS_READ,
+    module: "customers",
+    description: "View customer profiles and CRM data",
+  },
+  {
+    key: PERMISSIONS.CUSTOMERS_WRITE,
+    module: "customers",
+    description: "Create and edit customer profiles",
+  },
+  {
+    key: PERMISSIONS.MARKETING_READ,
+    module: "marketing",
+    description: "View AI marketing campaigns and content",
+  },
+  {
+    key: PERMISSIONS.MARKETING_WRITE,
+    module: "marketing",
+    description: "Create and manage AI marketing campaigns",
+  },
+  {
     key: PERMISSIONS.SETTINGS_READ,
     module: "settings",
     description: "View app settings",
@@ -186,6 +210,7 @@ export const SYSTEM_ROLE_DEFINITIONS: ReadonlyArray<{
       PERMISSIONS.RESERVATIONS_WRITE,
       PERMISSIONS.WHATSAPP_READ,
       PERMISSIONS.WHATSAPP_WRITE,
+      PERMISSIONS.CUSTOMERS_READ,
       PERMISSIONS.SETTINGS_READ,
     ],
   },

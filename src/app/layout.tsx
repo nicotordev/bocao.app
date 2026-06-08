@@ -33,9 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={cn(
-        "h-full",
+        "dark h-full",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
