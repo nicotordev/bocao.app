@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { AuthPageHeader } from "@/components/auth/auth-page-header";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { OnboardingLocalePicker } from "@/components/onboarding/onboarding-locale-picker";
 import { completeOnboarding } from "@/app/actions/complete-onboarding";
 import type { DashboardUser } from "@/lib/dashboard/types";
 import {
@@ -293,6 +294,14 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
 
         {step === 1 ? (
           <div className="space-y-5">
+            <div className="space-y-2">
+              <Label>{t("fields.language")}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t("fields.languageHint")}
+              </p>
+              <OnboardingLocalePicker disabled={isSubmitting} />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="organizationName">
                 {t("fields.organizationName")}

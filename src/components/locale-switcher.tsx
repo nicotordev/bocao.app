@@ -11,12 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type Locale, locales } from "@/i18n/locales";
-
-const localeLabels: Record<Locale, string> = {
-  es: "Español",
-  en: "English",
-};
+import { localeLabels } from "@/i18n/locale-labels";
+import { locales } from "@/i18n/locales";
 
 export function LocaleSwitcher() {
   const locale = useLocale();

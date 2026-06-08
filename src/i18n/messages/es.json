@@ -123,7 +123,7 @@
     "steps": {
       "1": {
         "title": "Tu negocio",
-        "description": "Cuéntanos sobre tu empresa para crear tu espacio en Bocao."
+        "description": "Elige tu idioma y cuéntanos sobre tu empresa para crear tu espacio en Bocao."
       },
       "2": {
         "title": "Tu local",
@@ -135,6 +135,8 @@
       }
     },
     "fields": {
+      "language": "Idioma",
+      "languageHint": "Usaremos este idioma en toda la aplicación. Puedes cambiarlo después.",
       "organizationName": "Nombre del negocio",
       "organizationNamePlaceholder": "Ej. Grupo Bocao",
       "country": "País",
