@@ -186,28 +186,29 @@ enum ReservationStatus {
 
 /// Restaurant (location) operating under an organization.
 model Restaurant {
-  id        String   @id @default(cuid())
-  name      String
-  city      String?
-  phone     String?
+  id           String        @id @default(cuid())
+  name         String
+  city         String?
+  phone        String?
   businessType BusinessType?
   primaryGoal  PrimaryGoal?
-  serviceModes OrderType[] @default([])
+  serviceModes OrderType[]   @default([])
   /// IANA timezone, e.g. America/Santiago
-  timezone  String   @default("America/Santiago")
+  timezone     String        @default("America/Santiago")
   /// ISO 4217, e.g. CLP, MXN, COP
-  currency  String   @default("CLP")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  currency     String        @default("CLP")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  customers     Customer[]
+  customers      Customer[]
   menuCategories MenuCategory[]
-  menuItems     MenuItem[]
-  orders        Order[]
-  reservations  Reservation[]
+  menuItems      MenuItem[]
+  orders         Order[]
+  reservations   Reservation[]
+  demoProfile    RestaurantDemoProfile?
 
   @@index([organizationId])
 }
@@ -222,8 +223,8 @@ model Customer {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orders       Order[]
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderLinks   OrderCustomer[]
   reservations Reservation[]
 
   @@index([restaurantId])
@@ -253,6 +254,8 @@ model MenuItem {
   name         String
   description  String?
   priceCents   Int
+  /// Public image URLs for this menu item
+  images       String[] @default([])
   isAvailable  Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -264,26 +267,59 @@ model MenuItem {
   @@index([categoryId])
 }
 
+model OrderCustomer {
+  orderId    String
+  customerId String
+  createdAt  DateTime @default(now())
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@id([orderId, customerId])
+  @@index([customerId])
+}
+
 model Order {
   id              String      @id @default(cuid())
   restaurantId    String
-  customerId      String?
   orderNumber     String
+  /// Table or station label for dine-in orders, e.g. "12"
+  tableNumber     String?
   status          OrderStatus @default(PENDING)
   type            OrderType   @default(DINE_IN)
+  /// UI channel key, e.g. whatsapp, web, dineIn
+  channel         String?
+  /// Staff member responsible for the order
+  assignedTo      String?
   totalCents      Int         @default(0)
   preparationMins Int?
   notes           String?
+  /// Rich UI payload: items, summary, timeline, history
+  details         Json?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  customer   Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customers  OrderCustomer[]
 
   @@unique([restaurantId, orderNumber])
   @@index([restaurantId])
   @@index([status])
   @@index([createdAt])
+}
+
+/// Demo-only dashboard extras seeded by `db:seed:demo` (insights, WhatsApp stats, team).
+model RestaurantDemoProfile {
+  restaurantId  String   @id
+  insights      Json     @default("[]")
+  orderInsights Json     @default("[]")
+  whatsapp      Json     @default("{}")
+  teamActivity  Json     @default("[]")
+  metricTrends  Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model Reservation {

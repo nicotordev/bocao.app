@@ -1,0 +1,354 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { createOrderBodySchema } from "@/lib/orders/schemas";
+import { useCreateOrderMutation } from "@/lib/query/orders/orders.mutations";
+import { Button } from "@/components/ui/button";
+import { NewOrderChannelSection } from "./new-order-channel-section";
+import { NewOrderCustomerSection } from "./new-order-customer-section";
+import { NewOrderItemsSection } from "./new-order-items-section";
+import { NewOrderNotesSection } from "./new-order-notes-section";
+import { NewOrderSummaryCard } from "./new-order-summary-card";
+import type {
+  NewOrderFormValues,
+  NewOrderLabels,
+  NewOrderLineItem,
+  NewOrderPageClientProps,
+  NewOrderSelectedCustomer,
+} from "./types";
+
+type FormErrors = {
+  customers?: string;
+  tableNumber?: string;
+  draftCustomerName?: string;
+  items?: string;
+};
+
+function createLineItemId() {
+  return crypto.randomUUID();
+}
+
+function createCustomerKey() {
+  return crypto.randomUUID();
+}
+
+
+
+type NewOrderFormProps = Pick<
+  NewOrderPageClientProps,
+  "labels" | "restaurantId" | "currency" | "menuItems" | "customers"
+>;
+
+export function NewOrderForm({
+  labels,
+  restaurantId,
+  currency,
+  menuItems,
+  customers,
+}: NewOrderFormProps) {
+  const router = useRouter();
+  const createOrderMutation = useCreateOrderMutation(restaurantId);
+  const [values, setValues] = useState<NewOrderFormValues>({
+    selectedCustomers: [],
+    draftCustomerName: "",
+    draftCustomerPhone: "",
+    tableNumber: "",
+    channel: "dineIn",
+    notes: "",
+    items: [],
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const isSubmitting = createOrderMutation.isPending;
+
+  const payload = useMemo(
+    () => ({
+      customers: values.selectedCustomers.map((customer) => ({
+        id: customer.id,
+        name: customer.name.trim(),
+        phone: customer.phone.trim() || undefined,
+      })),
+      tableNumber:
+        values.channel === "dineIn"
+          ? values.tableNumber.trim() || undefined
+          : undefined,
+      channel: values.channel,
+      notes: values.notes.trim() || undefined,
+      items: values.items.map((item) => ({
+        menuItemId: item.menuItemId,
+        name: item.name.trim(),
+        quantity: item.quantity,
+        priceCents: item.priceCents,
+        imageUrls: item.imageUrls.length ? item.imageUrls : undefined,
+      })),
+    }),
+    [values],
+  );
+
+  function updateField<K extends keyof NewOrderFormValues>(
+    field: K,
+    value: NewOrderFormValues[K],
+  ) {
+    setValues((current) => ({ ...current, [field]: value }));
+
+    if (field === "items") {
+      setErrors((current) => ({ ...current, items: undefined }));
+    }
+
+    if (field === "tableNumber") {
+      setErrors((current) => ({ ...current, tableNumber: undefined }));
+    }
+
+    if (field === "selectedCustomers") {
+      setErrors((current) => ({ ...current, customers: undefined }));
+    }
+  }
+
+  function syncExistingCustomers(
+    nextExisting: NewOrderPageClientProps["customers"],
+  ) {
+    setValues((current) => {
+      const preservedNewCustomers = current.selectedCustomers.filter(
+        (customer) => customer.source === "new",
+      );
+      const nextExistingCustomers: NewOrderSelectedCustomer[] =
+        nextExisting.map((customer) => ({
+          key: customer.id,
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone ?? "",
+          source: "existing",
+        }));
+
+      return {
+        ...current,
+        selectedCustomers: [...nextExistingCustomers, ...preservedNewCustomers],
+      };
+    });
+    setErrors((current) => ({ ...current, customers: undefined }));
+  }
+
+  function removeCustomer(key: string) {
+    setValues((current) => ({
+      ...current,
+      selectedCustomers: current.selectedCustomers.filter(
+        (customer) => customer.key !== key,
+      ),
+    }));
+  }
+
+  function addDraftCustomer() {
+    const name = values.draftCustomerName.trim();
+
+    if (!name) {
+      setErrors((current) => ({
+        ...current,
+        draftCustomerName: labels.validation.draftCustomerName,
+      }));
+      return;
+    }
+
+    setValues((current) => ({
+      ...current,
+      selectedCustomers: [
+        ...current.selectedCustomers,
+        {
+          key: createCustomerKey(),
+          name,
+          phone: current.draftCustomerPhone.trim(),
+          source: "new",
+        },
+      ],
+      draftCustomerName: "",
+      draftCustomerPhone: "",
+    }));
+    setErrors((current) => ({
+      ...current,
+      draftCustomerName: undefined,
+      customers: undefined,
+    }));
+  }
+
+  function addMenuItem(menuItem: NewOrderPageClientProps["menuItems"][number]) {
+    setValues((current) => {
+      const existing = current.items.find(
+        (item) => item.menuItemId === menuItem.id,
+      );
+
+      if (existing) {
+        return {
+          ...current,
+          items: current.items.map((item) =>
+            item.id === existing.id
+              ? { ...item, quantity: Math.min(99, item.quantity + 1) }
+              : item,
+          ),
+        };
+      }
+
+      return {
+        ...current,
+        items: [
+          ...current.items,
+          {
+            id: createLineItemId(),
+            menuItemId: menuItem.id,
+            name: menuItem.name,
+            quantity: 1,
+            priceCents: menuItem.priceCents,
+            imageUrls: [...menuItem.images],
+          },
+        ],
+      };
+    });
+    setErrors((current) => ({ ...current, items: undefined }));
+  }
+
+  function addCustomItem(name: string, priceCents: number, quantity: number) {
+    setValues((current) => ({
+      ...current,
+      items: [
+        ...current.items,
+        {
+          id: createLineItemId(),
+          name,
+          quantity,
+          priceCents,
+          imageUrls: [],
+        },
+      ],
+    }));
+    setErrors((current) => ({ ...current, items: undefined }));
+  }
+
+  function removeItem(id: string) {
+    setValues((current) => ({
+      ...current,
+      items: current.items.filter((item) => item.id !== id),
+    }));
+  }
+
+  function updateItem(
+    id: string,
+    updater: (item: NewOrderLineItem) => NewOrderLineItem,
+  ) {
+    setValues((current) => ({
+      ...current,
+      items: current.items.map((item) =>
+        item.id === id ? updater(item) : item,
+      ),
+    }));
+  }
+
+  function validateForm(): boolean {
+    const parsed = createOrderBodySchema.safeParse(payload);
+    const nextErrors: FormErrors = {};
+
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+
+        if (field === "customers" && !nextErrors.customers) {
+          nextErrors.customers = labels.validation.customers;
+        }
+
+        if (field === "tableNumber" && !nextErrors.tableNumber) {
+          nextErrors.tableNumber = labels.validation.tableNumber;
+        }
+
+        if (field === "items" && !nextErrors.items) {
+          nextErrors.items = labels.validation.items;
+        }
+      }
+    }
+
+    const hasInvalidCustomItem = values.items.some(
+      (item) => !item.menuItemId && item.name.trim().length === 0,
+    );
+
+    if (hasInvalidCustomItem) {
+      nextErrors.items = labels.validation.itemName;
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0 && parsed.success;
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await createOrderMutation.mutateAsync(payload);
+      toast.success(labels.feedback.success);
+      router.push(`/dashboard/orders?created=${encodeURIComponent(response.order.id)}`);
+    } catch {
+      toast.error(labels.feedback.error);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="space-y-6">
+        <NewOrderChannelSection
+          labels={labels}
+          value={values.channel}
+          onChange={(channel) => updateField("channel", channel)}
+        />
+        <NewOrderCustomerSection
+          labels={labels}
+          customers={customers}
+          channel={values.channel}
+          values={{
+            selectedCustomers: values.selectedCustomers,
+            draftCustomerName: values.draftCustomerName,
+            draftCustomerPhone: values.draftCustomerPhone,
+            tableNumber: values.tableNumber,
+          }}
+          errors={errors}
+          onAddExistingCustomers={syncExistingCustomers}
+          onRemoveCustomer={removeCustomer}
+          onDraftChange={(field, value) => updateField(field, value)}
+          onAddDraftCustomer={addDraftCustomer}
+          onTableNumberChange={(tableNumber) =>
+            updateField("tableNumber", tableNumber)
+          }
+        />
+        <NewOrderItemsSection
+          labels={labels}
+          currency={currency}
+          menuItems={menuItems}
+          items={values.items}
+          error={errors.items}
+          onAddFromMenu={addMenuItem}
+          onAddCustom={addCustomItem}
+          onRemove={removeItem}
+          onUpdateQuantity={(id, quantity) =>
+            updateItem(id, (item) => ({ ...item, quantity }))
+          }
+        />
+        <NewOrderNotesSection
+          labels={labels}
+          value={values.notes}
+          onChange={(notes) => updateField("notes", notes)}
+        />
+        <div className="flex justify-end">
+          <Button type="submit" className="min-w-40" disabled={isSubmitting}>
+            {isSubmitting ? labels.actions.submitting : labels.actions.submit}
+          </Button>
+        </div>
+      </div>
+
+      <NewOrderSummaryCard
+        labels={labels}
+        currency={currency}
+        items={values.items}
+      />
+    </form>
+  );
+}

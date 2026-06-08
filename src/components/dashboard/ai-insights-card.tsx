@@ -1,4 +1,4 @@
-import { IconSparkles } from "@tabler/icons-react";
+import { TbSparkles } from "react-icons/tb";
 import type { DashboardInsight } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ export function AiInsightsCard({ insights }: AiInsightsCardProps) {
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
-            <IconSparkles className="size-4" aria-hidden />
+            <TbSparkles className="size-4" aria-hidden />
           </span>
           <div>
             <CardTitle>Insights IA</CardTitle>
@@ -71,3 +71,4 @@ export function AiInsightsCard({ insights }: AiInsightsCardProps) {
     </Card>
   );
 }
+

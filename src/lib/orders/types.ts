@@ -12,6 +12,7 @@ export type OrderItem = {
   name: string;
   quantity: number;
   price: string;
+  imageUrls?: string[];
 };
 
 export type OrderTimelineEvent = {
@@ -23,10 +24,13 @@ export type OrderTimelineEvent = {
 export type Order = {
   id: string;
   customerName: string;
+  customerNames: string[];
   phone: string;
+  tableNumber?: string;
   channel: OrderChannel;
   status: OrderStatus;
   total: string;
+  totalCents?: number;
   createdAt: string;
   waitMinutes: number;
   owner: string;
@@ -48,6 +52,7 @@ export type OrdersListResponse = {
   orders: Order[];
   restaurantId: string;
   updatedAt: string;
+  insights?: string[];
 };
 
 export type UpdateOrderStatusInput = {
@@ -55,5 +60,31 @@ export type UpdateOrderStatusInput = {
 };
 
 export type UpdateOrderStatusResponse = {
+  order: Order;
+};
+
+export type CreateOrderLineItemInput = {
+  menuItemId?: string;
+  name: string;
+  quantity: number;
+  priceCents: number;
+  imageUrls?: string[];
+};
+
+export type CreateOrderCustomerInput = {
+  id?: string;
+  name: string;
+  phone?: string;
+};
+
+export type CreateOrderInput = {
+  customers: CreateOrderCustomerInput[];
+  tableNumber?: string;
+  channel: OrderChannel;
+  notes?: string;
+  items: CreateOrderLineItemInput[];
+};
+
+export type CreateOrderResponse = {
   order: Order;
 };

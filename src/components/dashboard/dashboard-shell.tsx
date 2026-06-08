@@ -17,6 +17,7 @@ export function DashboardShell({ context, children }: DashboardShellProps) {
   return (
     <SidebarProvider defaultOpen>
       <AppSidebar
+        user={context.user}
         navigation={context.navigation}
         organization={context.organization}
         restaurants={context.restaurants}

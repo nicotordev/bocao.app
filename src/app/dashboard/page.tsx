@@ -8,16 +8,25 @@ import { TeamActivityCard } from "@/components/dashboard/team-activity-card";
 import { UpcomingReservationsList } from "@/components/dashboard/upcoming-reservations-list";
 import { WhatsappStatusCard } from "@/components/dashboard/whatsapp-status-card";
 import { getDashboardContext } from "@/lib/dashboard/context";
-import { getDashboardHomeData } from "@/lib/dashboard/data";
+import { getDashboardHomeData } from "@/lib/dashboard/queries";
 import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
+  const tMetrics = await getTranslations("dashboard.metrics");
   const locale = await getLocale();
   const dateFnsLocale = locale === "es" ? es : enUS;
 
   const context = await getDashboardContext();
-  const data = getDashboardHomeData(context?.activeRestaurant ?? null);
+  const data = await getDashboardHomeData(context?.activeRestaurant ?? null, {
+    locale,
+    metricLabels: {
+      revenueToday: tMetrics("revenueToday"),
+      openOrders: tMetrics("openOrders"),
+      upcomingReservations: tMetrics("upcomingReservations"),
+      avgPrepTime: tMetrics("avgPrepTime"),
+    },
+  });
 
   const todayLabel = format(new Date(), t("dateFormat"), {
     locale: dateFnsLocale,

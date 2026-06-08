@@ -1,40 +1,110 @@
+import { computeOrderTotals } from "@/lib/orders/compute-order-totals";
+import { formatCurrency } from "@/lib/orders/currency";
 import {
   applyOrdersListFilters,
   type OrdersListFilters,
 } from "@/lib/orders/filters";
-import { seedOrders } from "@/lib/orders/seed-data";
+import { generateOrderNumber } from "@/lib/orders/generate-order-number";
+import { orderCustomerInclude } from "@/lib/orders/order-customers";
+import { mapDbOrderToUi, mapUiStatusToDb } from "@/lib/orders/order-mapper";
 import type {
+  CreateOrderCustomerInput,
+  CreateOrderInput,
   Order,
   OrderStatus,
   OrdersListResponse,
 } from "@/lib/orders/types";
+import { prisma } from "@/lib/prisma";
 
-const ordersByRestaurant = new Map<string, Order[]>();
-
-function cloneOrders(orders: Order[]): Order[] {
-  return structuredClone(orders);
+async function getRestaurantContext(restaurantId: string) {
+  return prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: {
+      currency: true,
+      timezone: true,
+      demoProfile: {
+        select: { orderInsights: true },
+      },
+    },
+  });
 }
 
-function getRestaurantOrders(restaurantId: string): Order[] {
-  const existing = ordersByRestaurant.get(restaurantId);
+async function resolveOrderCustomers(
+  restaurantId: string,
+  customers: CreateOrderCustomerInput[],
+) {
+  const resolved = [];
 
-  if (existing) {
-    return existing;
+  for (const customerInput of customers) {
+    if (customerInput.id) {
+      const existing = await prisma.customer.findFirst({
+        where: {
+          id: customerInput.id,
+          restaurantId,
+        },
+      });
+
+      if (!existing) {
+        throw new Error("Customer not found");
+      }
+
+      const nextPhone = customerInput.phone?.trim() || null;
+
+      if (nextPhone && nextPhone !== existing.phone) {
+        resolved.push(
+          await prisma.customer.update({
+            where: { id: existing.id },
+            data: { phone: nextPhone },
+          }),
+        );
+      } else {
+        resolved.push(existing);
+      }
+
+      continue;
+    }
+
+    resolved.push(
+      await prisma.customer.create({
+        data: {
+          restaurantId,
+          name: customerInput.name.trim(),
+          phone: customerInput.phone?.trim() || null,
+        },
+      }),
+    );
   }
 
-  const seeded = cloneOrders(seedOrders);
-  ordersByRestaurant.set(restaurantId, seeded);
-  return seeded;
+  return resolved;
 }
 
 export async function listOrders(
   restaurantId: string,
   filters?: OrdersListFilters,
 ): Promise<OrdersListResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 120));
+  const restaurant = await getRestaurantContext(restaurantId);
+
+  if (!restaurant) {
+    return {
+      orders: [],
+      restaurantId,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  const dbOrders = await prisma.order.findMany({
+    where: { restaurantId },
+    include: orderCustomerInclude,
+    orderBy: { createdAt: "desc" },
+  });
 
   const orders = applyOrdersListFilters(
-    getRestaurantOrders(restaurantId),
+    dbOrders.map((order) =>
+      mapDbOrderToUi(order, {
+        currency: restaurant.currency,
+        timezone: restaurant.timezone,
+      }),
+    ),
     filters,
   );
 
@@ -42,6 +112,9 @@ export async function listOrders(
     orders,
     restaurantId,
     updatedAt: new Date().toISOString(),
+    insights: Array.isArray(restaurant.demoProfile?.orderInsights)
+      ? (restaurant.demoProfile.orderInsights as string[])
+      : [],
   };
 }
 
@@ -49,8 +122,30 @@ export async function getOrder(
   restaurantId: string,
   orderId: string,
 ): Promise<Order | null> {
-  const orders = getRestaurantOrders(restaurantId);
-  return orders.find((order) => order.id === orderId) ?? null;
+  const restaurant = await getRestaurantContext(restaurantId);
+
+  if (!restaurant) {
+    return null;
+  }
+
+  const order = await prisma.order.findUnique({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    include: orderCustomerInclude,
+  });
+
+  if (!order) {
+    return null;
+  }
+
+  return mapDbOrderToUi(order, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+  });
 }
 
 export async function updateOrderStatus(
@@ -58,20 +153,90 @@ export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus,
 ): Promise<Order> {
-  await new Promise((resolve) => setTimeout(resolve, 180));
+  const restaurant = await getRestaurantContext(restaurantId);
 
-  const orders = getRestaurantOrders(restaurantId);
-  const index = orders.findIndex((order) => order.id === orderId);
-
-  if (index === -1) {
-    throw new Error("Order not found");
+  if (!restaurant) {
+    throw new Error("Restaurant not found");
   }
 
-  const updated: Order = {
-    ...orders[index],
-    status,
+  const order = await prisma.order.update({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    data: {
+      status: mapUiStatusToDb(status),
+    },
+    include: orderCustomerInclude,
+  });
+
+  return mapDbOrderToUi(order, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+  });
+}
+
+export async function createOrder(
+  restaurantId: string,
+  input: CreateOrderInput,
+  assignedTo: string,
+): Promise<Order> {
+  const restaurant = await getRestaurantContext(restaurantId);
+
+  if (!restaurant) {
+    throw new Error("Restaurant not found");
+  }
+
+  const totals = computeOrderTotals(input.items);
+  const orderNumber = await generateOrderNumber(restaurantId);
+  const currency = restaurant.currency;
+  const linkedCustomers = await resolveOrderCustomers(
+    restaurantId,
+    input.customers,
+  );
+
+  const items = input.items.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    price: formatCurrency(item.priceCents, currency),
+    ...(item.imageUrls?.length ? { imageUrls: item.imageUrls } : {}),
+  }));
+
+  const summary = {
+    subtotal: formatCurrency(totals.subtotalCents, currency),
+    taxes: formatCurrency(totals.taxCents, currency),
+    total: formatCurrency(totals.totalCents, currency),
   };
 
-  orders[index] = updated;
-  return updated;
+  const order = await prisma.order.create({
+    data: {
+      restaurantId,
+      orderNumber,
+      tableNumber: input.tableNumber?.trim() || null,
+      status: "PENDING",
+      channel: input.channel,
+      assignedTo,
+      totalCents: totals.totalCents,
+      notes: input.notes?.trim() || null,
+      details: {
+        history: "Pedido manual",
+        items,
+        summary,
+        timeline: [{ time: "Ahora", titleKey: "eventReceived" }],
+      },
+      customers: {
+        create: linkedCustomers.map((customer) => ({
+          customerId: customer.id,
+        })),
+      },
+    },
+    include: orderCustomerInclude,
+  });
+
+  return mapDbOrderToUi(order, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+  });
 }

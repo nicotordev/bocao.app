@@ -18,6 +18,7 @@ export function createKanbanGuidePhantomOrder(
   return {
     id: KANBAN_GUIDE_PHANTOM_ORDER_ID,
     customerName: labels.customerName,
+    customerNames: [],
     phone: "",
     channel: "web",
     status: "received",

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Copy, Edit3, Eye, MoreHorizontal, Printer, RefreshCcw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -187,7 +188,9 @@ export function OrdersEmptyState({ labels }: { labels: OrdersLabels }) {
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         {labels.empty.description}
       </p>
-      <Button className="mt-5">{labels.empty.cta}</Button>
+      <Button className="mt-5" asChild>
+        <Link href="/dashboard/orders/new">{labels.empty.cta}</Link>
+      </Button>
     </div>
   );
 }

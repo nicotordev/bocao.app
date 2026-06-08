@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { QueryResultState } from "@/components/query/query-result-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
 import { applyOrdersListFilters } from "@/lib/orders/filters";
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
 import { useOrdersListQuery } from "@/lib/query/orders/orders.queries";
@@ -43,20 +44,17 @@ export function OrdersPageClient({
   const ordersQuery = useOrdersListQuery(restaurantId);
   const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
 
-  const filteredOrders = useMemo(() => {
-    const orders = ordersQuery.data?.orders ?? [];
+  const allOrders = ordersQuery.data?.orders ?? [];
 
-    return applyOrdersListFilters(orders, {
+  const filteredOrders = useMemo(() => {
+    return applyOrdersListFilters(allOrders, {
       search: filters.search,
       status: filters.status,
       channel: filters.channel,
     });
-  }, [
-    filters.channel,
-    filters.search,
-    filters.status,
-    ordersQuery.data?.orders,
-  ]);
+  }, [allOrders, filters.channel, filters.search, filters.status]);
+
+  const kpiValues = useMemo(() => computeOrdersKpis(allOrders), [allOrders]);
 
   const clearFilters = () =>
     setFilters((current) => ({
@@ -77,8 +75,11 @@ export function OrdersPageClient({
         }}
         isRefreshing={ordersQuery.isFetching && !ordersQuery.isPending}
       />
-      <OrdersKpis labels={labels.kpis} />
-      <AiOrderInsights labels={labels.insights} />
+      <OrdersKpis labels={labels.kpis} values={kpiValues} />
+      <AiOrderInsights
+        labels={labels.insights}
+        items={ordersQuery.data?.insights}
+      />
 
       <QueryResultState query={ordersQuery}>
         {() => (

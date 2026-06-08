@@ -1,5 +1,7 @@
 import type { OrdersListFilters } from "@/lib/orders/filters";
 import type {
+  CreateOrderInput,
+  CreateOrderResponse,
   Order,
   OrdersListResponse,
   OrderStatus,
@@ -56,6 +58,19 @@ export async function patchOrderStatus(
     {
       method: "PATCH",
       body: { status },
+    },
+  );
+}
+
+export async function postOrder(
+  restaurantId: string,
+  input: CreateOrderInput,
+): Promise<CreateOrderResponse> {
+  return apiRequest<CreateOrderResponse>(
+    `/api/restaurants/${restaurantId}/orders`,
+    {
+      method: "POST",
+      body: input,
     },
   );
 }

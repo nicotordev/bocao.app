@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Download, Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { OrdersLabels } from "./types";
@@ -24,9 +25,11 @@ export function OrdersHeader({
         </p>
       </div>
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3 lg:flex">
-        <Button className="gap-2">
-          <Plus className="size-4" aria-hidden />
-          {labels.actions.newOrder}
+        <Button className="gap-2" asChild>
+          <Link href="/dashboard/orders/new">
+            <Plus className="size-4" aria-hidden />
+            {labels.actions.newOrder}
+          </Link>
         </Button>
         <Button variant="secondary" className="gap-2">
           <Download className="size-4" aria-hidden />

@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { OrderStatus, OrdersListResponse } from "@/lib/orders/types";
-import { patchOrderStatus } from "@/lib/query/orders/orders.api";
+import type {
+  CreateOrderInput,
+  OrderStatus,
+  OrdersListResponse,
+} from "@/lib/orders/types";
+import { patchOrderStatus, postOrder } from "@/lib/query/orders/orders.api";
 import { queryKeys } from "@/lib/query/query-keys";
 
 type UpdateOrderStatusVariables = {
@@ -50,6 +54,17 @@ export function useUpdateOrderStatusMutation(restaurantId: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.orders.detail(restaurantId, variables.orderId),
       });
+    },
+  });
+}
+
+export function useCreateOrderMutation(restaurantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateOrderInput) => postOrder(restaurantId, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
     },
   });
 }

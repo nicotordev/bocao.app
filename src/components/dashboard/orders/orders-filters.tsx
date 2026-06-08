@@ -1,7 +1,6 @@
 "use client";
 
-import { IconChevronDown, IconFilter } from "@tabler/icons-react";
-import { X } from "lucide-react";
+import { TbChevronDown, TbFilter, TbX } from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,7 +110,7 @@ export function OrdersFilters({
               className="h-10 w-full gap-2 rounded-2xl px-4 sm:w-auto"
               aria-label={labels.filters.menu}
             >
-              <IconFilter className="size-4" aria-hidden />
+              <TbFilter className="size-4" aria-hidden />
               {labels.filters.menu}
               {activeCount > 0 ? (
                 <Badge
@@ -121,7 +120,7 @@ export function OrdersFilters({
                   {activeCount}
                 </Badge>
               ) : null}
-              <IconChevronDown className="size-3.5 opacity-60" aria-hidden />
+              <TbChevronDown className="size-3.5 opacity-60" aria-hidden />
             </Button>
           </PopoverTrigger>
 
@@ -256,7 +255,7 @@ export function OrdersFilters({
                 onClick={onClear}
                 disabled={activeCount === 0}
               >
-                <X className="size-4" aria-hidden />
+                <TbX className="size-4" aria-hidden />
                 {labels.actions.clearFilters}
               </Button>
             </div>

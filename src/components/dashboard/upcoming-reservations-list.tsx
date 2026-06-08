@@ -1,4 +1,4 @@
-import { IconUsers } from "@tabler/icons-react";
+import { TbUsers } from "react-icons/tb";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,7 +40,7 @@ export function UpcomingReservationsList({
                   {reservation.guestName}
                 </p>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <IconUsers className="size-3.5" aria-hidden />
+                  <TbUsers className="size-3.5" aria-hidden />
                   {reservation.guestCount} personas
                 </p>
               </div>
@@ -59,3 +59,4 @@ export function UpcomingReservationsList({
     </Card>
   );
 }
+

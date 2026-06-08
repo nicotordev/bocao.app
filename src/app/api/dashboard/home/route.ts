@@ -1,6 +1,7 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getDashboardHomeData } from "@/lib/dashboard/data";
+import { getDashboardHomeData } from "@/lib/dashboard/queries";
 import { requireRestaurantAccess } from "@/lib/orders/api-auth";
 
 const querySchema = z.object({
@@ -34,8 +35,20 @@ export async function GET(request: Request) {
       (item) => item.id === parsed.data.restaurantId,
     ) ?? null;
 
+  const locale = await getLocale();
+  const tMetrics = await getTranslations("dashboard.metrics");
+  const data = await getDashboardHomeData(restaurant, {
+    locale,
+    metricLabels: {
+      revenueToday: tMetrics("revenueToday"),
+      openOrders: tMetrics("openOrders"),
+      upcomingReservations: tMetrics("upcomingReservations"),
+      avgPrepTime: tMetrics("avgPrepTime"),
+    },
+  });
+
   return NextResponse.json({
-    data: getDashboardHomeData(restaurant),
+    data,
     restaurantId: parsed.data.restaurantId,
     updatedAt: new Date().toISOString(),
   });

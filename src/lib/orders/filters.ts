@@ -17,6 +17,8 @@ export function applyOrdersListFilters(
       search.length === 0 ||
       order.id.toLowerCase().includes(search) ||
       order.customerName.toLowerCase().includes(search) ||
+      order.customerNames.some((name) => name.toLowerCase().includes(search)) ||
+      (order.tableNumber?.toLowerCase().includes(search) ?? false) ||
       order.phone.toLowerCase().includes(search);
     const matchesStatus =
       !filters?.status ||

@@ -14,11 +14,14 @@ export type NavItemId =
   | "team"
   | "settings";
 
+export type NavItemGroup = "inicio" | "operaciones" | "clientes" | "administracion";
+
 export type NavItem = {
   id: NavItemId;
   label: string;
   href: string;
   icon: NavItemId;
+  group: NavItemGroup;
   permission: PermissionKey | null;
   allowedRoles?: readonly SystemRoleSlug[];
 };
@@ -29,6 +32,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: "dashboard",
+    group: "inicio",
     permission: null,
   },
   {
@@ -36,6 +40,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Pedidos",
     href: "/dashboard/orders",
     icon: "orders",
+    group: "operaciones",
     permission: PERMISSIONS.ORDERS_READ,
   },
   {
@@ -43,6 +48,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Reservas",
     href: "/dashboard/reservations",
     icon: "reservations",
+    group: "operaciones",
     permission: PERMISSIONS.RESERVATIONS_READ,
   },
   {
@@ -50,6 +56,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "WhatsApp Inbox",
     href: "/dashboard/whatsapp",
     icon: "whatsapp",
+    group: "clientes",
     permission: PERMISSIONS.WHATSAPP_READ,
   },
   {
@@ -57,6 +64,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Menú",
     href: "/dashboard/menu",
     icon: "menu",
+    group: "operaciones",
     permission: PERMISSIONS.MENU_READ,
   },
   {
@@ -64,6 +72,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Cocina",
     href: "/dashboard/kitchen",
     icon: "kitchen",
+    group: "operaciones",
     permission: PERMISSIONS.ORDERS_READ,
     allowedRoles: ["owner", "manager", "staff"],
   },
@@ -72,6 +81,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Clientes / CRM",
     href: "/dashboard/customers",
     icon: "customers",
+    group: "clientes",
     permission: PERMISSIONS.CUSTOMERS_READ,
   },
   {
@@ -79,6 +89,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Marketing IA",
     href: "/dashboard/marketing",
     icon: "marketing",
+    group: "clientes",
     permission: PERMISSIONS.MARKETING_READ,
   },
   {
@@ -86,6 +97,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Analítica",
     href: "/dashboard/analytics",
     icon: "analytics",
+    group: "administracion",
     permission: PERMISSIONS.ANALYTICS_READ,
   },
   {
@@ -93,6 +105,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Equipo",
     href: "/dashboard/team",
     icon: "team",
+    group: "administracion",
     permission: PERMISSIONS.STAFF_READ,
   },
   {
@@ -100,6 +113,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Configuración",
     href: "/dashboard/settings",
     icon: "settings",
+    group: "administracion",
     permission: PERMISSIONS.SETTINGS_READ,
   },
 ] as const;
@@ -122,3 +136,4 @@ export function getVisibleNavItems(
     return permissionSet.has(item.permission);
   });
 }
+

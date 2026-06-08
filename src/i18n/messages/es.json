@@ -207,6 +207,12 @@
     "summary": "Resumen operativo de {restaurant}",
     "summaryFallback": "tu restaurante",
     "dateFormat": "EEEE d 'de' MMMM",
+    "metrics": {
+      "revenueToday": "Ingresos de hoy",
+      "openOrders": "Pedidos abiertos",
+      "upcomingReservations": "Reservas próximas",
+      "avgPrepTime": "Tiempo promedio de preparación"
+    },
     "orders": {
       "header": {
         "title": "Pedidos",
@@ -338,6 +344,140 @@
         "openActions": "Abrir acciones del pedido",
         "openDetails": "Abrir detalle del pedido",
         "whatsappOrder": "Pedido originado desde WhatsApp"
+      },
+      "new": {
+        "header": {
+          "title": "Nuevo pedido",
+          "subtitle": "Crea un pedido manual y mantén la operación centralizada en Bocao."
+        },
+        "breadcrumb": {
+          "orders": "Pedidos",
+          "new": "Nuevo pedido"
+        },
+        "actions": {
+          "back": "Volver a pedidos",
+          "submit": "Crear pedido",
+          "submitting": "Creando...",
+          "addItem": "Agregar producto",
+          "removeItem": "Quitar producto",
+          "addCustomer": "Agregar cliente",
+          "removeCustomer": "Quitar cliente"
+        },
+        "customer": {
+          "title": "Clientes",
+          "description": "Selecciona uno o varios clientes y, si es presencial, indica la mesa.",
+          "name": "Nombre del cliente",
+          "namePlaceholder": "ej. Valentina Rojas",
+          "phone": "Teléfono",
+          "phonePlaceholder": "+56 9 0000 0000",
+          "searchPlaceholder": "Buscar clientes",
+          "noResults": "No se encontraron clientes",
+          "selectedHint": "Selecciona clientes existentes desde el buscador.",
+          "newHint": "También puedes agregar clientes nuevos antes de confirmar el pedido.",
+          "tableNumber": "Número de mesa",
+          "tableNumberPlaceholder": "ej. 12",
+          "emptySelection": "Aún no hay clientes en este pedido."
+        },
+        "channel": {
+          "title": "Canal",
+          "description": "Dónde se recibió este pedido.",
+          "label": "Canal de venta"
+        },
+        "items": {
+          "title": "Productos",
+          "description": "Agrega ítems del menú o líneas personalizadas al pedido.",
+          "menuLabel": "Producto",
+          "menuPlaceholder": "Agregar desde el menú",
+          "quantity": "Cant.",
+          "price": "Precio unitario",
+          "lineTotal": "Subtotal línea",
+          "empty": "Sin productos aún",
+          "emptyDescription": "Agrega ítems del menú o crea una línea personalizada.",
+          "photos": "Fotos",
+          "picker": {
+            "title": "Agregar producto",
+            "description": "Elige del menú como en un kiosco: categorías a la izquierda y productos en lista vertical.",
+            "addProduct": "Agregar",
+            "customProduct": "Producto personalizado",
+            "emptyMenuTitle": "No hay productos en el menú",
+            "emptyMenuDescription": "Carga productos en Menú o agrega una línea personalizada para este pedido.",
+            "footerHint": "Puedes seguir agregando productos sin cerrar este diálogo.",
+            "customProductTitle": "Producto personalizado",
+            "customProductDescription": "Ingresa los detalles para crear un ítem personalizado en este pedido.",
+            "customNameLabel": "Nombre del producto",
+            "customNamePlaceholder": "ej. Menú especial, plato personalizado...",
+            "customPriceLabel": "Precio unitario",
+            "customQuantityLabel": "Cantidad",
+            "addCustomSuccess": "Producto personalizado agregado correctamente"
+          }
+        },
+        "photos": {
+          "addPhoto": "Agregar foto",
+          "removePhoto": "Quitar foto",
+          "uploading": "Subiendo...",
+          "uploadError": "No pudimos subir la foto.",
+          "invalidImageType": "El archivo debe ser una imagen válida.",
+          "imageTooLarge": "La imagen supera el límite de 5 MB.",
+          "storageNotConfigured": "El almacenamiento de imágenes no está configurado."
+        },
+        "notes": {
+          "title": "Notas",
+          "description": "Indicaciones adicionales de preparación o entrega.",
+          "placeholder": "ej. Entregar por la puerta trasera, sin cebolla..."
+        },
+        "summary": {
+          "title": "Resumen",
+          "subtotal": "Subtotal",
+          "taxes": "Impuestos (19%)",
+          "total": "Total",
+          "taxNote": "Los impuestos se estiman para pedidos manuales."
+        },
+        "validation": {
+          "customers": "Agrega al menos un cliente para pedidos fuera del local.",
+          "tableNumber": "Ingresa el número de mesa para pedidos presenciales.",
+          "draftCustomerName": "Ingresa el nombre del cliente.",
+          "items": "Agrega al menos un producto.",
+          "itemName": "Cada ítem personalizado necesita un nombre.",
+          "itemPrice": "El precio debe ser un número válido.",
+          "itemQuantity": "La cantidad debe estar entre 1 y 99."
+        },
+        "feedback": {
+          "success": "Pedido creado correctamente.",
+          "error": "No pudimos crear el pedido. Intenta nuevamente."
+        },
+        "permissions": {
+          "deniedTitle": "No puedes crear pedidos",
+          "deniedDescription": "Tu rol puede ver pedidos pero no crear nuevos. Pide acceso a un administrador si lo necesitas."
+        }
+      }
+    },
+    "menu": {
+      "header": {
+        "title": "Menú",
+        "subtitle": "Administra los productos y sus fotos para pedidos y operación."
+      },
+      "empty": {
+        "title": "Sin productos en el menú",
+        "description": "Aún no hay productos cargados para este restaurante."
+      },
+      "item": {
+        "photos": "Fotos del producto",
+        "unavailable": "No disponible"
+      },
+      "photos": {
+        "addPhoto": "Agregar foto",
+        "removePhoto": "Quitar foto",
+        "uploading": "Subiendo...",
+        "uploadError": "No pudimos subir la foto.",
+        "invalidImageType": "El archivo debe ser una imagen válida.",
+        "imageTooLarge": "La imagen excede el tamaño máximo de 5 MB.",
+        "storageNotConfigured": "El almacenamiento de imágenes no está configurado.",
+        "saveError": "No pudimos guardar las fotos del producto.",
+        "saveSuccess": "Fotos del producto actualizadas."
+      },
+      "permissions": {
+        "deniedTitle": "Sin acceso al menú",
+        "deniedDescription": "Tu rol no puede editar productos del menú."
       }
     }
   },

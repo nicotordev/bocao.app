@@ -3,19 +3,19 @@
 import Link from "next/link";
 import type { NavItem } from "@/lib/navigation";
 import {
-  IconBrandWhatsapp,
-  IconCalendarEvent,
-  IconChartBar,
-  IconChefHat,
-  IconClipboardList,
-  IconLayoutDashboard,
-  IconSettings,
-  IconSparkles,
-  IconToolsKitchen2,
-  IconUsers,
-  IconUsersGroup,
-  type TablerIcon,
-} from "@tabler/icons-react";
+  TbBrandWhatsapp,
+  TbCalendarEvent,
+  TbChartBar,
+  TbChefHat,
+  TbClipboardList,
+  TbLayoutDashboard,
+  TbSettings,
+  TbSparkles,
+  TbToolsKitchen2,
+  TbUsers,
+  TbUsersGroup,
+} from "react-icons/tb";
+import type { IconType } from "react-icons";
 import { cn } from "@/lib/utils";
 import {
   SidebarMenuButton,
@@ -28,18 +28,18 @@ type DashboardNavItemProps = {
 };
 
 const navIcons = {
-  dashboard: IconLayoutDashboard,
-  orders: IconClipboardList,
-  reservations: IconCalendarEvent,
-  whatsapp: IconBrandWhatsapp,
-  menu: IconToolsKitchen2,
-  kitchen: IconChefHat,
-  customers: IconUsers,
-  marketing: IconSparkles,
-  analytics: IconChartBar,
-  team: IconUsersGroup,
-  settings: IconSettings,
-} satisfies Record<NavItem["icon"], TablerIcon>;
+  dashboard: TbLayoutDashboard,
+  orders: TbClipboardList,
+  reservations: TbCalendarEvent,
+  whatsapp: TbBrandWhatsapp,
+  menu: TbToolsKitchen2,
+  kitchen: TbChefHat,
+  customers: TbUsers,
+  marketing: TbSparkles,
+  analytics: TbChartBar,
+  team: TbUsersGroup,
+  settings: TbSettings,
+} satisfies Record<NavItem["icon"], IconType>;
 
 export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
   const Icon = navIcons[item.icon];
@@ -51,16 +51,24 @@ export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
         isActive={isActive}
         tooltip={item.label}
         className={cn(
-          "transition-colors",
-          isActive &&
-            "bg-sidebar-primary/15 text-sidebar-primary hover:bg-sidebar-primary/20 hover:text-sidebar-primary",
+          "transition-all duration-200 rounded-xl relative group/nav-item py-2.5",
+          isActive
+            ? "bg-primary/10 text-primary font-medium hover:bg-primary/15"
+            : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50",
         )}
       >
         <Link href={item.href} aria-current={isActive ? "page" : undefined}>
-          <Icon className="size-4 shrink-0" aria-hidden />
+          <Icon className={cn(
+            "size-4 shrink-0 transition-transform duration-200 group-hover/nav-item:scale-110",
+            isActive ? "text-primary" : "text-muted-foreground group-hover/nav-item:text-foreground"
+          )} aria-hidden />
           <span>{item.label}</span>
+          {isActive && (
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary animate-pulse group-data-[collapsible=icon]:hidden" />
+          )}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }
+

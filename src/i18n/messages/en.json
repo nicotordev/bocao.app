@@ -207,6 +207,12 @@
     "summary": "Operational summary for {restaurant}",
     "summaryFallback": "your restaurant",
     "dateFormat": "EEEE, MMMM d",
+    "metrics": {
+      "revenueToday": "Today's revenue",
+      "openOrders": "Open orders",
+      "upcomingReservations": "Upcoming reservations",
+      "avgPrepTime": "Average prep time"
+    },
     "orders": {
       "header": {
         "title": "Orders",
@@ -338,6 +344,140 @@
         "openActions": "Open order actions",
         "openDetails": "Open order detail",
         "whatsappOrder": "Order originated from WhatsApp"
+      },
+      "new": {
+        "header": {
+          "title": "New order",
+          "subtitle": "Create a manual order and keep the operation centralized in Bocao."
+        },
+        "breadcrumb": {
+          "orders": "Orders",
+          "new": "New order"
+        },
+        "actions": {
+          "back": "Back to orders",
+          "submit": "Create order",
+          "submitting": "Creating...",
+          "addItem": "Add item",
+          "removeItem": "Remove item",
+          "addCustomer": "Add customer",
+          "removeCustomer": "Remove customer"
+        },
+        "customer": {
+          "title": "Customers",
+          "description": "Select one or more customers and, for dine-in, specify the table.",
+          "name": "Customer name",
+          "namePlaceholder": "e.g. Valentina Rojas",
+          "phone": "Phone",
+          "phonePlaceholder": "+56 9 0000 0000",
+          "searchPlaceholder": "Search customers",
+          "noResults": "No customers found",
+          "selectedHint": "Select existing customers from the search field.",
+          "newHint": "You can also add new customers before submitting the order.",
+          "tableNumber": "Table number",
+          "tableNumberPlaceholder": "e.g. 12",
+          "emptySelection": "No customers added to this order yet."
+        },
+        "channel": {
+          "title": "Channel",
+          "description": "Where this order was received.",
+          "label": "Sales channel"
+        },
+        "items": {
+          "title": "Products",
+          "description": "Add menu items or custom lines to the order.",
+          "menuLabel": "Product",
+          "menuPlaceholder": "Add from menu",
+          "quantity": "Qty",
+          "price": "Unit price",
+          "lineTotal": "Line total",
+          "empty": "No products yet",
+          "emptyDescription": "Add items from the menu or create a custom line.",
+          "photos": "Photos",
+          "picker": {
+            "title": "Add product",
+            "description": "Pick from the menu kiosk-style: categories on the left and products in a vertical list.",
+            "addProduct": "Add",
+            "customProduct": "Custom product",
+            "emptyMenuTitle": "No menu products yet",
+            "emptyMenuDescription": "Add products in Menu or create a custom line for this order.",
+            "footerHint": "You can keep adding products without closing this dialog.",
+            "customProductTitle": "Custom product",
+            "customProductDescription": "Enter details to create a custom item for this order.",
+            "customNameLabel": "Product name",
+            "customNamePlaceholder": "e.g. Special menu, custom dish...",
+            "customPriceLabel": "Unit price",
+            "customQuantityLabel": "Quantity",
+            "addCustomSuccess": "Custom product added successfully"
+          }
+        },
+        "photos": {
+          "addPhoto": "Add photo",
+          "removePhoto": "Remove photo",
+          "uploading": "Uploading...",
+          "uploadError": "We couldn't upload the photo.",
+          "invalidImageType": "The file must be a valid image.",
+          "imageTooLarge": "The image exceeds the 5 MB size limit.",
+          "storageNotConfigured": "Image storage is not configured."
+        },
+        "notes": {
+          "title": "Internal notes",
+          "description": "Operational notes visible to the team.",
+          "placeholder": "Allergies, delivery instructions, handoff details..."
+        },
+        "summary": {
+          "title": "Order summary",
+          "subtotal": "Subtotal",
+          "taxes": "Taxes (19%)",
+          "total": "Total",
+          "taxNote": "Taxes are estimated for manual orders."
+        },
+        "validation": {
+          "customers": "Add at least one customer for non dine-in orders.",
+          "tableNumber": "Enter the table number for dine-in orders.",
+          "draftCustomerName": "Enter the customer name.",
+          "items": "Add at least one product.",
+          "itemName": "Each custom item needs a name.",
+          "itemPrice": "Price must be a valid number.",
+          "itemQuantity": "Quantity must be between 1 and 99."
+        },
+        "feedback": {
+          "success": "Order created successfully.",
+          "error": "We couldn't create the order. Try again."
+        },
+        "permissions": {
+          "deniedTitle": "You can't create orders",
+          "deniedDescription": "Your role can view orders but not create new ones. Ask an admin if you need access."
+        }
+      }
+    },
+    "menu": {
+      "header": {
+        "title": "Menu",
+        "subtitle": "Manage products and their photos for orders and operations."
+      },
+      "empty": {
+        "title": "No menu products yet",
+        "description": "There are no products loaded for this restaurant yet."
+      },
+      "item": {
+        "photos": "Product photos",
+        "unavailable": "Unavailable"
+      },
+      "photos": {
+        "addPhoto": "Add photo",
+        "removePhoto": "Remove photo",
+        "uploading": "Uploading...",
+        "uploadError": "We couldn't upload the photo.",
+        "invalidImageType": "The file must be a valid image.",
+        "imageTooLarge": "The image exceeds the 5 MB size limit.",
+        "storageNotConfigured": "Image storage is not configured.",
+        "saveError": "We couldn't save the product photos.",
+        "saveSuccess": "Product photos updated."
+      },
+      "permissions": {
+        "deniedTitle": "No menu access",
+        "deniedDescription": "Your role can't edit menu products."
       }
     }
   },

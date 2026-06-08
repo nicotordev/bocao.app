@@ -26,6 +26,23 @@ export function MobileSidebar({
 }: MobileSidebarProps) {
   const pathname = usePathname();
 
+  const groupLabels: Record<string, string> = {
+    inicio: "Inicio",
+    operaciones: "Operaciones",
+    clientes: "Clientes & Canales",
+    administracion: "Administración",
+  };
+
+  const groupKeys: Array<keyof typeof groupLabels> = ["inicio", "operaciones", "clientes", "administracion"];
+
+  const groupedNavigation = navigation.reduce((acc, item) => {
+    if (!acc[item.group]) {
+      acc[item.group] = [];
+    }
+    acc[item.group].push(item);
+    return acc;
+  }, {} as Record<string, typeof navigation>);
+
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-sidebar-border p-4">
@@ -36,24 +53,35 @@ export function MobileSidebar({
         />
       </div>
       <ScrollArea className="flex-1 p-4">
-        <SidebarGroup>
-          <SidebarGroupLabel>Módulos</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navigation.map((item) => (
-                <DashboardNavItem
-                  key={item.id}
-                  item={item}
-                  isActive={
-                    item.href === "/dashboard"
-                      ? pathname === "/dashboard"
-                      : pathname.startsWith(item.href)
-                  }
-                />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <div className="flex flex-col gap-4">
+          {groupKeys.map((groupKey) => {
+            const items = groupedNavigation[groupKey];
+            if (!items || items.length === 0) return null;
+
+            return (
+              <SidebarGroup key={groupKey} className="p-0">
+                <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                  {groupLabels[groupKey]}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {items.map((item) => (
+                      <DashboardNavItem
+                        key={item.id}
+                        item={item}
+                        isActive={
+                          item.href === "/dashboard"
+                            ? pathname === "/dashboard"
+                            : pathname.startsWith(item.href)
+                        }
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
+        </div>
       </ScrollArea>
       <Separator />
       <p className="p-4 text-xs text-muted-foreground">
@@ -62,3 +90,4 @@ export function MobileSidebar({
     </div>
   );
 }
+

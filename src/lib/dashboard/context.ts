@@ -7,6 +7,7 @@ import {
   extractPermissionKeys,
   getNavigationForMembership,
 } from "@/lib/permissions";
+import { ensureDemoAdminMembershipForUser } from "@/lib/demo/ensure-admin-membership";
 import { prisma } from "@/lib/prisma";
 import type { SystemRoleSlug } from "@/lib/rbac/permissions";
 import { headers } from "next/headers";
@@ -23,9 +24,7 @@ function resolveActiveRestaurant(
     return restaurants[0] ?? null;
   }
 
-  const match = restaurants.find(
-    (restaurant) => restaurant.id === parsed.data,
-  );
+  const match = restaurants.find((restaurant) => restaurant.id === parsed.data);
 
   return match ?? restaurants[0] ?? null;
 }
@@ -54,7 +53,7 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
     return null;
   }
 
-  const membership = await prisma.membership.findFirst({
+  let membership = await prisma.membership.findFirst({
     where: { userId: session.user.id },
     orderBy: { createdAt: "asc" },
     include: {
@@ -78,6 +77,42 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
       },
     },
   });
+
+  if (!membership) {
+    const attached = await ensureDemoAdminMembershipForUser(
+      session.user.id,
+      session.user.email,
+    );
+
+    if (!attached) {
+      return null;
+    }
+
+    membership = await prisma.membership.findFirst({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "asc" },
+      include: {
+        organization: {
+          include: {
+            restaurants: {
+              orderBy: { createdAt: "asc" },
+            },
+          },
+        },
+        role: {
+          include: {
+            rolePermissions: {
+              include: {
+                permission: {
+                  select: { key: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 
   if (!membership) {
     return null;

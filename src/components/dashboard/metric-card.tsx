@@ -1,4 +1,4 @@
-import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react";
+import { TbArrowDownRight, TbArrowUpRight } from "react-icons/tb";
 import type { DashboardMetric } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ type MetricCardProps = {
 
 export function MetricCard({ metric }: MetricCardProps) {
   const TrendIcon =
-    metric.trend === "down" ? IconArrowDownRight : IconArrowUpRight;
+    metric.trend === "down" ? TbArrowDownRight : TbArrowUpRight;
 
   return (
     <Card className="border-border/60 bg-card/80 backdrop-blur-sm">
@@ -47,3 +47,4 @@ export function MetricCard({ metric }: MetricCardProps) {
     </Card>
   );
 }
+

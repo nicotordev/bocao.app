@@ -1,7 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getTranslations } from "next-intl/server";
 import { OrdersPageClient } from "@/components/dashboard/orders/orders-page-client";
-import { restaurants } from "@/components/dashboard/orders/orders-data";
 import type { OrdersLabels } from "@/components/dashboard/orders/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
 import { getQueryClient } from "@/lib/query/get-query-client";
@@ -132,12 +131,7 @@ export default async function OrdersPage() {
     insights: {
       title: t("insights.title"),
       subtitle: t("insights.subtitle"),
-      items: [
-        t("insights.items.0"),
-        t("insights.items.1"),
-        t("insights.items.2"),
-        t("insights.items.3"),
-      ],
+      items: [],
     },
     empty: {
       title: t("empty.title"),
@@ -156,12 +150,9 @@ export default async function OrdersPage() {
       <OrdersPageClient
         labels={labels}
         restaurantId={restaurantId}
-        restaurants={[
-          context?.activeRestaurant?.name ?? restaurants[0],
-          ...restaurants.filter(
-            (restaurant) => restaurant !== context?.activeRestaurant?.name,
-          ),
-        ]}
+        restaurants={
+          context?.restaurants.map((restaurant) => restaurant.name) ?? []
+        }
       />
     </HydrationBoundary>
   );

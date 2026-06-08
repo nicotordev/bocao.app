@@ -2,7 +2,7 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { IconGripVertical } from "@tabler/icons-react";
+import { TbGripVertical } from "react-icons/tb";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { OrderChannelBadge } from "./order-channel-badge";
@@ -63,7 +63,7 @@ export function OrdersKanbanCardView({
           {...dragHandleProps?.listeners}
           onClick={(event) => event.stopPropagation()}
         >
-          <IconGripVertical className="size-4" aria-hidden />
+          <TbGripVertical className="size-4" aria-hidden />
         </button>
 
         <button

@@ -1,4 +1,4 @@
-import { IconBrandWhatsapp, IconMessageCircle } from "@tabler/icons-react";
+import { TbBrandWhatsapp, TbMessageCircle } from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -27,7 +27,7 @@ export function WhatsappStatusCard({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
-              <IconBrandWhatsapp className="size-4" aria-hidden />
+              <TbBrandWhatsapp className="size-4" aria-hidden />
             </span>
             <div>
               <CardTitle>WhatsApp</CardTitle>
@@ -58,10 +58,11 @@ export function WhatsappStatusCard({
           </div>
         </div>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <IconMessageCircle className="size-4" aria-hidden />
+          <TbMessageCircle className="size-4" aria-hidden />
           Último mensaje {lastMessageAt}
         </p>
       </CardContent>
     </Card>
   );
 }
+
