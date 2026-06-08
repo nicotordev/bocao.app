@@ -1,0 +1,16 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "language": "Language",
+    "save": "Save"
+  },
+  "metadata": {
+    "title": "Bocao",
+    "description": "AI-powered restaurant operating system"
+  },
+  "home": {
+    "title": "Welcome to Bocao",
+    "description": "AI-powered restaurant operating system.",
+    "clientExample": "This text comes from a Client Component using useTranslations()."
+  }
+}

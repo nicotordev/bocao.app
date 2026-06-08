@@ -1,0 +1,16 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "language": "Idioma",
+    "save": "Guardar"
+  },
+  "metadata": {
+    "title": "Bocao",
+    "description": "Sistema operativo para restaurantes con IA"
+  },
+  "home": {
+    "title": "Bienvenido a Bocao",
+    "description": "Sistema operativo para restaurantes impulsado por inteligencia artificial.",
+    "clientExample": "Este texto viene de un Client Component con useTranslations()."
+  }
+}
