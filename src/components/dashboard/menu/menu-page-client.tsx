@@ -7,6 +7,7 @@ import {
   deleteMenuItemAction,
   refreshMenuPageAction,
 } from "@/app/actions/menu";
+import type { Locale } from "@/i18n/locales";
 import { defaultLocale } from "@/i18n/locales";
 import {
   buildMenuCustomTagLabelMap,
@@ -64,7 +65,7 @@ export function MenuPageClient({
     () =>
       buildMenuCustomTagLabelMap(
         customTagDefinitions,
-        locale,
+        locale as Locale,
         defaultLocale,
       ),
     [customTagDefinitions, locale],
@@ -108,7 +109,14 @@ export function MenuPageClient({
     setCategoryDialogOpen(true);
   }
 
-  function upsertItem(nextItem: MenuItemRecord) {
+  function upsertItem(
+    nextItem: MenuItemRecord,
+    nextCustomTagDefinitions?: MenuCustomTagRecord[],
+  ) {
+    if (nextCustomTagDefinitions) {
+      setCustomTagDefinitions(nextCustomTagDefinitions);
+    }
+
     setItems((current) => {
       const exists = current.some((item) => item.id === nextItem.id);
       const nextItems = exists
@@ -232,6 +240,7 @@ export function MenuPageClient({
           search={search}
           showUnavailable={showUnavailable}
           tagCatalogLabels={tagCatalogLabels}
+          customTagLabels={customTagLabels}
           onEditCategory={handleEditCategory}
           onEditItem={handleEditItem}
           onDeleteItem={(item) => void handleDeleteItem(item)}
@@ -249,6 +258,8 @@ export function MenuPageClient({
             item={activeItem}
             catalogTags={catalogTags}
             tagCatalogLabels={tagCatalogLabels}
+            customTagDefinitions={customTagDefinitions}
+            localeOptions={localeOptions}
             tagSuggestions={tagSuggestions}
             open={itemDialogOpen}
             onOpenChange={setItemDialogOpen}

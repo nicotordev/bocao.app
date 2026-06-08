@@ -11,7 +11,6 @@ import {
   MENU_TAG_CATALOG,
   MENU_TAG_CATALOG_KEYS,
 } from "@/lib/menu/tag-types";
-import { locales } from "@/i18n/locales";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 export default async function MenuPage() {
@@ -32,10 +31,10 @@ export default async function MenuPage() {
       ])
     : [[], [], []];
 
-  const localeOptions = locales.map((locale) => ({
-    value: locale,
-    label: t(`locales.${locale}`),
-  }));
+  const localeOptions = [
+    { value: "es" as const, label: t("locales.es") },
+    { value: "en" as const, label: t("locales.en") },
+  ];
 
   const tagCatalogLabels = Object.fromEntries(
     MENU_TAG_CATALOG_KEYS.map((key) => [key, t(`tags.${key}`)]),

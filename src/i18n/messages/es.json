@@ -731,6 +731,7 @@
         "tagsRemove": "Quitar etiqueta",
         "tagsSuggestions": "Etiquetas personalizadas usadas antes",
         "tagsPickIcon": "Elige un icono",
+        "tagsLanguages": "Idiomas a traducir",
         "successCreate": "Producto creado con éxito",
         "successUpdate": "Producto actualizado con éxito",
         "successDelete": "Producto eliminado con éxito",
@@ -773,6 +774,10 @@
         "containsNuts": "Contiene frutos secos",
         "chefChoice": "Recomendación del chef",
         "new": "Nuevo"
+      },
+      "locales": {
+        "es": "Español",
+        "en": "Inglés"
       }
     }
   },

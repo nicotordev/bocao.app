@@ -731,6 +731,7 @@
         "tagsRemove": "Remove tag",
         "tagsSuggestions": "Previously used custom tags",
         "tagsPickIcon": "Choose an icon",
+        "tagsLanguages": "Languages to translate",
         "successCreate": "Product created successfully",
         "successUpdate": "Product updated successfully",
         "successDelete": "Product deleted successfully",
@@ -773,6 +774,10 @@
         "containsNuts": "Contains nuts",
         "chefChoice": "Chef's choice",
         "new": "New"
+      },
+      "locales": {
+        "es": "Spanish",
+        "en": "English"
       }
     }
   },

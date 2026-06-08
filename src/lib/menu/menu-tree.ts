@@ -232,6 +232,7 @@ export function filterMenuTreeLayout(
   query: string,
   showUnavailable: boolean,
   catalogLabels: Record<string, string> = {},
+  customLabels: Record<string, string> = {},
 ): MenuTreeLayout {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -250,7 +251,7 @@ export function filterMenuTreeLayout(
           item.name.toLowerCase().includes(normalizedQuery) ||
           item.description?.toLowerCase().includes(normalizedQuery) ||
           item.tags.some((tag) =>
-            menuTagMatchesQuery(tag, normalizedQuery, catalogLabels),
+            menuTagMatchesQuery(tag, normalizedQuery, catalogLabels, customLabels),
           ) ||
           category.name.toLowerCase().includes(normalizedQuery)
         );

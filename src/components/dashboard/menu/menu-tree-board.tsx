@@ -61,6 +61,7 @@ type MenuTreeBoardProps = {
   search: string;
   showUnavailable: boolean;
   tagCatalogLabels: Record<string, string>;
+  customTagLabels: Record<string, string>;
   onEditCategory: (category: MenuCategoryRecord) => void;
   onEditItem: (item: MenuItemRecord) => void;
   onDeleteItem: (item: MenuItemRecord) => void;
@@ -80,6 +81,7 @@ export function MenuTreeBoard({
   search,
   showUnavailable,
   tagCatalogLabels,
+  customTagLabels,
   onEditCategory,
   onEditItem,
   onDeleteItem,
@@ -104,8 +106,14 @@ export function MenuTreeBoard({
 
   const displayLayout = useMemo(
     () =>
-      filterMenuTreeLayout(layout, search, showUnavailable, tagCatalogLabels),
-    [layout, search, showUnavailable, tagCatalogLabels],
+      filterMenuTreeLayout(
+        layout,
+        search,
+        showUnavailable,
+        tagCatalogLabels,
+        customTagLabels,
+      ),
+    [layout, search, showUnavailable, tagCatalogLabels, customTagLabels],
   );
 
   const sensors = useSensors(
@@ -269,6 +277,7 @@ export function MenuTreeBoard({
               canEdit={canEdit}
               dragEnabled={dragEnabled}
               tagCatalogLabels={tagCatalogLabels}
+              customTagLabels={customTagLabels}
               onEditCategory={() => onEditCategory(category)}
               onEditItem={onEditItem}
               onDeleteItem={onDeleteItem}
@@ -329,6 +338,7 @@ function MenuTreeCategorySection({
   canEdit,
   dragEnabled,
   tagCatalogLabels,
+  customTagLabels,
   onEditCategory,
   onEditItem,
   onDeleteItem,
@@ -340,6 +350,7 @@ function MenuTreeCategorySection({
   canEdit: boolean;
   dragEnabled: boolean;
   tagCatalogLabels: Record<string, string>;
+  customTagLabels: Record<string, string>;
   onEditCategory: () => void;
   onEditItem: (item: MenuItemRecord) => void;
   onDeleteItem: (item: MenuItemRecord) => void;
@@ -422,6 +433,7 @@ function MenuTreeCategorySection({
               canEdit={canEdit}
               dragEnabled={dragEnabled}
               tagCatalogLabels={tagCatalogLabels}
+              customTagLabels={customTagLabels}
               onEdit={() => onEditItem(item)}
               onDelete={() => onDeleteItem(item)}
             />
@@ -445,6 +457,7 @@ function MenuTreeItemRow({
   canEdit,
   dragEnabled,
   tagCatalogLabels,
+  customTagLabels,
   onEdit,
   onDelete,
 }: {
@@ -454,6 +467,7 @@ function MenuTreeItemRow({
   canEdit: boolean;
   dragEnabled: boolean;
   tagCatalogLabels: Record<string, string>;
+  customTagLabels: Record<string, string>;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -506,6 +520,7 @@ function MenuTreeItemRow({
         <MenuItemTagsPreview
           tags={item.tags}
           catalogLabels={tagCatalogLabels}
+          customLabels={customTagLabels}
           className="mt-1.5"
         />
       </div>

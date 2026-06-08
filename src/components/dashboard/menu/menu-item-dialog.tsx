@@ -39,11 +39,18 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
+import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags";
+import { menuCustomTagsToMap } from "@/lib/menu/custom-tags";
+import { mergeMenuItemTagsWithCustomDefinitions } from "@/lib/menu/tag-utils";
 import {
   MenuItemTagsField,
   type MenuCatalogTagOption,
 } from "./menu-item-tags-field";
-import type { MenuItemFormValues, MenuPageLabels } from "./types";
+import type {
+  MenuItemFormValues,
+  MenuLocaleOption,
+  MenuPageLabels,
+} from "./types";
 
 type MenuItemDialogProps = {
   labels: MenuPageLabels;
@@ -53,10 +60,15 @@ type MenuItemDialogProps = {
   item: MenuItemRecord | null;
   catalogTags: MenuCatalogTagOption[];
   tagCatalogLabels: Record<string, string>;
+  customTagDefinitions: MenuCustomTagRecord[];
+  localeOptions: MenuLocaleOption[];
   tagSuggestions: MenuItemTag[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (item: MenuItemRecord) => void;
+  onSuccess: (
+    item: MenuItemRecord,
+    customTagDefinitions?: MenuCustomTagRecord[],
+  ) => void;
 };
 
 const emptyForm = (): MenuItemFormValues => ({
@@ -77,11 +89,14 @@ export function MenuItemDialog({
   item,
   catalogTags,
   tagCatalogLabels,
+  customTagDefinitions,
+  localeOptions,
   tagSuggestions,
   open,
   onOpenChange,
   onSuccess,
 }: MenuItemDialogProps) {
+  const customTagsByKey = menuCustomTagsToMap(customTagDefinitions);
   const [form, setForm] = useState<MenuItemFormValues>(emptyForm);
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +113,10 @@ export function MenuItemDialog({
         price: String(item.priceCents / 100),
         isAvailable: item.isAvailable,
         images: item.images,
-        tags: item.tags,
+        tags: mergeMenuItemTagsWithCustomDefinitions(
+          item.tags,
+          customTagsByKey,
+        ),
       });
     } else {
       setForm({
@@ -107,7 +125,7 @@ export function MenuItemDialog({
       });
     }
     setValidationError("");
-  }, [item, open, categories]);
+  }, [item, open, categories, customTagDefinitions]);
 
   function updateField<K extends keyof MenuItemFormValues>(
     field: K,
@@ -162,7 +180,7 @@ export function MenuItemDialog({
           tags: form.tags,
         });
         toast.success(labels.itemDialog.successUpdate);
-        onSuccess(result.item);
+        onSuccess(result.item, result.customTagDefinitions);
       } else {
         const result = await createMenuItemAction({
           restaurantId,
@@ -175,7 +193,7 @@ export function MenuItemDialog({
           tags: form.tags,
         });
         toast.success(labels.itemDialog.successCreate);
-        onSuccess(result.item);
+        onSuccess(result.item, result.customTagDefinitions);
       }
 
       onOpenChange(false);
@@ -286,9 +304,12 @@ export function MenuItemDialog({
               remove: labels.itemDialog.tagsRemove,
               suggestions: labels.itemDialog.tagsSuggestions,
               pickIcon: labels.itemDialog.tagsPickIcon,
+              languages: labels.itemDialog.tagsLanguages,
             }}
+            localeOptions={localeOptions}
             catalogTags={catalogTags}
             catalogLabels={tagCatalogLabels}
+            customTagDefinitions={customTagDefinitions}
             value={form.tags}
             suggestions={tagSuggestions}
             onChange={(tags) => updateField("tags", tags)}
