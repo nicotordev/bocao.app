@@ -34,6 +34,8 @@ export default async function ReservationsPage() {
       clearFilters: t("actions.clearFilters"),
       addCustomer: t("actions.addCustomer"),
       removeCustomer: t("actions.removeCustomer"),
+      menu: t("actions.menu"),
+      noShow: t("actions.noShow"),
     },
     filters: {
       search: t("filters.search"),

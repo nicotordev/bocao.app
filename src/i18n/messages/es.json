@@ -577,7 +577,9 @@
         "cancel": "Cancelar",
         "clearFilters": "Limpiar filtros",
         "addCustomer": "Agregar cliente",
-        "removeCustomer": "Quitar cliente"
+        "removeCustomer": "Quitar cliente",
+        "menu": "Acción",
+        "noShow": "Ausente"
       },
       "filters": {
         "search": "Buscar",

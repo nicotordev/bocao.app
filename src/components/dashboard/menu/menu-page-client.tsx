@@ -1,12 +1,21 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   deleteMenuItemAction,
   refreshMenuPageAction,
 } from "@/app/actions/menu";
-import { collectMenuTagSuggestions } from "@/lib/menu/tag-utils";
+import { defaultLocale } from "@/i18n/locales";
+import {
+  buildMenuCustomTagLabelMap,
+  type MenuCustomTagRecord,
+} from "@/lib/menu/custom-tags";
+import {
+  collectMenuTagSuggestions,
+  mergeMenuItemTagsWithCustomDefinitions,
+} from "@/lib/menu/tag-utils";
 import {
   Card,
   CardContent,
@@ -32,9 +41,15 @@ export function MenuPageClient({
   categories: initialCategories,
   catalogTags,
   tagCatalogLabels,
+  customTagDefinitions: initialCustomTagDefinitions,
+  localeOptions,
 }: MenuPageClientProps) {
+  const locale = useLocale();
   const [items, setItems] = useState(initialItems);
   const [categories, setCategories] = useState(initialCategories);
+  const [customTagDefinitions, setCustomTagDefinitions] = useState(
+    initialCustomTagDefinitions,
+  );
   const [search, setSearch] = useState("");
   const [showUnavailable, setShowUnavailable] = useState(true);
   const [activeItem, setActiveItem] = useState<MenuItemRecord | null>(null);
@@ -44,6 +59,16 @@ export function MenuPageClient({
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [isRefreshing, startRefresh] = useTransition();
+
+  const customTagLabels = useMemo(
+    () =>
+      buildMenuCustomTagLabelMap(
+        customTagDefinitions,
+        locale,
+        defaultLocale,
+      ),
+    [customTagDefinitions, locale],
+  );
 
   const tagSuggestions = useMemo(
     () => collectMenuTagSuggestions(items),
@@ -56,6 +81,7 @@ export function MenuPageClient({
         const result = await refreshMenuPageAction(restaurantId);
         setItems(result.items);
         setCategories(result.categories);
+        setCustomTagDefinitions(result.customTagDefinitions);
       } catch {
         toast.error(labels.feedback.error);
       }
@@ -156,25 +182,6 @@ export function MenuPageClient({
   ) {
     setCategories(nextCategories);
     setItems(nextItems);
-  }
-
-  if (!canEdit && items.length === 0) {
-    return (
-      <main className="flex flex-col gap-6 p-4 md:p-6">
-        <MenuHeader
-          labels={labels}
-          canEdit={false}
-          onNewItem={() => {}}
-          onNewCategory={() => {}}
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>{labels.permissions.deniedTitle}</CardTitle>
-            <CardDescription>{labels.permissions.deniedDescription}</CardDescription>
-          </CardHeader>
-        </Card>
-      </main>
-    );
   }
 
   return (

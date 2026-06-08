@@ -22,6 +22,7 @@ import {
   updateMenuItemSchema,
 } from "@/lib/menu/schemas";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
+import { listMenuCustomTags } from "@/lib/menu/custom-tags";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { uploadImageToR2 } from "@/lib/upload/image-upload";
 
@@ -222,7 +223,9 @@ export async function createMenuItemAction(input: {
 
   const item = await createMenuItem(parsed.data.restaurantId, parsed.data);
 
-  return { item };
+  const customTagDefinitions = await listMenuCustomTags(parsed.data.restaurantId);
+
+  return { item, customTagDefinitions };
 }
 
 export async function updateMenuItemAction(input: {
@@ -250,7 +253,9 @@ export async function updateMenuItemAction(input: {
     parsed.data,
   );
 
-  return { item };
+  const customTagDefinitions = await listMenuCustomTags(parsed.data.restaurantId);
+
+  return { item, customTagDefinitions };
 }
 
 export async function deleteMenuItemAction(input: {
@@ -355,14 +360,15 @@ export async function uploadOrderItemImageAction(formData: FormData) {
 export async function refreshMenuPageAction(restaurantId: string) {
   await requireMenuRead(restaurantId);
 
-  const [{ listMenuCategories, listMenuItemRecords }] = await Promise.all([
-    import("@/lib/menu/repository"),
-  ]);
+  const { listMenuCategories, listMenuItemRecords } = await import(
+    "@/lib/menu/repository"
+  );
 
-  const [categories, items] = await Promise.all([
+  const [categories, items, customTagDefinitions] = await Promise.all([
     listMenuCategories(restaurantId),
     listMenuItemRecords(restaurantId, { availableOnly: false }),
+    listMenuCustomTags(restaurantId),
   ]);
 
-  return { categories, items };
+  return { categories, items, customTagDefinitions };
 }

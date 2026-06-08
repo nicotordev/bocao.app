@@ -87,13 +87,17 @@ export function ReservationsTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/50">
-              <TableHead className="w-[120px]">{labels.form.scheduledAt}</TableHead>
+              <TableHead className="w-[120px]">
+                {labels.form.scheduledAt}
+              </TableHead>
               <TableHead>{labels.form.guestName}</TableHead>
               <TableHead className="text-center w-[120px]">
                 {labels.form.guestCount}
               </TableHead>
               <TableHead className="w-[140px]">{labels.form.status}</TableHead>
-              <TableHead className="max-w-[300px]">{labels.form.notes}</TableHead>
+              <TableHead className="max-w-[300px]">
+                {labels.form.notes}
+              </TableHead>
               <TableHead className="text-right w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -158,7 +162,9 @@ export function ReservationsTable({
                       labels={labels}
                       reservation={res}
                       onEdit={() => onEdit(res)}
-                      onUpdateStatus={(status) => onUpdateStatus(res.id, status)}
+                      onUpdateStatus={(status) =>
+                        onUpdateStatus(res.id, status)
+                      }
                       onDelete={() => onDelete(res.id)}
                       disabled={isUpdating}
                     />
@@ -263,8 +269,7 @@ function ReservationStatusBadge({
       "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
     COMPLETED:
       "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    CANCELLED:
-      "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
+    CANCELLED: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
     NO_SHOW:
       "border-zinc-500/30 bg-zinc-500/10 text-zinc-600 dark:text-zinc-400",
   };
@@ -298,7 +303,12 @@ function ReservationActions({
 }) {
   const trigger =
     variant === "icon" ? (
-      <Button variant="ghost" size="icon" className="h-8 w-8" disabled={disabled}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        disabled={disabled}
+      >
         <MoreHorizontal className="size-4" />
       </Button>
     ) : (
@@ -309,7 +319,7 @@ function ReservationActions({
         disabled={disabled}
       >
         <MoreHorizontal className="size-3" />
-        Acción
+        {labels.actions.menu}
       </Button>
     );
 
@@ -351,7 +361,7 @@ function ReservationActions({
             onSelect={() => onUpdateStatus("NO_SHOW")}
           >
             <UserMinus className="size-4 mr-2 text-zinc-500" />
-            Ausente
+            {labels.actions.noShow}
           </DropdownMenuItem>
         )}
         {reservation.status !== "COMPLETED" &&

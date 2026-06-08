@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/locales";
+import { locales } from "@/i18n/locales";
 import { isMenuTagIconId } from "@/lib/menu/tag-icons";
 import {
   isMenuTagCatalogKey,
@@ -5,6 +7,23 @@ import {
   slugifyMenuTagLabel,
   type MenuItemTag,
 } from "@/lib/menu/tag-types";
+
+export function stripMenuItemTagForStorage(tag: MenuItemTag): MenuItemTag {
+  if (isMenuTagCatalogKey(tag.key)) {
+    return {
+      key: tag.key,
+      icon:
+        tag.icon && isMenuTagIconId(tag.icon)
+          ? tag.icon
+          : MENU_TAG_CATALOG[tag.key].icon,
+    };
+  }
+
+  return {
+    key: tag.key,
+    icon: tag.icon && isMenuTagIconId(tag.icon) ? tag.icon : undefined,
+  };
+}
 
 export function normalizeMenuItemTags(tags: MenuItemTag[]) {
   const seen = new Set<string>();
@@ -21,23 +40,51 @@ export function normalizeMenuItemTags(tags: MenuItemTag[]) {
     if (isMenuTagCatalogKey(key)) {
       normalized.push({
         key,
-        icon: tag.icon && isMenuTagIconId(tag.icon)
-          ? tag.icon
-          : MENU_TAG_CATALOG[key].icon,
+        icon:
+          tag.icon && isMenuTagIconId(tag.icon)
+            ? tag.icon
+            : MENU_TAG_CATALOG[key].icon,
       });
       continue;
     }
 
-    const label = tag.label?.trim();
-    if (!label) {
+    const translations = normalizeCustomTagTranslations(tag.translations);
+    const legacyLabel = tag.label?.trim();
+
+    if (Object.keys(translations).length === 0 && !legacyLabel) {
       continue;
     }
 
     normalized.push({
       key,
-      label,
       icon: tag.icon && isMenuTagIconId(tag.icon) ? tag.icon : undefined,
+      translations:
+        Object.keys(translations).length > 0
+          ? translations
+          : legacyLabel
+            ? { es: legacyLabel }
+            : undefined,
+      label: legacyLabel,
     });
+  }
+
+  return normalized;
+}
+
+export function normalizeMenuItemTagsForStorage(tags: MenuItemTag[]) {
+  return normalizeMenuItemTags(tags).map(stripMenuItemTagForStorage);
+}
+
+function normalizeCustomTagTranslations(
+  translations?: Partial<Record<Locale, string>>,
+) {
+  const normalized: Partial<Record<Locale, string>> = {};
+
+  for (const locale of locales) {
+    const value = translations?.[locale]?.trim();
+    if (value) {
+      normalized[locale] = value;
+    }
   }
 
   return normalized;
@@ -57,6 +104,7 @@ export function parseMenuItemTags(value: unknown): MenuItemTag[] {
 
           return {
             key: `custom-${slugifyMenuTagLabel(label) || "tag"}`,
+            translations: { es: label },
             label,
           };
         }),
@@ -76,13 +124,18 @@ export function parseMenuItemTags(value: unknown): MenuItemTag[] {
         continue;
       }
 
+      const translations = parseInlineTranslations(record.translations);
+      const label =
+        typeof record.label === "string" ? record.label.trim() : undefined;
+
       parsed.push({
         key,
         icon:
           typeof record.icon === "string" && isMenuTagIconId(record.icon)
             ? record.icon
             : undefined,
-        label: typeof record.label === "string" ? record.label.trim() : undefined,
+        translations,
+        label,
       });
     }
 
@@ -90,6 +143,23 @@ export function parseMenuItemTags(value: unknown): MenuItemTag[] {
   }
 
   return [];
+}
+
+function parseInlineTranslations(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const translations: Partial<Record<Locale, string>> = {};
+
+  for (const locale of locales) {
+    const candidate = (value as Record<string, unknown>)[locale];
+    if (typeof candidate === "string" && candidate.trim()) {
+      translations[locale] = candidate.trim();
+    }
+  }
+
+  return Object.keys(translations).length > 0 ? translations : undefined;
 }
 
 function resolveLegacyCatalogKey(label: string) {
@@ -113,15 +183,20 @@ function resolveLegacyCatalogKey(label: string) {
   return legacyMap[slug];
 }
 
-export function createCustomMenuTag(label: string, icon?: MenuItemTag["icon"]) {
-  const trimmed = label.trim();
-  const slug = slugifyMenuTagLabel(trimmed) || "tag";
+export function createCustomMenuTag(input: {
+  translations: Partial<Record<Locale, string>>;
+  icon?: MenuItemTag["icon"];
+}) {
+  const translations = normalizeCustomTagTranslations(input.translations);
+  const primaryLabel =
+    translations.es ?? translations.en ?? Object.values(translations)[0] ?? "";
+  const slug = slugifyMenuTagLabel(primaryLabel) || "tag";
 
   return normalizeMenuItemTags([
     {
       key: `custom-${slug}`,
-      label: trimmed,
-      icon,
+      icon: input.icon,
+      translations,
     },
   ])[0];
 }
@@ -149,19 +224,68 @@ export function collectMenuTagSuggestions(items: Array<{ tags: MenuItemTag[] }>)
 export function resolveMenuTagLabel(
   tag: MenuItemTag,
   catalogLabels: Record<string, string>,
+  customLabels: Record<string, string> = {},
 ) {
   if (isMenuTagCatalogKey(tag.key)) {
     return catalogLabels[tag.key] ?? tag.key;
   }
 
-  return tag.label ?? tag.key;
+  return (
+    customLabels[tag.key] ??
+    tag.translations?.es ??
+    tag.translations?.en ??
+    tag.label ??
+    tag.key
+  );
 }
 
 export function menuTagMatchesQuery(
   tag: MenuItemTag,
   query: string,
   catalogLabels: Record<string, string>,
+  customLabels: Record<string, string> = {},
 ) {
-  const label = resolveMenuTagLabel(tag, catalogLabels).toLowerCase();
-  return label.includes(query) || tag.key.toLowerCase().includes(query);
+  const values = new Set<string>([
+    resolveMenuTagLabel(tag, catalogLabels, customLabels).toLowerCase(),
+    tag.key.toLowerCase(),
+  ]);
+
+  if (!isMenuTagCatalogKey(tag.key)) {
+    for (const label of Object.values(tag.translations ?? {})) {
+      if (label?.trim()) {
+        values.add(label.trim().toLowerCase());
+      }
+    }
+
+    if (tag.label?.trim()) {
+      values.add(tag.label.trim().toLowerCase());
+    }
+  }
+
+  return [...values].some((value) => value.includes(query));
+}
+
+export function mergeMenuItemTagsWithCustomDefinitions(
+  tags: MenuItemTag[],
+  customTagsByKey: Record<
+    string,
+    { icon?: MenuItemTag["icon"]; translations: Partial<Record<Locale, string>> }
+  >,
+) {
+  return tags.map((tag) => {
+    if (isMenuTagCatalogKey(tag.key)) {
+      return tag;
+    }
+
+    const definition = customTagsByKey[tag.key];
+    if (!definition) {
+      return tag;
+    }
+
+    return {
+      key: tag.key,
+      icon: tag.icon ?? definition.icon,
+      translations: definition.translations,
+    };
+  });
 }

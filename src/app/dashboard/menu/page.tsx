@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { MenuPageClient } from "@/components/dashboard/menu/menu-page-client";
 import type { MenuPageLabels } from "@/components/dashboard/menu/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
+import { listMenuCustomTags } from "@/lib/menu/custom-tags";
 import {
   listMenuCategories,
   listMenuItemRecords,
@@ -10,6 +11,7 @@ import {
   MENU_TAG_CATALOG,
   MENU_TAG_CATALOG_KEYS,
 } from "@/lib/menu/tag-types";
+import { locales } from "@/i18n/locales";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 export default async function MenuPage() {
@@ -22,12 +24,18 @@ export default async function MenuPage() {
   const canRead =
     context?.membership.permissions.includes(PERMISSIONS.MENU_READ) ?? false;
 
-  const [items, categories] = restaurantId
+  const [items, categories, customTagDefinitions] = restaurantId
     ? await Promise.all([
         listMenuItemRecords(restaurantId, { availableOnly: false }),
         listMenuCategories(restaurantId),
+        listMenuCustomTags(restaurantId),
       ])
-    : [[], []];
+    : [[], [], []];
+
+  const localeOptions = locales.map((locale) => ({
+    value: locale,
+    label: t(`locales.${locale}`),
+  }));
 
   const tagCatalogLabels = Object.fromEntries(
     MENU_TAG_CATALOG_KEYS.map((key) => [key, t(`tags.${key}`)]),
@@ -111,6 +119,7 @@ export default async function MenuPage() {
       tagsRemove: t("itemDialog.tagsRemove"),
       tagsSuggestions: t("itemDialog.tagsSuggestions"),
       tagsPickIcon: t("itemDialog.tagsPickIcon"),
+      tagsLanguages: t("itemDialog.tagsLanguages"),
       successCreate: t("itemDialog.successCreate"),
       successUpdate: t("itemDialog.successUpdate"),
       successDelete: t("itemDialog.successDelete"),
@@ -177,6 +186,8 @@ export default async function MenuPage() {
       categories={categories}
       catalogTags={catalogTags}
       tagCatalogLabels={tagCatalogLabels}
+      customTagDefinitions={customTagDefinitions}
+      localeOptions={localeOptions}
     />
   );
 }

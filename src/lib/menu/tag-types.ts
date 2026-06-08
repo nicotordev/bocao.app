@@ -1,9 +1,12 @@
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
+import type { Locale } from "@/i18n/locales";
 
 export type MenuItemTag = {
   key: string;
   icon?: MenuTagIconId;
-  /** Custom tag label when key is not in the catalog */
+  /** Custom tag translations stored in DbTranslation */
+  translations?: Partial<Record<Locale, string>>;
+  /** Legacy inline label while migrating older records */
   label?: string;
 };
 

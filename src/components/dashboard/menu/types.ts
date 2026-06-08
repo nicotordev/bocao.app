@@ -1,11 +1,19 @@
+import type { Locale } from "@/i18n/locales";
+import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
+import type { MenuItemTag } from "@/lib/menu/tag-types";
 import type { ProductImagesFieldLabels } from "@/components/dashboard/product-images-field";
 
 export type MenuCatalogTagOption = {
   key: string;
   label: string;
   icon: MenuTagIconId;
+};
+
+export type MenuLocaleOption = {
+  value: Locale;
+  label: string;
 };
 
 export type MenuPageLabels = {
@@ -73,6 +81,7 @@ export type MenuPageLabels = {
     tagsRemove: string;
     tagsSuggestions: string;
     tagsPickIcon: string;
+    tagsLanguages: string;
     successCreate: string;
     successUpdate: string;
     successDelete: string;
@@ -117,9 +126,9 @@ export type MenuPageClientProps = {
   categories: MenuCategoryRecord[];
   catalogTags: MenuCatalogTagOption[];
   tagCatalogLabels: Record<string, string>;
+  customTagDefinitions: MenuCustomTagRecord[];
+  localeOptions: MenuLocaleOption[];
 };
-
-import type { MenuItemTag } from "@/lib/menu/tag-types";
 
 export type MenuItemFormValues = {
   categoryId: string;

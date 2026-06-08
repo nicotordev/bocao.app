@@ -216,6 +216,8 @@ model Restaurant {
   reservations   Reservation[]
   demoProfile    RestaurantDemoProfile?
   diningSurfaces DiningSurface[]
+  menuCustomTags MenuCustomTag[]
+  dbTranslations DbTranslation[]
 
   @@index([organizationId])
 }
@@ -325,6 +327,45 @@ model MenuItem {
 
   @@index([restaurantId])
   @@index([categoryId])
+}
+
+/// Restaurant-defined menu tag metadata (icon, stable key).
+model MenuCustomTag {
+  id           String   @id @default(cuid())
+  restaurantId String
+  /// Stable tag key, e.g. custom-porcion-familiar
+  key          String
+  icon         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, key])
+  @@index([restaurantId])
+}
+
+/// Generic database-backed translations scoped to a restaurant.
+model DbTranslation {
+  id           String   @id @default(cuid())
+  restaurantId String
+  /// Entity namespace, e.g. menu_custom_tag
+  entityType   String
+  /// Stable key within the entity namespace
+  entityKey    String
+  /// BCP 47 language code, e.g. es, en
+  locale       String
+  /// Field name being translated, e.g. label
+  field        String
+  value        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, entityType, entityKey, locale, field])
+  @@index([restaurantId, entityType])
+  @@index([restaurantId, entityType, entityKey])
 }
 
 model OrderCustomer {

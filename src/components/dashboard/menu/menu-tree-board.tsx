@@ -64,7 +64,10 @@ type MenuTreeBoardProps = {
   onEditCategory: (category: MenuCategoryRecord) => void;
   onEditItem: (item: MenuItemRecord) => void;
   onDeleteItem: (item: MenuItemRecord) => void;
-  onLayoutChange: (categories: MenuCategoryRecord[], items: MenuItemRecord[]) => void;
+  onLayoutChange: (
+    categories: MenuCategoryRecord[],
+    items: MenuItemRecord[],
+  ) => void;
 };
 
 export function MenuTreeBoard({
@@ -100,7 +103,8 @@ export function MenuTreeBoard({
   }, [categories, items]);
 
   const displayLayout = useMemo(
-    () => filterMenuTreeLayout(layout, search, showUnavailable, tagCatalogLabels),
+    () =>
+      filterMenuTreeLayout(layout, search, showUnavailable, tagCatalogLabels),
     [layout, search, showUnavailable, tagCatalogLabels],
   );
 
@@ -119,7 +123,8 @@ export function MenuTreeBoard({
   const activeNode = activeId ? parseMenuTreeNodeId(activeId) : null;
   const activeCategory =
     activeNode?.type === "category"
-      ? layout.categories.find((category) => category.id === activeNode.id) ?? null
+      ? (layout.categories.find((category) => category.id === activeNode.id) ??
+        null)
       : null;
   const activeItem = useMemo(() => {
     if (activeNode?.type !== "item") {
@@ -189,7 +194,8 @@ export function MenuTreeBoard({
 
     setLayout((current) => {
       const nextLayout =
-        applyMenuTreeMove(current, String(active.id), String(over.id)) ?? current;
+        applyMenuTreeMove(current, String(active.id), String(over.id)) ??
+        current;
 
       layoutRef.current = nextLayout;
       return nextLayout;
@@ -218,15 +224,16 @@ export function MenuTreeBoard({
     const activeParsed = parseMenuTreeNodeId(active.id);
     let nextLayout = layoutRef.current;
 
-    if (activeParsed?.type === "category") {
+    if (activeParsed) {
       nextLayout =
         applyMenuTreeMove(nextLayout, String(active.id), String(over.id)) ??
         nextLayout;
       setLayout(nextLayout);
       layoutRef.current = nextLayout;
+      void persistLayout(nextLayout);
     }
 
-    void persistLayout(nextLayout);
+    layoutSnapshotRef.current = null;
   }
 
   function handleDragCancel() {
@@ -492,7 +499,9 @@ function MenuTreeItemRow({
           ) : null}
         </div>
         {item.description ? (
-          <p className="truncate text-xs text-muted-foreground">{item.description}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {item.description}
+          </p>
         ) : null}
         <MenuItemTagsPreview
           tags={item.tags}
@@ -568,7 +577,9 @@ function MenuTreeItemPreview({
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{item.name}</p>
         {!item.isAvailable ? (
-          <p className="text-xs text-muted-foreground">{labels.item.unavailable}</p>
+          <p className="text-xs text-muted-foreground">
+            {labels.item.unavailable}
+          </p>
         ) : null}
       </div>
       <p className="text-sm font-medium">

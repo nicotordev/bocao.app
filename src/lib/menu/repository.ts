@@ -1,11 +1,15 @@
 import type { Prisma } from "@/generated/prisma/client";
+import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags";
 import type {
   MenuCategoryRecord,
   MenuItemOption,
   MenuItemRecord,
 } from "@/lib/menu/types";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
-import { parseMenuItemTags } from "@/lib/menu/tag-utils";
+import {
+  normalizeMenuItemTagsForStorage,
+  parseMenuItemTags,
+} from "@/lib/menu/tag-utils";
 import { prisma } from "@/lib/prisma";
 
 function mapMenuItemRecord(item: {
@@ -207,6 +211,9 @@ export async function createMenuItem(
     _max: { sortOrder: true },
   });
 
+  await syncMenuCustomTagsFromItemTags(restaurantId, input.tags);
+  const storedTags = normalizeMenuItemTagsForStorage(input.tags);
+
   const item = await prisma.menuItem.create({
     data: {
       restaurantId,
@@ -217,7 +224,7 @@ export async function createMenuItem(
       sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1,
       isAvailable: input.isAvailable,
       images: input.images,
-      tags: input.tags as Prisma.InputJsonValue,
+      tags: storedTags as Prisma.InputJsonValue,
     },
     include: {
       category: {
@@ -260,6 +267,15 @@ export async function updateMenuItem(
     }
   }
 
+  if (input.tags !== undefined) {
+    await syncMenuCustomTagsFromItemTags(restaurantId, input.tags);
+  }
+
+  const storedTags =
+    input.tags !== undefined
+      ? normalizeMenuItemTagsForStorage(input.tags)
+      : undefined;
+
   const item = await prisma.menuItem.update({
     where: { id: menuItemId },
     data: {
@@ -271,8 +287,8 @@ export async function updateMenuItem(
       ...(input.priceCents !== undefined ? { priceCents: input.priceCents } : {}),
       ...(input.isAvailable !== undefined ? { isAvailable: input.isAvailable } : {}),
       ...(input.images !== undefined ? { images: input.images } : {}),
-      ...(input.tags !== undefined
-        ? { tags: input.tags as Prisma.InputJsonValue }
+      ...(storedTags !== undefined
+        ? { tags: storedTags as Prisma.InputJsonValue }
         : {}),
     },
     include: {

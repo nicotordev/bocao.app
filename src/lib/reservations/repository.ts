@@ -39,8 +39,7 @@ function buildGuestFieldsFromCustomers(
 ) {
   return {
     guestName: customers.map((customer) => customer.name).join(", "),
-    guestPhone:
-      customers.find((customer) => customer.phone)?.phone ?? null,
+    guestPhone: customers.find((customer) => customer.phone)?.phone ?? null,
     customerId: customers[0]?.id ?? null,
   };
 }
@@ -103,43 +102,27 @@ export async function createReservation(
     throw new Error("At least one customer is required");
   }
 
-  const sharedData = {
-    restaurantId,
-    guestCount: input.guestCount,
-    status: input.status,
-    scheduledAt: new Date(input.scheduledAt),
-    notes: input.notes || null,
-  };
+  const guestFields =
+    resolvedCustomers.length === 1
+      ? {
+          customerId: resolvedCustomers[0]!.id,
+          guestName: resolvedCustomers[0]!.name,
+          guestPhone: resolvedCustomers[0]!.phone,
+        }
+      : buildGuestFieldsFromCustomers(resolvedCustomers);
 
-  if (resolvedCustomers.length === 1) {
-    const customer = resolvedCustomers[0]!;
-    const res = await prisma.reservation.create({
-      data: {
-        ...sharedData,
-        customerId: customer.id,
-        guestName: customer.name,
-        guestPhone: customer.phone,
-      },
-    });
+  const res = await prisma.reservation.create({
+    data: {
+      restaurantId,
+      guestCount: input.guestCount,
+      status: input.status,
+      scheduledAt: new Date(input.scheduledAt),
+      notes: input.notes || null,
+      ...guestFields,
+    },
+  });
 
-    return [mapReservation(res)];
-  }
-
-  const created = await prisma.$transaction(
-    resolvedCustomers.map((customer) =>
-      prisma.reservation.create({
-        data: {
-          ...sharedData,
-          customerId: customer.id,
-          guestName: customer.name,
-          guestPhone: customer.phone,
-          guestCount: 1,
-        },
-      }),
-    ),
-  );
-
-  return created.map((res) => mapReservation(res));
+  return [mapReservation(res)];
 }
 
 export async function updateReservation(
@@ -181,7 +164,8 @@ export async function updateReservation(
 
   if (input.guestCount !== undefined) data.guestCount = input.guestCount;
   if (input.status !== undefined) data.status = input.status;
-  if (input.scheduledAt !== undefined) data.scheduledAt = new Date(input.scheduledAt);
+  if (input.scheduledAt !== undefined)
+    data.scheduledAt = new Date(input.scheduledAt);
   if (input.notes !== undefined) data.notes = input.notes || null;
 
   const res = await prisma.reservation.update({
