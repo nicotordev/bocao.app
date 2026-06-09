@@ -11,7 +11,7 @@ import { KitchenStationsEmptyState } from "./kitchen-stations-empty-state";
 import { KitchenStationsHeader } from "./kitchen-stations-header";
 import { KitchenStationsList } from "./kitchen-stations-list";
 import type { KitchenStationsLabels } from "./types";
-
+import { KitchenStationsPageSkeleton } from "./kitchen-stations-page-skeleton";
 type KitchenStationsPageClientProps = {
   labels: KitchenStationsLabels;
   restaurantId: string;
@@ -140,7 +140,7 @@ export function KitchenStationsPageClient({
       />
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">{labels.loading}</p>
+        <KitchenStationsPageSkeleton />
       ) : stations.length === 0 ? (
         <KitchenStationsEmptyState
           labels={labels.empty}
