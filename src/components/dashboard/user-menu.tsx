@@ -162,9 +162,9 @@ export function UserMenu({
           <Button
             variant="ghost"
             className={cn(
-              "gap-2.5 rounded-xl transition-all",
+              "gap-2.5 rounded-xl transition-colors duration-150",
               isSidebar
-                ? "h-auto w-full justify-start p-2 hover:bg-sidebar-accent text-sidebar-foreground data-[state=open]:bg-sidebar-accent"
+                ? "h-auto w-full justify-start p-2 hover:bg-sidebar-accent text-sidebar-foreground data-[state=open]:bg-sidebar-accent group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-0"
                 : "h-10.5 px-2.5 hover:bg-muted/60",
             )}
             aria-label={t("ariaLabel")}

@@ -7,10 +7,7 @@ import {
   DashboardFocusModeProvider,
   useDashboardFocusMode,
 } from "@/components/dashboard/dashboard-focus-mode";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
@@ -30,7 +27,14 @@ function DashboardShellInner({ context, children }: DashboardShellProps) {
   const { isFocused } = useDashboardFocusMode();
 
   return (
-    <SidebarProvider defaultOpen>
+    <SidebarProvider
+      defaultOpen
+      style={
+        {
+          "--sidebar-width-icon": "4rem",
+        } as React.CSSProperties
+      }
+    >
       {isFocused ? null : (
         <AppSidebar
           user={context.user}

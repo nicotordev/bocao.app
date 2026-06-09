@@ -624,6 +624,156 @@
         }
       }
     },
+    "kitchen": {
+      "header": {
+        "title": "Cocina",
+        "subtitle": "Monitorea preparación, estaciones y tiempos de pedidos en tiempo real."
+      },
+      "actions": {
+        "refresh": "Actualizar",
+        "configureStations": "Configurar estaciones",
+        "fullscreen": "Pantalla completa",
+        "exitFullscreen": "Salir de pantalla completa",
+        "start": "Iniciar",
+        "pause": "Pausar",
+        "resume": "Reanudar",
+        "markReady": "Listo",
+        "viewDetail": "Ver detalle",
+        "changeStatus": "Cambiar estado",
+        "reassignStation": "Reasignar estación",
+        "markDelayed": "Marcar atrasado",
+        "printTicket": "Imprimir comanda",
+        "viewSuggestions": "Ver sugerencias",
+        "clearFilters": "Limpiar",
+        "toggleFilters": "Filtros"
+      },
+      "kpis": {
+        "active": "Pedidos activos",
+        "averageTime": "Tiempo promedio",
+        "delayed": "Atrasados",
+        "ready": "Listos",
+        "activeTrend": "+3 vs última hora",
+        "averageTrend": "+11% en 60 min",
+        "delayedTrend": "Requiere atención",
+        "readyTrend": "Salida estable"
+      },
+      "toolbar": {
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por pedido, cliente o producto",
+        "station": "Estación",
+        "priority": "Prioridad",
+        "channel": "Canal",
+        "view": "Vista",
+        "all": "Todas"
+      },
+      "stations": {
+        "all": "Todas",
+        "grill": "Parrilla",
+        "fryer": "Freidora",
+        "sushi": "Sushi",
+        "bar": "Bar",
+        "desserts": "Postres",
+        "delivery": "Delivery"
+      },
+      "priorities": {
+        "all": "Todas",
+        "normal": "Normal",
+        "high": "Alta",
+        "urgent": "Urgente",
+        "delayed": "Atrasado"
+      },
+      "channels": {
+        "all": "Todos",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "table": "Mesa",
+        "delivery": "Delivery",
+        "pickup": "Retiro"
+      },
+      "statuses": {
+        "received": "Recibido",
+        "inPreparation": "En preparación",
+        "waiting": "En espera",
+        "ready": "Listo",
+        "delivered": "Entregado",
+        "delayed": "Atrasado"
+      },
+      "views": {
+        "cards": "Cards",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "tabs": {
+        "cards": "Cards",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "ticket": {
+        "table": "Mesa",
+        "minutes": "min",
+        "paused": "Pausado",
+        "items": "Productos",
+        "kitchenNote": "Nota",
+        "importantNote": "Nota importante",
+        "allergen": "Contiene",
+        "delayedAlert": "Pedido fuera de SLA — priorizar salida"
+      },
+      "kanban": {
+        "dragHelp": "Arrastra tickets entre columnas para actualizar el estado.",
+        "dropHere": "Suelta tickets aquí"
+      },
+      "timeline": {
+        "title": "Actividad de cocina",
+        "subtitle": "Eventos operacionales recientes por pedido.",
+        "eventReceived": "Pedido recibido",
+        "eventAssigned": "Asignado a",
+        "eventStarted": "Iniciado por",
+        "eventPaused": "Pausado por",
+        "eventReady": "Marcado como listo",
+        "eventDelivered": "Entregado a",
+        "eventDelayed": "Marcado como atrasado",
+        "fromChannel": "desde"
+      },
+      "drawer": {
+        "title": "Pedido",
+        "description": "Detalle operativo del ticket de cocina.",
+        "order": "Pedido",
+        "items": "Items",
+        "operation": "Operación",
+        "timeline": "Timeline",
+        "actions": "Acciones",
+        "number": "Número",
+        "status": "Estado",
+        "channel": "Canal",
+        "destination": "Mesa / cliente",
+        "receivedAt": "Hora de entrada",
+        "totalTime": "Tiempo total",
+        "station": "Estación",
+        "assignee": "Responsable",
+        "priority": "Prioridad",
+        "sla": "SLA estimado",
+        "quantity": "Cantidad",
+        "modifiers": "Modificadores",
+        "allergens": "Alérgenos",
+        "notes": "Notas"
+      },
+      "copilot": {
+        "title": "Copiloto de cocina",
+        "subtitle": "Insights accionables para el turno actual."
+      },
+      "empty": {
+        "title": "La cocina está al día",
+        "description": "Cuando entren nuevos pedidos, aparecerán aquí listos para preparación.",
+        "cta": "Ver pedidos"
+      },
+      "loading": {
+        "tickets": "Cargando tickets de cocina..."
+      },
+      "accessibility": {
+        "openDetails": "Abrir detalle del pedido",
+        "orderNumber": "Número de pedido"
+      }
+    },
     "floorPlan": {
       "header": {
         "title": "Plano de mesas",

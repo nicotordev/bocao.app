@@ -624,6 +624,156 @@
         }
       }
     },
+    "kitchen": {
+      "header": {
+        "title": "Kitchen",
+        "subtitle": "Monitor prep stations and order timing in real time."
+      },
+      "actions": {
+        "refresh": "Refresh",
+        "configureStations": "Configure stations",
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit fullscreen",
+        "start": "Start",
+        "pause": "Pause",
+        "resume": "Resume",
+        "markReady": "Ready",
+        "viewDetail": "View detail",
+        "changeStatus": "Change status",
+        "reassignStation": "Reassign station",
+        "markDelayed": "Mark delayed",
+        "printTicket": "Print ticket",
+        "viewSuggestions": "View suggestions",
+        "clearFilters": "Clear",
+        "toggleFilters": "Filters"
+      },
+      "kpis": {
+        "active": "Active orders",
+        "averageTime": "Average time",
+        "delayed": "Delayed",
+        "ready": "Ready",
+        "activeTrend": "+3 vs last hour",
+        "averageTrend": "+11% in 60 min",
+        "delayedTrend": "Needs attention",
+        "readyTrend": "Steady output"
+      },
+      "toolbar": {
+        "search": "Search",
+        "searchPlaceholder": "Search by order, customer, or product",
+        "station": "Station",
+        "priority": "Priority",
+        "channel": "Channel",
+        "view": "View",
+        "all": "All"
+      },
+      "stations": {
+        "all": "All",
+        "grill": "Grill",
+        "fryer": "Fryer",
+        "sushi": "Sushi",
+        "bar": "Bar",
+        "desserts": "Desserts",
+        "delivery": "Delivery"
+      },
+      "priorities": {
+        "all": "All",
+        "normal": "Normal",
+        "high": "High",
+        "urgent": "Urgent",
+        "delayed": "Delayed"
+      },
+      "channels": {
+        "all": "All",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "table": "Table",
+        "delivery": "Delivery",
+        "pickup": "Pickup"
+      },
+      "statuses": {
+        "received": "Received",
+        "inPreparation": "In preparation",
+        "waiting": "Waiting",
+        "ready": "Ready",
+        "delivered": "Delivered",
+        "delayed": "Delayed"
+      },
+      "views": {
+        "cards": "Cards",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "tabs": {
+        "cards": "Cards",
+        "kanban": "Kanban",
+        "timeline": "Timeline"
+      },
+      "ticket": {
+        "table": "Table",
+        "minutes": "min",
+        "paused": "Paused",
+        "items": "Items",
+        "kitchenNote": "Note",
+        "importantNote": "Important note",
+        "allergen": "Contains",
+        "delayedAlert": "Order past SLA — prioritize output"
+      },
+      "kanban": {
+        "dragHelp": "Drag tickets across columns to update status.",
+        "dropHere": "Drop tickets here"
+      },
+      "timeline": {
+        "title": "Kitchen activity",
+        "subtitle": "Recent operational events by order.",
+        "eventReceived": "Order received",
+        "eventAssigned": "Assigned to",
+        "eventStarted": "Started by",
+        "eventPaused": "Paused by",
+        "eventReady": "Marked ready",
+        "eventDelivered": "Delivered to",
+        "eventDelayed": "Marked delayed",
+        "fromChannel": "from"
+      },
+      "drawer": {
+        "title": "Order",
+        "description": "Operational detail for the kitchen ticket.",
+        "order": "Order",
+        "items": "Items",
+        "operation": "Operation",
+        "timeline": "Timeline",
+        "actions": "Actions",
+        "number": "Number",
+        "status": "Status",
+        "channel": "Channel",
+        "destination": "Table / customer",
+        "receivedAt": "Received at",
+        "totalTime": "Total time",
+        "station": "Station",
+        "assignee": "Assignee",
+        "priority": "Priority",
+        "sla": "Estimated SLA",
+        "quantity": "Quantity",
+        "modifiers": "Modifiers",
+        "allergens": "Allergens",
+        "notes": "Notes"
+      },
+      "copilot": {
+        "title": "Kitchen copilot",
+        "subtitle": "Actionable insights for the current shift."
+      },
+      "empty": {
+        "title": "Kitchen is caught up",
+        "description": "When new orders arrive, they will appear here ready for prep.",
+        "cta": "View orders"
+      },
+      "loading": {
+        "tickets": "Loading kitchen tickets..."
+      },
+      "accessibility": {
+        "openDetails": "Open order details",
+        "orderNumber": "Order number"
+      }
+    },
     "floorPlan": {
       "header": {
         "title": "Table floor plan",

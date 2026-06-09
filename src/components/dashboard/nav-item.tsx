@@ -47,29 +47,34 @@ export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
   const label = t(item.id);
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
       <SidebarMenuButton
         asChild
         isActive={isActive}
         tooltip={label}
         className={cn(
-          "transition-all duration-200 rounded-xl relative group/nav-item py-2.5",
+          "transition-colors duration-150 rounded-xl relative group/nav-item py-2.5",
+          "group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:py-0!",
           isActive
             ? "bg-primary/10 text-primary font-medium hover:bg-primary/15"
             : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50",
         )}
       >
-        <Link href={item.href} aria-current={isActive ? "page" : undefined}>
+        <Link
+          href={item.href}
+          aria-current={isActive ? "page" : undefined}
+          className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+        >
           <Icon
             className={cn(
-              "size-4 shrink-0 transition-transform duration-200 group-hover/nav-item:scale-110",
+              "size-4 shrink-0 transition-transform duration-150 group-hover/nav-item:scale-110",
               isActive
                 ? "text-primary"
                 : "text-muted-foreground group-hover/nav-item:text-foreground",
             )}
             aria-hidden
           />
-          <span>{label}</span>
+          <span className="group-data-[collapsible=icon]:hidden">{label}</span>
           {isActive && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary animate-pulse group-data-[collapsible=icon]:hidden" />
           )}
