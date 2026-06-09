@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -141,7 +141,12 @@ export function MenuItemDialog({
   onFlowSaved,
 }: MenuItemDialogProps) {
   const locale = useLocale() as typeof defaultLocale;
-  const customTagsByKey = menuCustomTagsToMap(customTagDefinitions);
+  const customTagsByKey = useMemo(
+    () => menuCustomTagsToMap(customTagDefinitions),
+    [customTagDefinitions],
+  );
+  const defaultCategoryId = categories[0]?.id ?? "";
+  const cachedFlow = item ? productFlowsByMenuItemId[item.id] : undefined;
   const [form, setForm] = useState<MenuItemFormValues>(() => emptyForm(locale));
   const [activeTab, setActiveTab] = useState("general");
   const [validationError, setValidationError] = useState("");
@@ -160,7 +165,7 @@ export function MenuItemDialog({
     async function loadForm() {
       if (item) {
         const existingFlow =
-          productFlowsByMenuItemId[item.id] ??
+          cachedFlow ??
           (await getProductPurchaseFlowAction({
             restaurantId,
             menuItemId: item.id,
@@ -195,7 +200,7 @@ export function MenuItemDialog({
       } else {
         setForm({
           ...emptyForm(locale),
-          categoryId: categories[0]?.id ?? "",
+          categoryId: defaultCategoryId,
         });
       }
 
@@ -209,12 +214,12 @@ export function MenuItemDialog({
       cancelled = true;
     };
   }, [
-    categories,
+    cachedFlow,
     customTagsByKey,
+    defaultCategoryId,
     item,
     locale,
     open,
-    productFlowsByMenuItemId,
     restaurantId,
   ]);
 

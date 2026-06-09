@@ -378,7 +378,6 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
       flowBlocks={flowBlocks}
       flowTemplates={flowTemplates}
       productFlowsByMenuItemId={productFlowsByMenuItemId}
-      contentLocales={contentLocales}
     />
   );
 }

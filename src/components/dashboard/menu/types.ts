@@ -261,7 +261,6 @@ export type MenuPageClientProps = {
   flowBlocks: ProductFlowBlockRecord[];
   flowTemplates: ProductFlowTemplateRecord[];
   productFlowsByMenuItemId: Record<string, ProductPurchaseFlowRecord>;
-  contentLocales: string[];
 };
 
 export type MenuItemFormValues = {

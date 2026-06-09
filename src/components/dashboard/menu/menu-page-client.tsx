@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useCallback, useMemo, useState, useTransition } from "react";
@@ -30,12 +31,18 @@ import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import { MenuCategoryDialog } from "./menu-category-dialog";
 import { MenuFilters } from "./menu-filters";
 import { MenuHeader } from "./menu-header";
-import { FlowBlocksLibraryDialog } from "./flow-blocks-library-dialog";
 import { MenuItemDialog } from "./menu-item-dialog";
-import { ContentLocalesDialog } from "./content-locales-dialog";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
-import { MenuTreeBoard } from "./menu-tree-board";
+import { MenuTreeBoardSkeleton } from "./menu-tree-board-skeleton";
 import type { MenuPageClientProps } from "./types";
+
+const MenuTreeBoard = dynamic(
+  () => import("./menu-tree-board").then((module) => module.MenuTreeBoard),
+  {
+    ssr: false,
+    loading: () => <MenuTreeBoardSkeleton />,
+  },
+);
 import type { MenuListFilters } from "@/lib/menu/filter-utils";
 import type {
   ProductFlowBlockRecord,
@@ -188,7 +195,6 @@ function MenuPageClientBody({
   flowBlocks: initialFlowBlocks,
   flowTemplates: initialFlowTemplates,
   productFlowsByMenuItemId: initialProductFlowsByMenuItemId,
-  contentLocales: initialContentLocales,
   filters,
   searchDraft,
   setSearchDraft,
@@ -210,8 +216,6 @@ function MenuPageClientBody({
   const router = useRouter();
   const [isRefreshing, startRefresh] = useTransition();
 
-  const [contentLocales, setContentLocales] = useState(initialContentLocales);
-  const [localeOptionsState, setLocaleOptionsState] = useState(localeOptions);
   const [items, setItems] = useState(initialItems);
   const [categories, setCategories] = useState(initialCategories);
   const [customTagDefinitions, setCustomTagDefinitions] = useState(
@@ -222,10 +226,7 @@ function MenuPageClientBody({
     useState<MenuCategoryRecord | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [flowLibraryOpen, setFlowLibraryOpen] = useState(false);
-  const [contentLocalesOpen, setContentLocalesOpen] = useState(false);
-  const [flowBlocks, setFlowBlocks] =
-    useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
+  const [flowBlocks] = useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
   const [flowTemplates, setFlowTemplates] =
     useState<ProductFlowTemplateRecord[]>(initialFlowTemplates);
   const [productFlowsByMenuItemId, setProductFlowsByMenuItemId] = useState(
@@ -379,8 +380,6 @@ function MenuPageClientBody({
         canEdit={canEdit}
         onNewItem={handleCreateItem}
         onNewCategory={handleCreateCategory}
-        onOpenContentLocales={() => setContentLocalesOpen(true)}
-        onOpenFlowLibrary={() => setFlowLibraryOpen(true)}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
@@ -460,7 +459,7 @@ function MenuPageClientBody({
             catalogTags={catalogTags}
             tagCatalogLabels={tagCatalogLabels}
             customTagDefinitions={customTagDefinitions}
-            localeOptions={localeOptionsState}
+            localeOptions={localeOptions}
             flowLabels={labels.flow}
             flowBlocks={flowBlocks}
             flowTemplates={flowTemplates}
@@ -488,38 +487,6 @@ function MenuPageClientBody({
                 return next;
               })
             }
-          />
-          <FlowBlocksLibraryDialog
-            open={flowLibraryOpen}
-            onOpenChange={setFlowLibraryOpen}
-            labels={labels.flow}
-            localeOptions={localeOptionsState}
-            currency={currency}
-            restaurantId={restaurantId}
-            blocks={flowBlocks}
-            templates={flowTemplates}
-            categories={categories.map((entry) => ({
-              id: entry.id,
-              name: entry.name,
-            }))}
-            menuItems={items.map((entry) => ({
-              id: entry.id,
-              name: entry.name,
-            }))}
-            onBlocksChange={setFlowBlocks}
-            onTemplatesChange={setFlowTemplates}
-          />
-          <ContentLocalesDialog
-            open={contentLocalesOpen}
-            onOpenChange={setContentLocalesOpen}
-            labels={labels.flow.contentLocales}
-            uiLocale={locale}
-            restaurantId={restaurantId}
-            contentLocales={contentLocales}
-            onSaved={(nextLocales, nextLocaleOptions) => {
-              setContentLocales(nextLocales);
-              setLocaleOptionsState(nextLocaleOptions);
-            }}
           />
           <MenuCategoryDialog
             labels={labels}
