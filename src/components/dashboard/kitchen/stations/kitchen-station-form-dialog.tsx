@@ -67,34 +67,73 @@ export function KitchenStationFormDialog({
   onSubmit,
   isSubmitting = false,
 }: KitchenStationFormDialogProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<KitchenStationCategory>("grill");
-  const [customCategoryLabel, setCustomCategoryLabel] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [iconId, setIconId] = useState<MenuTagIconId | null>(null);
-  const [isActive, setIsActive] = useState(true);
-  const [sortOrder, setSortOrder] = useState("");
+  const isEditing = Boolean(station);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? labels.form.editTitle : labels.form.createTitle}
+          </DialogTitle>
+          <DialogDescription>
+            {isEditing
+              ? labels.form.editDescription
+              : labels.form.createDescription}
+          </DialogDescription>
+        </DialogHeader>
+
+        {open ? (
+          <KitchenStationFormFields
+            key={station?.id ?? "new"}
+            labels={labels}
+            restaurantId={restaurantId}
+            station={station}
+            isSubmitting={isSubmitting}
+            onOpenChange={onOpenChange}
+            onSubmit={onSubmit}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function KitchenStationFormFields({
+  labels,
+  restaurantId,
+  station,
+  isSubmitting,
+  onOpenChange,
+  onSubmit,
+}: {
+  labels: KitchenStationsLabels;
+  restaurantId: string;
+  station: KitchenStationWithStats | null;
+  isSubmitting: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: KitchenStationFormDialogProps["onSubmit"];
+}) {
+  const [name, setName] = useState(() => station?.name ?? "");
+  const [description, setDescription] = useState(() => station?.description ?? "");
+  const [category, setCategory] = useState<KitchenStationCategory>(
+    () => station?.category ?? "grill",
+  );
+  const [customCategoryLabel, setCustomCategoryLabel] = useState(
+    () => station?.customCategoryLabel ?? "",
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    () => station?.imageUrl ?? null,
+  );
+  const [iconId, setIconId] = useState<MenuTagIconId | null>(
+    () => station?.iconId ?? null,
+  );
+  const [isActive, setIsActive] = useState(() => station?.isActive ?? true);
+  const [sortOrder, setSortOrder] = useState(() =>
+    station ? String(station.sortOrder + 1) : "",
+  );
   const [validationError, setValidationError] = useState("");
   const [otherCategoryError, setOtherCategoryError] = useState("");
-
-  const isEditing = Boolean(station);
-  const formKey = `${open}-${station?.id ?? "new"}`;
-  const [syncedFormKey, setSyncedFormKey] = useState(formKey);
-
-  if (syncedFormKey !== formKey) {
-    setSyncedFormKey(formKey);
-    setName(station?.name ?? "");
-    setDescription(station?.description ?? "");
-    setCategory(station?.category ?? "grill");
-    setCustomCategoryLabel(station?.customCategoryLabel ?? "");
-    setImageUrl(station?.imageUrl ?? null);
-    setIconId(station?.iconId ?? null);
-    setIsActive(station?.isActive ?? true);
-    setSortOrder(station ? String(station.sortOrder + 1) : "");
-    setValidationError("");
-    setOtherCategoryError("");
-  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -142,152 +181,139 @@ export function KitchenStationFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? labels.form.editTitle : labels.form.createTitle}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? labels.form.editDescription
-              : labels.form.createDescription}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 py-2">
-          <Field>
-            <FieldLabel htmlFor="station-name">{labels.form.name}</FieldLabel>
-            <Input
-              id="station-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder={labels.form.namePlaceholder}
-              autoFocus
-            />
-            {validationError ? (
-              <p className="text-sm text-destructive">{validationError}</p>
-            ) : null}
-          </Field>
-
-          <KitchenStationVisualField
-            labels={labels.form.visual}
-            restaurantId={restaurantId}
-            imageUrl={imageUrl}
-            iconId={iconId}
-            onImageChange={setImageUrl}
-            onIconChange={setIconId}
-            disabled={isSubmitting}
+    <>
+      <div className="grid gap-4 py-2">
+        <Field>
+          <FieldLabel htmlFor="station-name">{labels.form.name}</FieldLabel>
+          <Input
+            id="station-name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder={labels.form.namePlaceholder}
+            autoFocus
           />
+          {validationError ? (
+            <p className="text-sm text-destructive">{validationError}</p>
+          ) : null}
+        </Field>
 
+        <KitchenStationVisualField
+          labels={labels.form.visual}
+          restaurantId={restaurantId}
+          imageUrl={imageUrl}
+          iconId={iconId}
+          onImageChange={setImageUrl}
+          onIconChange={setIconId}
+          disabled={isSubmitting}
+        />
+
+        <Field>
+          <FieldLabel htmlFor="station-description">
+            {labels.form.description}
+          </FieldLabel>
+          <Textarea
+            id="station-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder={labels.form.descriptionPlaceholder}
+            rows={3}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel>{labels.form.category}</FieldLabel>
+          <Select
+            value={category}
+            onValueChange={(value) => {
+              const nextCategory = value as KitchenStationCategory;
+              setCategory(nextCategory);
+              if (nextCategory !== "other") {
+                setCustomCategoryLabel("");
+                setOtherCategoryError("");
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={labels.form.categoryPlaceholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {labels.categories[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
+        {category === "other" ? (
           <Field>
-            <FieldLabel htmlFor="station-description">
-              {labels.form.description}
+            <FieldLabel htmlFor="station-other-category">
+              {labels.form.otherCategoryLabel}
             </FieldLabel>
-            <Textarea
-              id="station-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder={labels.form.descriptionPlaceholder}
-              rows={3}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel>{labels.form.category}</FieldLabel>
-            <Select
-              value={category}
-              onValueChange={(value) => {
-                const nextCategory = value as KitchenStationCategory;
-                setCategory(nextCategory);
-                if (nextCategory !== "other") {
-                  setCustomCategoryLabel("");
+            <Input
+              id="station-other-category"
+              value={customCategoryLabel}
+              onChange={(event) => {
+                setCustomCategoryLabel(event.target.value);
+                if (otherCategoryError) {
                   setOtherCategoryError("");
                 }
               }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={labels.form.categoryPlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {categoryOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {labels.categories[option]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              placeholder={labels.form.otherCategoryLabelPlaceholder}
+              maxLength={40}
+            />
+            <FieldDescription>
+              {labels.form.otherCategoryLabelHint}
+            </FieldDescription>
+            {otherCategoryError ? (
+              <p className="text-sm text-destructive">{otherCategoryError}</p>
+            ) : null}
           </Field>
+        ) : null}
 
-          {category === "other" ? (
-            <Field>
-              <FieldLabel htmlFor="station-other-category">
-                {labels.form.otherCategoryLabel}
-              </FieldLabel>
-              <Input
-                id="station-other-category"
-                value={customCategoryLabel}
-                onChange={(event) => {
-                  setCustomCategoryLabel(event.target.value);
-                  if (otherCategoryError) {
-                    setOtherCategoryError("");
-                  }
-                }}
-                placeholder={labels.form.otherCategoryLabelPlaceholder}
-                maxLength={40}
-              />
-              <FieldDescription>
-                {labels.form.otherCategoryLabelHint}
-              </FieldDescription>
-              {otherCategoryError ? (
-                <p className="text-sm text-destructive">{otherCategoryError}</p>
-              ) : null}
-            </Field>
-          ) : null}
+        <Field>
+          <FieldLabel htmlFor="station-sort-order">
+            {labels.form.sortOrder}
+          </FieldLabel>
+          <Input
+            id="station-sort-order"
+            type="number"
+            min={1}
+            value={sortOrder}
+            onChange={(event) => setSortOrder(event.target.value)}
+            placeholder="1"
+          />
+          <FieldDescription>{labels.form.sortOrderHint}</FieldDescription>
+        </Field>
 
-          <Field>
-            <FieldLabel htmlFor="station-sort-order">
-              {labels.form.sortOrder}
+        <Field orientation="horizontal">
+          <div className="flex flex-1 flex-col gap-1">
+            <FieldLabel htmlFor="station-active">
+              {labels.form.isActive}
             </FieldLabel>
-            <Input
-              id="station-sort-order"
-              type="number"
-              min={1}
-              value={sortOrder}
-              onChange={(event) => setSortOrder(event.target.value)}
-              placeholder="1"
-            />
-            <FieldDescription>{labels.form.sortOrderHint}</FieldDescription>
-          </Field>
+            <FieldDescription>{labels.form.isActiveHint}</FieldDescription>
+          </div>
+          <Switch
+            id="station-active"
+            checked={isActive}
+            onCheckedChange={setIsActive}
+          />
+        </Field>
+      </div>
 
-          <Field orientation="horizontal">
-            <div className="flex flex-1 flex-col gap-1">
-              <FieldLabel htmlFor="station-active">
-                {labels.form.isActive}
-              </FieldLabel>
-              <FieldDescription>{labels.form.isActiveHint}</FieldDescription>
-            </div>
-            <Switch
-              id="station-active"
-              checked={isActive}
-              onCheckedChange={setIsActive}
-            />
-          </Field>
-        </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            {labels.form.cancel}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? labels.form.saving : labels.form.save}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <DialogFooter>
+        <Button
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+          disabled={isSubmitting}
+        >
+          {labels.form.cancel}
+        </Button>
+        <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? labels.form.saving : labels.form.save}
+        </Button>
+      </DialogFooter>
+    </>
   );
 }

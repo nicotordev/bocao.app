@@ -2,13 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteMenuItemAction } from "@/app/actions/menu";
 import { ListPagination } from "@/components/dashboard/list-pagination";
@@ -39,138 +33,86 @@ import { MenuHeader } from "./menu-header";
 import { FlowBlocksLibraryDialog } from "./flow-blocks-library-dialog";
 import { MenuItemDialog } from "./menu-item-dialog";
 import { ContentLocalesDialog } from "./content-locales-dialog";
+import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { MenuTreeBoard } from "./menu-tree-board";
 import type { MenuPageClientProps } from "./types";
+import type { MenuListFilters } from "@/lib/menu/filters";
 import type {
   ProductFlowBlockRecord,
   ProductFlowTemplateRecord,
 } from "@/lib/product-flow/types";
 
-export function MenuPageClient({
-  labels,
-  restaurantId,
-  currency,
-  canEdit,
-  items: initialItems,
-  categories: initialCategories,
-  pagination: initialPagination,
-  catalogTags,
-  tagCatalogLabels,
-  customTagDefinitions: initialCustomTagDefinitions,
-  localeOptions,
-  flowBlocks: initialFlowBlocks,
-  flowTemplates: initialFlowTemplates,
-  productFlowsByMenuItemId: initialProductFlowsByMenuItemId,
-  contentLocales: initialContentLocales,
-}: MenuPageClientProps) {
-  const locale = useLocale();
+function buildMenuServerSnapshotKey({
+  items,
+  categories,
+  customTagDefinitions,
+  flowBlocks,
+  flowTemplates,
+  productFlowsByMenuItemId,
+}: Pick<
+  MenuPageClientProps,
+  | "items"
+  | "categories"
+  | "customTagDefinitions"
+  | "flowBlocks"
+  | "flowTemplates"
+  | "productFlowsByMenuItemId"
+>) {
+  return [
+    items
+      .map(
+        (item) =>
+          `${item.id}:${item.priceCents}:${item.isAvailable}:${item.categoryId}`,
+      )
+      .join("|"),
+    categories
+      .map(
+        (category) =>
+          `${category.id}:${category.name}:${category.itemCount}`,
+      )
+      .join("|"),
+    customTagDefinitions.map((tag) => tag.key).join("|"),
+    flowBlocks.map((block) => block.id).join("|"),
+    flowTemplates.map((template) => template.id).join("|"),
+    Object.keys(productFlowsByMenuItemId).sort().join("|"),
+  ].join("::");
+}
+
+export function MenuPageClient(props: MenuPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isRefreshing, startRefresh] = useTransition();
   const filters = useMemo(
     () => parseMenuListSearchParams(Object.fromEntries(searchParams.entries())),
     [searchParams],
   );
-
   const urlSearch = filters.search ?? "";
-  const [searchDraft, setSearchDraft] = useState(urlSearch);
-  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
-
-  if (prevUrlSearch !== urlSearch) {
-    setPrevUrlSearch(urlSearch);
-    setSearchDraft(urlSearch);
-  }
-
-  const [contentLocales, setContentLocales] = useState(initialContentLocales);
-  const [localeOptionsState, setLocaleOptionsState] = useState(localeOptions);
-  const [items, setItems] = useState(initialItems);
-  const [categories, setCategories] = useState(initialCategories);
-  const [customTagDefinitions, setCustomTagDefinitions] = useState(
-    initialCustomTagDefinitions,
-  );
-  const [activeItem, setActiveItem] = useState<MenuItemRecord | null>(null);
-  const [activeCategory, setActiveCategory] =
-    useState<MenuCategoryRecord | null>(null);
-  const [itemDialogOpen, setItemDialogOpen] = useState(false);
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [flowLibraryOpen, setFlowLibraryOpen] = useState(false);
-  const [contentLocalesOpen, setContentLocalesOpen] = useState(false);
-  const [flowBlocks, setFlowBlocks] =
-    useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
-  const [flowTemplates, setFlowTemplates] =
-    useState<ProductFlowTemplateRecord[]>(initialFlowTemplates);
-  const [productFlowsByMenuItemId, setProductFlowsByMenuItemId] = useState(
-    initialProductFlowsByMenuItemId,
-  );
-
-  const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
-  if (prevInitialItems !== initialItems) {
-    setPrevInitialItems(initialItems);
-    setItems(initialItems);
-  }
-
-  const [prevInitialCategories, setPrevInitialCategories] =
-    useState(initialCategories);
-  if (prevInitialCategories !== initialCategories) {
-    setPrevInitialCategories(initialCategories);
-    setCategories(initialCategories);
-  }
-
-  const [prevInitialCustomTags, setPrevInitialCustomTags] = useState(
-    initialCustomTagDefinitions,
-  );
-  if (prevInitialCustomTags !== initialCustomTagDefinitions) {
-    setPrevInitialCustomTags(initialCustomTagDefinitions);
-    setCustomTagDefinitions(initialCustomTagDefinitions);
-  }
-
-  const [prevInitialFlowBlocks, setPrevInitialFlowBlocks] =
-    useState(initialFlowBlocks);
-  if (prevInitialFlowBlocks !== initialFlowBlocks) {
-    setPrevInitialFlowBlocks(initialFlowBlocks);
-    setFlowBlocks(initialFlowBlocks);
-  }
-
-  const [prevInitialFlowTemplates, setPrevInitialFlowTemplates] =
-    useState(initialFlowTemplates);
-  if (prevInitialFlowTemplates !== initialFlowTemplates) {
-    setPrevInitialFlowTemplates(initialFlowTemplates);
-    setFlowTemplates(initialFlowTemplates);
-  }
-
-  const [prevInitialProductFlows, setPrevInitialProductFlows] = useState(
-    initialProductFlowsByMenuItemId,
-  );
-  if (prevInitialProductFlows !== initialProductFlowsByMenuItemId) {
-    setPrevInitialProductFlows(initialProductFlowsByMenuItemId);
-    setProductFlowsByMenuItemId(initialProductFlowsByMenuItemId);
-  }
-
-  const customTagLabels = useMemo(
+  const {
+    items: snapshotItems,
+    categories: snapshotCategories,
+    customTagDefinitions: snapshotCustomTags,
+    flowBlocks: snapshotFlowBlocks,
+    flowTemplates: snapshotFlowTemplates,
+    productFlowsByMenuItemId: snapshotProductFlows,
+  } = props;
+  const serverSnapshotKey = useMemo(
     () =>
-      buildMenuCustomTagLabelMap(
-        customTagDefinitions,
-        locale as Locale,
-        defaultLocale,
-      ),
-    [customTagDefinitions, locale],
+      buildMenuServerSnapshotKey({
+        items: snapshotItems,
+        categories: snapshotCategories,
+        customTagDefinitions: snapshotCustomTags,
+        flowBlocks: snapshotFlowBlocks,
+        flowTemplates: snapshotFlowTemplates,
+        productFlowsByMenuItemId: snapshotProductFlows,
+      }),
+    [
+      snapshotItems,
+      snapshotCategories,
+      snapshotCustomTags,
+      snapshotFlowBlocks,
+      snapshotFlowTemplates,
+      snapshotProductFlows,
+    ],
   );
-
-  const tagSuggestions = useMemo(
-    () => collectMenuTagSuggestions(items),
-    [items],
-  );
-
-  const urlParams = useMemo(
-    () => ({
-      search: filters.search,
-      category: filters.categoryId,
-      showUnavailable: filters.showUnavailable === false ? "false" : undefined,
-    }),
-    [filters],
-  );
-
-  const contentFiltersActive = hasMenuContentFilters(filters);
 
   const navigateFilters = useCallback(
     (
@@ -207,17 +149,110 @@ export function MenuPageClient({
     [filters, router],
   );
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (urlSearch === searchDraft) {
-        return;
-      }
+  return (
+    <DebouncedSearchDraft
+      key={urlSearch}
+      urlSearch={urlSearch}
+      onDebouncedChange={(search) => navigateFilters({ search })}
+    >
+      {(searchDraft, setSearchDraft) => (
+        <MenuPageClientBody
+          key={serverSnapshotKey}
+          {...props}
+          filters={filters}
+          searchDraft={searchDraft}
+          setSearchDraft={setSearchDraft}
+          navigateFilters={navigateFilters}
+        />
+      )}
+    </DebouncedSearchDraft>
+  );
+}
 
-      navigateFilters({ search: searchDraft });
-    }, 350);
+function MenuPageClientBody({
+  labels,
+  restaurantId,
+  currency,
+  canEdit,
+  items: initialItems,
+  categories: initialCategories,
+  pagination: initialPagination,
+  catalogTags,
+  tagCatalogLabels,
+  customTagDefinitions: initialCustomTagDefinitions,
+  localeOptions,
+  flowBlocks: initialFlowBlocks,
+  flowTemplates: initialFlowTemplates,
+  productFlowsByMenuItemId: initialProductFlowsByMenuItemId,
+  contentLocales: initialContentLocales,
+  filters,
+  searchDraft,
+  setSearchDraft,
+  navigateFilters,
+}: MenuPageClientProps & {
+  filters: MenuListFilters;
+  searchDraft: string;
+  setSearchDraft: (value: string) => void;
+  navigateFilters: (
+    next: {
+      search?: string;
+      categoryId?: string;
+      showUnavailable?: boolean;
+    },
+    options?: { page?: number },
+  ) => void;
+}) {
+  const locale = useLocale();
+  const router = useRouter();
+  const [isRefreshing, startRefresh] = useTransition();
 
-    return () => window.clearTimeout(timer);
-  }, [navigateFilters, searchDraft, urlSearch]);
+  const [contentLocales, setContentLocales] = useState(initialContentLocales);
+  const [localeOptionsState, setLocaleOptionsState] = useState(localeOptions);
+  const [items, setItems] = useState(initialItems);
+  const [categories, setCategories] = useState(initialCategories);
+  const [customTagDefinitions, setCustomTagDefinitions] = useState(
+    initialCustomTagDefinitions,
+  );
+  const [activeItem, setActiveItem] = useState<MenuItemRecord | null>(null);
+  const [activeCategory, setActiveCategory] =
+    useState<MenuCategoryRecord | null>(null);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [flowLibraryOpen, setFlowLibraryOpen] = useState(false);
+  const [contentLocalesOpen, setContentLocalesOpen] = useState(false);
+  const [flowBlocks, setFlowBlocks] =
+    useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
+  const [flowTemplates, setFlowTemplates] =
+    useState<ProductFlowTemplateRecord[]>(initialFlowTemplates);
+  const [productFlowsByMenuItemId, setProductFlowsByMenuItemId] = useState(
+    initialProductFlowsByMenuItemId,
+  );
+
+  const customTagLabels = useMemo(
+    () =>
+      buildMenuCustomTagLabelMap(
+        customTagDefinitions,
+        locale as Locale,
+        defaultLocale,
+      ),
+    [customTagDefinitions, locale],
+  );
+
+  const tagSuggestions = useMemo(
+    () => collectMenuTagSuggestions(items),
+    [items],
+  );
+
+  const urlParams = useMemo(
+    () => ({
+      search: filters.search,
+      category: filters.categoryId,
+      showUnavailable: filters.showUnavailable === false ? "false" : undefined,
+    }),
+    [filters],
+  );
+
+  const contentFiltersActive = hasMenuContentFilters(filters);
 
   function handleRefresh() {
     startRefresh(() => {

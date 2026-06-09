@@ -79,10 +79,54 @@ export function ProductPurchaseWizard({
   allMenuItems,
   onConfirm,
 }: ProductPurchaseWizardProps) {
-  const locale = useLocale() as MenuLocaleOption["value"];
   const flow = menuItem.purchaseFlow;
+
+  if (!flow || !flow.isActive || flow.steps.length === 0) {
+    return null;
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[min(90vh,720px)] max-w-lg flex-col gap-0 overflow-hidden p-0">
+        {open ? (
+          <ProductPurchaseWizardBody
+            key={`${menuItem.id}-${flow.id}`}
+            labels={labels}
+            currency={currency}
+            menuItem={menuItem}
+            flow={flow}
+            allMenuItems={allMenuItems}
+            onOpenChange={onOpenChange}
+            onConfirm={onConfirm}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ProductPurchaseWizardBody({
+  labels,
+  currency,
+  menuItem,
+  flow,
+  allMenuItems,
+  onOpenChange,
+  onConfirm,
+}: {
+  labels: ProductFlowWizardLabels;
+  currency: string;
+  menuItem: MenuItemWithFlowOption;
+  flow: NonNullable<MenuItemWithFlowOption["purchaseFlow"]>;
+  allMenuItems: Array<{ id: string; name: string; priceCents: number }>;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (result: ProductPurchaseWizardResult) => void;
+}) {
+  const locale = useLocale() as MenuLocaleOption["value"];
   const [stepIndex, setStepIndex] = useState(0);
-  const [selections, setSelections] = useState<FlowSelections>({});
+  const [selections, setSelections] = useState<FlowSelections>(() =>
+    createInitialSelections(flow.steps, menuItem.flowBlocks),
+  );
   const [validationError, setValidationError] = useState("");
 
   const menuItemPrices = useMemo(
@@ -90,41 +134,20 @@ export function ProductPurchaseWizard({
     [allMenuItems],
   );
 
-  const visibleSteps = useMemo(() => {
-    if (!flow) {
-      return [];
-    }
+  const visibleSteps = useMemo(
+    () => resolveVisibleSteps(flow.steps, menuItem.flowBlocks, selections),
+    [flow.steps, menuItem.flowBlocks, selections],
+  );
 
-    return resolveVisibleSteps(flow.steps, menuItem.flowBlocks, selections);
-  }, [flow, menuItem.flowBlocks, selections]);
-
-  const wizardKey = `${open}-${menuItem.id}-${flow?.id ?? "none"}`;
-  const [syncedWizardKey, setSyncedWizardKey] = useState(wizardKey);
-
-  if (syncedWizardKey !== wizardKey && open && flow) {
-    setSyncedWizardKey(wizardKey);
-    setSelections(createInitialSelections(flow.steps, menuItem.flowBlocks));
-    setStepIndex(0);
-    setValidationError("");
-  }
-
-  const safeStepIndex =
+  const currentStepIndex =
     visibleSteps.length === 0
       ? 0
       : Math.min(stepIndex, visibleSteps.length - 1);
 
-  if (safeStepIndex !== stepIndex && visibleSteps.length > 0) {
-    setStepIndex(safeStepIndex);
-  }
-
-  const currentStep = visibleSteps[safeStepIndex];
-  const isLastStep = safeStepIndex >= visibleSteps.length - 1;
+  const currentStep = visibleSteps[currentStepIndex];
+  const isLastStep = currentStepIndex >= visibleSteps.length - 1;
 
   const livePrice = useMemo(() => {
-    if (!flow) {
-      return menuItem.priceCents;
-    }
-
     return computeFlowLinePrice({
       basePriceCents: menuItem.priceCents,
       steps: flow.steps,
@@ -148,7 +171,7 @@ export function ProductPurchaseWizard({
   }
 
   function validateCurrentStep() {
-    if (!flow || !currentStep) {
+    if (!currentStep) {
       return true;
     }
 
@@ -184,14 +207,10 @@ export function ProductPurchaseWizard({
       return;
     }
 
-    setStepIndex((current) => current + 1);
+    setStepIndex(currentStepIndex + 1);
   }
 
   function handleConfirm() {
-    if (!flow) {
-      return;
-    }
-
     const errors = validateFlowSelections({
       steps: flow.steps,
       blocks: menuItem.flowBlocks,
@@ -224,14 +243,9 @@ export function ProductPurchaseWizard({
     onOpenChange(false);
   }
 
-  if (!flow || !flow.isActive || flow.steps.length === 0) {
-    return null;
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[min(90vh,720px)] max-w-lg flex-col gap-0 overflow-hidden p-0">
-        <DialogHeader className="border-b border-border px-6 py-5">
+    <>
+      <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle>{labels.title}</DialogTitle>
           <DialogDescription>
             {labels.description.replace("{product}", menuItem.name)}
@@ -242,7 +256,7 @@ export function ProductPurchaseWizard({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
               {labels.stepOf
-                .replace("{current}", String(safeStepIndex + 1))
+                .replace("{current}", String(currentStepIndex + 1))
                 .replace("{total}", String(visibleSteps.length))}
             </span>
             <span className="font-medium">
@@ -289,7 +303,7 @@ export function ProductPurchaseWizard({
               onClick={() =>
                 setStepIndex((current) => Math.max(0, current - 1))
               }
-              disabled={safeStepIndex === 0}
+              disabled={currentStepIndex === 0}
             >
               <ChevronLeft className="size-4" aria-hidden />
               {labels.back}
@@ -306,8 +320,7 @@ export function ProductPurchaseWizard({
             </Button>
           </div>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </>
   );
 }
 

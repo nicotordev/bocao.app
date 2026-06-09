@@ -99,17 +99,34 @@ export function MenuTreeBoard({
     () => buildMenuTreeLayout(categories, items),
     [categories, items],
   );
-  const [dragLayout, setDragLayout] = useState<MenuTreeLayout | null>(null);
-  const layout = dragLayout ?? baseLayout;
+  const [dragOverride, setDragOverride] = useState<{
+    source: MenuTreeLayout;
+    layout: MenuTreeLayout;
+  } | null>(null);
+  const layout =
+    dragOverride && dragOverride.source === baseLayout
+      ? dragOverride.layout
+      : baseLayout;
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const layoutRef = useRef(layout);
   const layoutSnapshotRef = useRef<MenuTreeLayout | null>(null);
 
-  const [prevBaseLayout, setPrevBaseLayout] = useState(baseLayout);
-  if (prevBaseLayout !== baseLayout) {
-    setPrevBaseLayout(baseLayout);
-    setDragLayout(null);
+  function setDragLayout(
+    next:
+      | MenuTreeLayout
+      | ((current: MenuTreeLayout) => MenuTreeLayout),
+  ) {
+    setDragOverride((current) => {
+      const resolvedBase =
+        current && current.source === baseLayout
+          ? current.layout
+          : baseLayout;
+      const resolvedLayout =
+        typeof next === "function" ? next(resolvedBase) : next;
+
+      return { source: baseLayout, layout: resolvedLayout };
+    });
   }
 
   useEffect(() => {
@@ -214,12 +231,11 @@ export function MenuTreeBoard({
       return;
     }
 
-    setDragLayout((current) => {
-      const base = current ?? baseLayout;
-      return (
-        applyMenuTreeMove(base, String(active.id), String(over.id)) ?? base
-      );
-    });
+    setDragLayout(
+      (current) =>
+        applyMenuTreeMove(current, String(active.id), String(over.id)) ??
+        current,
+    );
   }
 
   function handleDragEnd(event: DragEndEvent) {

@@ -49,6 +49,7 @@ export default async function ReservationsPage({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <ReservationsPageClient
+        key={reservationId ?? "list"}
         labels={{
           ...labels,
           pagination: {

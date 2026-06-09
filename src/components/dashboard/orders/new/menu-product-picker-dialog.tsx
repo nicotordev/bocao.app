@@ -42,23 +42,6 @@ export function MenuProductPickerDialog({
     () => [...groupedMenuItems.keys()],
     [groupedMenuItems],
   );
-  const [activeCategory, setActiveCategory] = useState(categories[0] ?? "");
-  const pickerKey = `${open}-${categories.join(",")}`;
-  const [syncedPickerKey, setSyncedPickerKey] = useState(pickerKey);
-
-  if (syncedPickerKey !== pickerKey && open && categories.length > 0) {
-    setSyncedPickerKey(pickerKey);
-    setActiveCategory(categories[0] ?? "");
-  }
-
-  const activeItems =
-    groupedMenuItems.get(activeCategory) ??
-    groupedMenuItems.get(categories[0] ?? "") ??
-    [];
-
-  function handleSelectMenuItem(menuItem: MenuItemWithFlowOption) {
-    onSelectMenuItem(menuItem);
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,46 +53,16 @@ export function MenuProductPickerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {menuItems.length > 0 ? (
-          <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,11rem)_minmax(0,1fr)]">
-            <aside className="border-r border-border bg-muted/20 p-3">
-              <ScrollArea className="h-[min(58vh,520px)]">
-                <div className="flex flex-col gap-2 pr-2">
-                  {categories.map((categoryName) => (
-                    <button
-                      key={categoryName}
-                      type="button"
-                      onClick={() => setActiveCategory(categoryName)}
-                      className={cn(
-                        "rounded-2xl px-3 py-3 text-left text-sm font-medium transition-colors",
-                        activeCategory === categoryName
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "bg-card text-foreground hover:bg-accent hover:text-accent-foreground",
-                      )}
-                    >
-                      {categoryName}
-                    </button>
-                  ))}
-                </div>
-              </ScrollArea>
-            </aside>
-
-            <ScrollArea className="h-[min(58vh,520px)]">
-              <div className="flex flex-col gap-3 p-4">
-                {activeItems.map((menuItem) => (
-                  <MenuProductCard
-                    key={menuItem.id}
-                    menuItem={menuItem}
-                    currency={currency}
-                    addLabel={labels.items.picker.addProduct}
-                    flowLabel={labels.items.picker.hasFlow}
-                    onSelect={() => handleSelectMenuItem(menuItem)}
-                  />
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        ) : (
+        {open && menuItems.length > 0 ? (
+          <MenuProductPickerContent
+            key={categories.join(",")}
+            labels={labels}
+            currency={currency}
+            categories={categories}
+            groupedMenuItems={groupedMenuItems}
+            onSelectMenuItem={onSelectMenuItem}
+          />
+        ) : menuItems.length > 0 ? null : (
           <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
             <p className="font-medium">{labels.items.picker.emptyMenuTitle}</p>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
@@ -125,6 +78,68 @@ export function MenuProductPickerDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function MenuProductPickerContent({
+  labels,
+  currency,
+  categories,
+  groupedMenuItems,
+  onSelectMenuItem,
+}: {
+  labels: NewOrderLabels;
+  currency: string;
+  categories: string[];
+  groupedMenuItems: Map<string, MenuItemWithFlowOption[]>;
+  onSelectMenuItem: (menuItem: MenuItemWithFlowOption) => void;
+}) {
+  const [activeCategory, setActiveCategory] = useState(() => categories[0] ?? "");
+
+  const activeItems =
+    groupedMenuItems.get(activeCategory) ??
+    groupedMenuItems.get(categories[0] ?? "") ??
+    [];
+
+  return (
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,11rem)_minmax(0,1fr)]">
+      <aside className="border-r border-border bg-muted/20 p-3">
+        <ScrollArea className="h-[min(58vh,520px)]">
+          <div className="flex flex-col gap-2 pr-2">
+            {categories.map((categoryName) => (
+              <button
+                key={categoryName}
+                type="button"
+                onClick={() => setActiveCategory(categoryName)}
+                className={cn(
+                  "rounded-2xl px-3 py-3 text-left text-sm font-medium transition-colors",
+                  activeCategory === categoryName
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-card text-foreground hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                {categoryName}
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
+      </aside>
+
+      <ScrollArea className="h-[min(58vh,520px)]">
+        <div className="flex flex-col gap-3 p-4">
+          {activeItems.map((menuItem) => (
+            <MenuProductCard
+              key={menuItem.id}
+              menuItem={menuItem}
+              currency={currency}
+              addLabel={labels.items.picker.addProduct}
+              flowLabel={labels.items.picker.hasFlow}
+              onSelect={() => onSelectMenuItem(menuItem)}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
 

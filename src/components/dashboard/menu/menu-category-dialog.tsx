@@ -42,19 +42,62 @@ export function MenuCategoryDialog({
   onUpdated,
   onDeleted,
 }: MenuCategoryDialogProps) {
-  const [name, setName] = useState("");
+  const isEditing = Boolean(category);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md rounded-3xl">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing
+              ? labels.categoryDialog.editTitle
+              : labels.categoryDialog.createTitle}
+          </DialogTitle>
+          <DialogDescription>
+            {isEditing
+              ? labels.categoryDialog.editDescription
+              : labels.categoryDialog.createDescription}
+          </DialogDescription>
+        </DialogHeader>
+
+        {open ? (
+          <MenuCategoryFormFields
+            key={category?.id ?? "new"}
+            labels={labels}
+            restaurantId={restaurantId}
+            category={category}
+            onOpenChange={onOpenChange}
+            onCreated={onCreated}
+            onUpdated={onUpdated}
+            onDeleted={onDeleted}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MenuCategoryFormFields({
+  labels,
+  restaurantId,
+  category,
+  onOpenChange,
+  onCreated,
+  onUpdated,
+  onDeleted,
+}: {
+  labels: MenuPageLabels;
+  restaurantId: string;
+  category: MenuCategoryRecord | null;
+  onOpenChange: (open: boolean) => void;
+  onCreated: (category: MenuCategoryRecord) => void;
+  onUpdated: (category: MenuCategoryRecord) => void;
+  onDeleted: (categoryId: string) => void;
+}) {
+  const [name, setName] = useState(() => category?.name ?? "");
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const isEditing = Boolean(category);
-  const formKey = `${open}-${category?.id ?? "new"}`;
-  const [syncedFormKey, setSyncedFormKey] = useState(formKey);
-
-  if (syncedFormKey !== formKey) {
-    setSyncedFormKey(formKey);
-    setName(category?.name ?? "");
-    setValidationError("");
-  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -127,80 +170,65 @@ export function MenuCategoryDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-3xl">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing
-              ? labels.categoryDialog.editTitle
-              : labels.categoryDialog.createTitle}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? labels.categoryDialog.editDescription
-              : labels.categoryDialog.createDescription}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className="space-y-4 py-2">
+        {validationError ? (
+          <div className="rounded-2xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
+            {validationError}
+          </div>
+        ) : null}
 
-        <div className="space-y-4 py-2">
-          {validationError ? (
-            <div className="rounded-2xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
-              {validationError}
-            </div>
-          ) : null}
+        <Field>
+          <FieldLabel className="required">
+            {labels.categoryDialog.name}
+          </FieldLabel>
+          <Input
+            value={name}
+            onChange={(event) => {
+              setName(event.target.value);
+              setValidationError("");
+            }}
+            placeholder={labels.categoryDialog.namePlaceholder}
+            className="rounded-3xl"
+            autoFocus
+          />
+        </Field>
+      </div>
 
-          <Field>
-            <FieldLabel className="required">
-              {labels.categoryDialog.name}
-            </FieldLabel>
-            <Input
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-                setValidationError("");
-              }}
-              placeholder={labels.categoryDialog.namePlaceholder}
-              className="rounded-3xl"
-              autoFocus
-            />
-          </Field>
-        </div>
-
-        <DialogFooter className="flex gap-2 pt-2">
-          {isEditing ? (
-            <Button
-              type="button"
-              variant="destructive"
-              className="rounded-2xl"
-              onClick={() => void handleDelete()}
-              disabled={isSubmitting}
-            >
-              {labels.actions.delete}
-            </Button>
-          ) : null}
+      <DialogFooter className="flex gap-2 pt-2">
+        {isEditing ? (
           <Button
             type="button"
-            variant="outline"
+            variant="destructive"
             className="rounded-2xl"
-            onClick={() => onOpenChange(false)}
+            onClick={() => void handleDelete()}
             disabled={isSubmitting}
           >
-            {labels.actions.cancel}
+            {labels.actions.delete}
           </Button>
-          <Button
-            type="button"
-            className="rounded-2xl"
-            onClick={() => void handleSubmit()}
-            disabled={isSubmitting}
-          >
-            {isSubmitting
-              ? labels.actions.saving
-              : isEditing
-                ? labels.actions.save
-                : labels.actions.create}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-2xl"
+          onClick={() => onOpenChange(false)}
+          disabled={isSubmitting}
+        >
+          {labels.actions.cancel}
+        </Button>
+        <Button
+          type="button"
+          className="rounded-2xl"
+          onClick={() => void handleSubmit()}
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? labels.actions.saving
+            : isEditing
+              ? labels.actions.save
+              : labels.actions.create}
+        </Button>
+      </DialogFooter>
+    </>
   );
 }

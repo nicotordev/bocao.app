@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { useReservationsListQuery } from "@/lib/query/reservations/reservations.queries";
@@ -55,25 +56,10 @@ export function ReservationsPageClient({
   );
 
   const urlSearch = filters.search ?? "";
-  const [searchDraft, setSearchDraft] = useState(urlSearch);
-  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
-
-  if (prevUrlSearch !== urlSearch) {
-    setPrevUrlSearch(urlSearch);
-    setSearchDraft(urlSearch);
-  }
 
   const [activeReservation, setActiveReservation] =
     useState<Reservation | null>(initialReservation);
   const [isDialogOpen, setIsDialogOpen] = useState(Boolean(initialReservation));
-
-  const [prevInitialReservation, setPrevInitialReservation] =
-    useState(initialReservation);
-  if (initialReservation && prevInitialReservation !== initialReservation) {
-    setPrevInitialReservation(initialReservation);
-    setActiveReservation(initialReservation);
-    setIsDialogOpen(true);
-  }
 
   const reservationsQuery = useReservationsListQuery(restaurantId, filters);
 
@@ -161,18 +147,6 @@ export function ReservationsPageClient({
     },
     [filters, router, searchParams],
   );
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (urlSearch === searchDraft) {
-        return;
-      }
-
-      navigateFilters({ search: searchDraft });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [navigateFilters, searchDraft, urlSearch]);
 
   const handleCreate = () => {
     setActiveReservation(null);
@@ -263,31 +237,37 @@ export function ReservationsPageClient({
   };
 
   return (
-    <main className="flex flex-col gap-6 p-4 md:p-6">
-      <ReservationsHeader
-        labels={labels}
-        onNew={handleCreate}
-        onRefresh={() => void reservationsQuery.refetch()}
-        isRefreshing={
-          reservationsQuery.isFetching && !reservationsQuery.isPending
-        }
-      />
+    <DebouncedSearchDraft
+      key={urlSearch}
+      urlSearch={urlSearch}
+      onDebouncedChange={(search) => navigateFilters({ search })}
+    >
+      {(searchDraft, setSearchDraft) => (
+        <main className="flex flex-col gap-6 p-4 md:p-6">
+          <ReservationsHeader
+            labels={labels}
+            onNew={handleCreate}
+            onRefresh={() => void reservationsQuery.refetch()}
+            isRefreshing={
+              reservationsQuery.isFetching && !reservationsQuery.isPending
+            }
+          />
 
-      <ReservationsKpis labels={labels.kpis} values={kpis} />
+          <ReservationsKpis labels={labels.kpis} values={kpis} />
 
-      <ReservationsFilters
-        labels={labels}
-        search={searchDraft}
-        onSearchChange={setSearchDraft}
-        status={filters.status ?? "all"}
-        onStatusChange={(status) => navigateFilters({ status })}
-        date={dateFilter}
-        onDateChange={(date) => navigateFilters({ date })}
-        onClear={() => {
-          setSearchDraft("");
-          navigateFilters({ search: "", status: "all", date: undefined });
-        }}
-      />
+          <ReservationsFilters
+            labels={labels}
+            search={searchDraft}
+            onSearchChange={setSearchDraft}
+            status={filters.status ?? "all"}
+            onStatusChange={(status) => navigateFilters({ status })}
+            date={dateFilter}
+            onDateChange={(date) => navigateFilters({ date })}
+            onClear={() => {
+              setSearchDraft("");
+              navigateFilters({ search: "", status: "all", date: undefined });
+            }}
+          />
 
       <QueryResultState query={reservationsQuery}>
         {() => (
@@ -326,6 +306,8 @@ export function ReservationsPageClient({
         onSubmit={handleSubmit}
         isSubmitting={createMutation.isPending || updateMutation.isPending}
       />
-    </main>
+        </main>
+      )}
+    </DebouncedSearchDraft>
   );
 }

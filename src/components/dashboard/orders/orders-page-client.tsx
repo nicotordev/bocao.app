@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
@@ -26,6 +26,7 @@ import {
   useOrdersKpiQuery,
   useOrdersListQuery,
 } from "@/lib/query/orders/orders.queries";
+import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { AiOrderInsights } from "./ai-order-insights";
 import { OrderDetailsDrawer } from "./order-details-drawer";
 import { OrdersFilters, type OrdersFiltersState } from "./orders-filters";
@@ -65,13 +66,6 @@ export function OrdersPageClient({
   );
 
   const urlSearch = filters.search ?? "";
-  const [searchDraft, setSearchDraft] = useState(urlSearch);
-  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
-
-  if (prevUrlSearch !== urlSearch) {
-    setPrevUrlSearch(urlSearch);
-    setSearchDraft(urlSearch);
-  }
 
   const kpiFilters = useMemo(() => toOrdersKpiFilters(filters), [filters]);
   const ordersQuery = useOrdersListQuery(restaurantId, filters);
@@ -86,15 +80,6 @@ export function OrdersPageClient({
     pageSize: filters.pageSize,
     total: 0,
     totalPages: 1,
-  };
-
-  const filterState: OrdersFiltersState = {
-    search: searchDraft,
-    status: filters.status ?? "all",
-    channel: filters.channel ?? "all",
-    restaurant: restaurants[0] ?? "",
-    from: filters.from ?? "",
-    to: filters.to ?? "",
   };
 
   const urlParams = useMemo(
@@ -151,19 +136,9 @@ export function OrdersPageClient({
     [filters, router],
   );
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (urlSearch === searchDraft) {
-        return;
-      }
-
-      navigateFilters({ search: searchDraft });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [navigateFilters, searchDraft, urlSearch]);
-
-  const clearFilters = () => {
+  const clearFilters = (
+    setSearchDraft: (value: string) => void,
+  ) => {
     const { from, to } = createDefaultOrdersDateRange(timezone);
     setSearchDraft("");
     navigateFilters({
@@ -206,7 +181,23 @@ export function OrdersPageClient({
   };
 
   return (
-    <main className="flex flex-col gap-6 p-4 md:p-6">
+    <DebouncedSearchDraft
+      key={urlSearch}
+      urlSearch={urlSearch}
+      onDebouncedChange={(search) => navigateFilters({ search })}
+    >
+      {(searchDraft, setSearchDraft) => {
+        const filterState: OrdersFiltersState = {
+          search: searchDraft,
+          status: filters.status ?? "all",
+          channel: filters.channel ?? "all",
+          restaurant: restaurants[0] ?? "",
+          from: filters.from ?? "",
+          to: filters.to ?? "",
+        };
+
+        return (
+          <main className="flex flex-col gap-6 p-4 md:p-6">
       <OrdersHeader
         labels={labels}
         onExport={handleExport}
@@ -247,7 +238,7 @@ export function OrdersPageClient({
                   to: value.to,
                 });
               }}
-              onClear={clearFilters}
+              onClear={() => clearFilters(setSearchDraft)}
             />
 
             <Tabs
@@ -310,6 +301,9 @@ export function OrdersPageClient({
           if (!open) setSelectedOrder(null);
         }}
       />
-    </main>
+          </main>
+        );
+      }}
+    </DebouncedSearchDraft>
   );
 }
