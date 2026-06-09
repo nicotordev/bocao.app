@@ -1,4 +1,4 @@
-import type { OrdersListFilters } from "@/lib/orders/filters";
+import type { OrdersKpiFilters, OrdersListFilters } from "@/lib/orders/filters";
 
 export const queryKeys = {
   restaurants: {
@@ -16,6 +16,9 @@ export const queryKeys = {
       restaurantId: string,
       filters?: Omit<OrdersListFilters, "page" | "pageSize">,
     ) => [...queryKeys.orders.boards(), restaurantId, filters ?? {}] as const,
+    kpis: () => [...queryKeys.orders.all, "kpi"] as const,
+    kpi: (restaurantId: string, filters?: OrdersKpiFilters) =>
+      [...queryKeys.orders.kpis(), restaurantId, filters ?? {}] as const,
     details: () => [...queryKeys.orders.all, "detail"] as const,
     detail: (restaurantId: string, orderId: string) =>
       [...queryKeys.orders.details(), restaurantId, orderId] as const,

@@ -848,7 +848,23 @@
           "saving": "Saving...",
           "cancel": "Cancel",
           "delete": "Delete",
-          "confirmDelete": "Delete this station? This action cannot be undone."
+          "confirmDelete": "Delete this station? This action cannot be undone.",
+          "visual": {
+            "image": "Station image",
+            "imageHint": "Upload a photo to identify this station in the kitchen view.",
+            "icon": "Station icon",
+            "iconHint": "Pick an icon when you don't have a photo. Selecting an icon clears the image.",
+            "orDivider": "or",
+            "photos": {
+              "addPhoto": "Add photo",
+              "removePhoto": "Remove photo",
+              "uploading": "Uploading...",
+              "uploadError": "We couldn't upload the photo.",
+              "invalidImageType": "The file must be a valid image.",
+              "imageTooLarge": "The image exceeds the 5 MB size limit.",
+              "storageNotConfigured": "Image storage is not configured."
+            }
+          }
         },
         "empty": {
           "title": "No stations configured yet",

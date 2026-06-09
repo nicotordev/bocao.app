@@ -3,10 +3,14 @@ import { getTranslations } from "next-intl/server";
 import { OrdersPageClient } from "@/components/dashboard/orders/orders-page-client";
 import type { OrdersLabels } from "@/components/dashboard/orders/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
-import { parseOrdersListSearchParams } from "@/lib/orders/filters";
+import {
+  parseOrdersListSearchParams,
+  toOrdersKpiFilters,
+} from "@/lib/orders/filters";
 import { getQueryClient } from "@/lib/query/get-query-client";
 import {
   ordersBoardQueryOptions,
+  ordersKpiQueryOptions,
   ordersListQueryOptions,
 } from "@/lib/query/orders/orders.queries";
 import { searchParamsToRecord } from "@/lib/list-url";
@@ -29,6 +33,9 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     await Promise.all([
       queryClient.prefetchQuery(ordersListQueryOptions(restaurantId, filters)),
       queryClient.prefetchQuery(ordersBoardQueryOptions(restaurantId, filters)),
+      queryClient.prefetchQuery(
+        ordersKpiQueryOptions(restaurantId, toOrdersKpiFilters(filters)),
+      ),
     ]);
   }
 

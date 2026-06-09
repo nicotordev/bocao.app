@@ -1,3 +1,5 @@
+import type { MenuTagIconId } from "@/lib/menu/tag-icons";
+
 export type KitchenStationCategory =
   | "grill"
   | "fryer"
@@ -14,6 +16,8 @@ export type KitchenStationConfig = {
   name: string;
   description: string;
   category: KitchenStationCategory;
+  imageUrl: string | null;
+  iconId: MenuTagIconId | null;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;

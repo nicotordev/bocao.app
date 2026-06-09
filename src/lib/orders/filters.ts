@@ -77,6 +77,17 @@ export type OrdersQueryFilters = Omit<
   keyof PaginationParams
 >;
 
+export type OrdersKpiFilters = Pick<OrdersQueryFilters, "from" | "to">;
+
+export function toOrdersKpiFilters(
+  filters: OrdersListFilters,
+): OrdersKpiFilters {
+  return {
+    from: filters.from,
+    to: filters.to,
+  };
+}
+
 export function buildOrdersPrismaWhere(
   restaurantId: string,
   filters: OrdersQueryFilters | undefined,

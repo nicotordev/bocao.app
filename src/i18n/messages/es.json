@@ -848,7 +848,23 @@
           "saving": "Guardando...",
           "cancel": "Cancelar",
           "delete": "Eliminar",
-          "confirmDelete": "¿Eliminar esta estación? Esta acción no se puede deshacer."
+          "confirmDelete": "¿Eliminar esta estación? Esta acción no se puede deshacer.",
+          "visual": {
+            "image": "Imagen de la estación",
+            "imageHint": "Sube una foto para identificar esta estación en la vista de cocina.",
+            "icon": "Ícono de la estación",
+            "iconHint": "Elige un ícono si no tienes foto. Al seleccionar un ícono se quita la imagen.",
+            "orDivider": "o",
+            "photos": {
+              "addPhoto": "Agregar foto",
+              "removePhoto": "Quitar foto",
+              "uploading": "Subiendo...",
+              "uploadError": "No pudimos subir la foto.",
+              "invalidImageType": "El archivo debe ser una imagen válida.",
+              "imageTooLarge": "La imagen supera el límite de 5 MB.",
+              "storageNotConfigured": "El almacenamiento de imágenes no está configurado."
+            }
+          }
         },
         "empty": {
           "title": "Aún no hay estaciones configuradas",

@@ -10,7 +10,7 @@ import type { Locale } from "@/i18n/locales";
 import { defaultLocale } from "@/i18n/locales";
 import { buildListUrl } from "@/lib/list-url";
 import {
-  hasActiveMenuFilters,
+  hasMenuContentFilters,
   parseMenuListSearchParams,
 } from "@/lib/menu/filters";
 import {
@@ -147,7 +147,7 @@ export function MenuPageClient({
     [filters],
   );
 
-  const serverFiltered = hasActiveMenuFilters(filters);
+  const contentFiltersActive = hasMenuContentFilters(filters);
 
   function navigateFilters(
     next: {
@@ -354,7 +354,6 @@ export function MenuPageClient({
             items={items}
             search={searchDraft}
             showUnavailable={filters.showUnavailable ?? true}
-            serverFiltered={serverFiltered}
             tagCatalogLabels={tagCatalogLabels}
             customTagLabels={customTagLabels}
             onEditCategory={handleEditCategory}
@@ -362,12 +361,14 @@ export function MenuPageClient({
             onDeleteItem={(item) => void handleDeleteItem(item)}
             onLayoutChange={handleLayoutChange}
           />
-          <ListPagination
-            basePath="/dashboard/menu"
-            params={urlParams}
-            meta={initialPagination}
-            labels={labels.pagination}
-          />
+          {!contentFiltersActive ? (
+            <ListPagination
+              basePath="/dashboard/menu"
+              params={urlParams}
+              meta={initialPagination}
+              labels={labels.pagination}
+            />
+          ) : null}
         </div>
       )}
 

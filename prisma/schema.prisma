@@ -204,6 +204,17 @@ enum FlowLibraryScope {
   MENU_ITEM
 }
 
+enum KitchenStationCategory {
+  GRILL
+  FRYER
+  SUSHI
+  BAR
+  DESSERTS
+  DELIVERY
+  PREP
+  OTHER
+}
+
 /// Restaurant (location) operating under an organization.
 model Restaurant {
   id             String        @id @default(cuid())
@@ -236,8 +247,30 @@ model Restaurant {
   productFlowBlocks    ProductFlowBlock[]
   productFlowTemplates ProductFlowTemplate[]
   productPurchaseFlows ProductPurchaseFlow[]
+  kitchenStations      KitchenStation[]
 
   @@index([organizationId])
+}
+
+/// Operational kitchen prep station configured per restaurant.
+model KitchenStation {
+  id           String                 @id @default(cuid())
+  restaurantId String
+  name         String
+  description  String                 @default("")
+  category     KitchenStationCategory
+  imageUrl     String?
+  /// Menu tag icon key used when no custom image is set.
+  iconId       String?
+  isActive     Boolean                @default(true)
+  sortOrder    Int                    @default(0)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@index([restaurantId, sortOrder])
 }
 
 /// Configurable dining area with a custom polygon boundary and table layout.

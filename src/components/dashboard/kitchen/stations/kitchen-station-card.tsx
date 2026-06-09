@@ -16,6 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MenuTagIconGlyph } from "@/components/dashboard/menu/menu-tag-icon-picker";
 import type { KitchenStationWithStats } from "@/lib/kitchen/stations/types";
 import { cn } from "@/lib/utils";
 import { KitchenStationStatusBadge } from "./kitchen-station-status-badge";
@@ -69,11 +70,27 @@ export function KitchenStationCard({
     >
       <CardHeader className="gap-3 border-b border-border/60 bg-card/70 pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
+          <div className="flex min-w-0 items-start gap-3">
+            {station.imageUrl ? (
+              <div className="size-12 shrink-0 overflow-hidden rounded-xl border border-border/70 bg-background/80">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={station.imageUrl}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              </div>
+            ) : station.iconId ? (
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background/80 text-primary">
+                <MenuTagIconGlyph icon={station.iconId} className="size-6" />
+              </div>
+            ) : null}
+            <div className="min-w-0 space-y-1">
             <CardTitle className="truncate text-lg">{station.name}</CardTitle>
             <CardDescription className="line-clamp-2">
               {station.description || labels.card.noDescription}
             </CardDescription>
+            </div>
           </div>
           <KitchenStationStatusBadge
             isActive={station.isActive}

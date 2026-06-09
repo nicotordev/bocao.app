@@ -12,6 +12,7 @@ import { computeOrdersKpiTrends } from "@/lib/orders/compute-kpi-trends";
 import { createDefaultOrdersDateRange } from "@/lib/orders/date";
 import {
   parseOrdersListSearchParams,
+  toOrdersKpiFilters,
   type OrdersListFilters,
 } from "@/lib/orders/filters";
 import {
@@ -22,6 +23,7 @@ import {
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
 import {
   useOrdersBoardQuery,
+  useOrdersKpiQuery,
   useOrdersListQuery,
 } from "@/lib/query/orders/orders.queries";
 import { AiOrderInsights } from "./ai-order-insights";
@@ -80,8 +82,10 @@ export function OrdersPageClient({
     return () => window.clearTimeout(timer);
   }, [filters.search, searchDraft]);
 
+  const kpiFilters = useMemo(() => toOrdersKpiFilters(filters), [filters]);
   const ordersQuery = useOrdersListQuery(restaurantId, filters);
   const boardQuery = useOrdersBoardQuery(restaurantId, filters);
+  const kpiQuery = useOrdersKpiQuery(restaurantId, kpiFilters);
   const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
 
   const listOrders = ordersQuery.data?.orders ?? [];
@@ -113,16 +117,18 @@ export function OrdersPageClient({
     [filters],
   );
 
+  const kpiOrders = kpiQuery.data?.orders ?? [];
+
   const kpiValues = useMemo(() => {
-    const values = computeOrdersKpis(boardOrders);
-    const trends = computeOrdersKpiTrends(boardOrders, {
+    const values = computeOrdersKpis(kpiOrders);
+    const trends = computeOrdersKpiTrends(kpiOrders, {
       notAvailable: labels.kpis.notAvailable,
       preparingCount: labels.kpis.preparingCount,
       readyCount: labels.kpis.readyCount,
     });
 
     return { ...values, trends };
-  }, [boardOrders, labels.kpis]);
+  }, [kpiOrders, labels.kpis]);
 
   function navigateFilters(
     next: Partial<OrdersListFilters & OrdersFiltersState>,
@@ -200,11 +206,16 @@ export function OrdersPageClient({
         labels={labels}
         onExport={handleExport}
         onRefresh={() => {
-          void Promise.all([ordersQuery.refetch(), boardQuery.refetch()]);
+          void Promise.all([
+            ordersQuery.refetch(),
+            boardQuery.refetch(),
+            kpiQuery.refetch(),
+          ]);
         }}
         isRefreshing={
           (ordersQuery.isFetching && !ordersQuery.isPending) ||
-          (boardQuery.isFetching && !boardQuery.isPending)
+          (boardQuery.isFetching && !boardQuery.isPending) ||
+          (kpiQuery.isFetching && !kpiQuery.isPending)
         }
       />
       <OrdersKpis labels={labels.kpis} values={kpiValues} />

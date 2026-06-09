@@ -106,11 +106,16 @@ export async function buildMenuItemPrismaWhere(
   return where;
 }
 
-export function hasActiveMenuFilters(filters: MenuListFilters) {
+export function hasMenuContentFilters(
+  filters: Pick<MenuListFilters, "search" | "categoryId" | "showUnavailable">,
+) {
   return Boolean(
     filters.search?.trim() ||
     filters.categoryId ||
-    filters.showUnavailable === false ||
-    filters.page > 1,
+    filters.showUnavailable === false,
   );
+}
+
+export function hasActiveMenuFilters(filters: MenuListFilters) {
+  return hasMenuContentFilters(filters) || filters.page > 1;
 }

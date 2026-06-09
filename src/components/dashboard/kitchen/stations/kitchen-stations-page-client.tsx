@@ -65,6 +65,8 @@ export function KitchenStationsPageClient({
     name: string;
     description: string;
     category: KitchenStationWithStats["category"];
+    imageUrl: string | null;
+    iconId: KitchenStationWithStats["iconId"];
     isActive: boolean;
     sortOrder?: number;
   }) {
@@ -159,6 +161,7 @@ export function KitchenStationsPageClient({
       {canEdit ? (
         <KitchenStationFormDialog
           labels={labels}
+          restaurantId={restaurantId}
           station={editingStation}
           open={dialogOpen}
           onOpenChange={setDialogOpen}

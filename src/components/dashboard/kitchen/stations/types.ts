@@ -1,3 +1,4 @@
+import type { KitchenStationVisualFieldLabels } from "./kitchen-station-visual-field";
 import type { KitchenStationCategory } from "@/lib/kitchen/stations/types";
 
 export type KitchenStationsLabels = {
@@ -47,6 +48,7 @@ export type KitchenStationsLabels = {
     cancel: string;
     delete: string;
     confirmDelete: string;
+    visual: KitchenStationVisualFieldLabels;
   };
   empty: {
     title: string;

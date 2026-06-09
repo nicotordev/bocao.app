@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import type { OrdersListFilters } from "@/lib/orders/filters";
+import type { OrdersKpiFilters, OrdersListFilters } from "@/lib/orders/filters";
 import { queryKeys } from "@/lib/query/query-keys";
 import {
   fetchOrder,
@@ -31,6 +31,18 @@ export function ordersBoardQueryOptions(
   });
 }
 
+export function ordersKpiQueryOptions(
+  restaurantId: string,
+  filters?: OrdersKpiFilters,
+) {
+  return queryOptions({
+    queryKey: queryKeys.orders.kpi(restaurantId, filters),
+    queryFn: () => fetchOrdersBoard(restaurantId, filters),
+    enabled: restaurantId.length > 0,
+    staleTime: 30_000,
+  });
+}
+
 export function orderDetailQueryOptions(restaurantId: string, orderId: string) {
   return queryOptions({
     queryKey: queryKeys.orders.detail(restaurantId, orderId),
@@ -52,6 +64,13 @@ export function useOrdersBoardQuery(
   filters?: Omit<OrdersListFilters, "page" | "pageSize">,
 ) {
   return useQuery(ordersBoardQueryOptions(restaurantId, filters));
+}
+
+export function useOrdersKpiQuery(
+  restaurantId: string,
+  filters?: OrdersKpiFilters,
+) {
+  return useQuery(ordersKpiQueryOptions(restaurantId, filters));
 }
 
 export function useOrderDetailQuery(restaurantId: string, orderId: string) {

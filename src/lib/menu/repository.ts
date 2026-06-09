@@ -1,6 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import {
   buildMenuItemPrismaWhere,
+  hasMenuContentFilters,
   type MenuListFilters,
 } from "@/lib/menu/filters";
 import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags.server";
@@ -129,7 +130,10 @@ export async function listMenuItemRecordsPaginated(
   };
 
   const where = await buildMenuItemPrismaWhere(restaurantId, filters);
-  const { skip, take } = getSkipTake(filters);
+  const contentFiltersActive = hasMenuContentFilters(filters);
+  const { skip, take } = contentFiltersActive
+    ? { skip: undefined, take: undefined }
+    : getSkipTake(filters);
 
   const [total, items] = await Promise.all([
     prisma.menuItem.count({ where }),
@@ -146,8 +150,8 @@ export async function listMenuItemRecordsPaginated(
         { sortOrder: "asc" },
         { name: "asc" },
       ],
-      skip,
-      take,
+      ...(skip !== undefined ? { skip } : {}),
+      ...(take !== undefined ? { take } : {}),
     }),
   ]);
 
@@ -158,7 +162,9 @@ export async function listMenuItemRecordsPaginated(
 
   return {
     items: items.map((item) => mapMenuItemRecord(item, translationMap)),
-    pagination: buildPaginationMeta(total, filters),
+    pagination: contentFiltersActive
+      ? buildPaginationMeta(total, { page: 1, pageSize: Math.max(total, 1) })
+      : buildPaginationMeta(total, filters),
   };
 }
 

@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import type { KitchenStationCategory } from "@/lib/kitchen/stations/types";
 import type { KitchenStationWithStats } from "@/lib/kitchen/stations/types";
+import { KitchenStationVisualField } from "./kitchen-station-visual-field";
 import type { KitchenStationsLabels } from "./types";
 
 const categoryOptions: KitchenStationCategory[] = [
@@ -39,6 +41,7 @@ const categoryOptions: KitchenStationCategory[] = [
 
 type KitchenStationFormDialogProps = {
   labels: KitchenStationsLabels;
+  restaurantId: string;
   station: KitchenStationWithStats | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -46,6 +49,8 @@ type KitchenStationFormDialogProps = {
     name: string;
     description: string;
     category: KitchenStationCategory;
+    imageUrl: string | null;
+    iconId: MenuTagIconId | null;
     isActive: boolean;
     sortOrder?: number;
   }) => Promise<void>;
@@ -54,6 +59,7 @@ type KitchenStationFormDialogProps = {
 
 export function KitchenStationFormDialog({
   labels,
+  restaurantId,
   station,
   open,
   onOpenChange,
@@ -63,6 +69,8 @@ export function KitchenStationFormDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<KitchenStationCategory>("grill");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [iconId, setIconId] = useState<MenuTagIconId | null>(null);
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState("");
   const [validationError, setValidationError] = useState("");
@@ -73,6 +81,8 @@ export function KitchenStationFormDialog({
     setName(station?.name ?? "");
     setDescription(station?.description ?? "");
     setCategory(station?.category ?? "grill");
+    setImageUrl(station?.imageUrl ?? null);
+    setIconId(station?.iconId ?? null);
     setIsActive(station?.isActive ?? true);
     setSortOrder(station ? String(station.sortOrder + 1) : "");
     setValidationError("");
@@ -102,6 +112,8 @@ export function KitchenStationFormDialog({
         name: trimmedName,
         description: description.trim(),
         category,
+        imageUrl,
+        iconId,
         isActive,
         sortOrder:
           parsedSortOrder !== undefined ? parsedSortOrder - 1 : undefined,
@@ -140,6 +152,16 @@ export function KitchenStationFormDialog({
               <p className="text-sm text-destructive">{validationError}</p>
             ) : null}
           </Field>
+
+          <KitchenStationVisualField
+            labels={labels.form.visual}
+            restaurantId={restaurantId}
+            imageUrl={imageUrl}
+            iconId={iconId}
+            onImageChange={setImageUrl}
+            onIconChange={setIconId}
+            disabled={isSubmitting}
+          />
 
           <Field>
             <FieldLabel htmlFor="station-description">

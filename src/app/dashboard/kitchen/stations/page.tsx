@@ -78,6 +78,22 @@ export default async function KitchenStationsPage() {
       cancel: t("form.cancel"),
       delete: t("form.delete"),
       confirmDelete: t("form.confirmDelete"),
+      visual: {
+        image: t("form.visual.image"),
+        imageHint: t("form.visual.imageHint"),
+        icon: t("form.visual.icon"),
+        iconHint: t("form.visual.iconHint"),
+        orDivider: t("form.visual.orDivider"),
+        photos: {
+          addPhoto: t("form.visual.photos.addPhoto"),
+          removePhoto: t("form.visual.photos.removePhoto"),
+          uploading: t("form.visual.photos.uploading"),
+          uploadError: t("form.visual.photos.uploadError"),
+          invalidImageType: t("form.visual.photos.invalidImageType"),
+          imageTooLarge: t("form.visual.photos.imageTooLarge"),
+          storageNotConfigured: t("form.visual.photos.storageNotConfigured"),
+        },
+      },
     },
     empty: {
       title: t("empty.title"),
