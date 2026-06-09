@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { QueryErrorState } from "@/components/query/query-result-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyKitchenFilters, sortKitchenOrders } from "@/lib/kitchen/filters";
@@ -16,7 +22,7 @@ import type {
 } from "@/lib/kitchen/types";
 import { useUpdateKitchenOrderMutation } from "@/lib/query/kitchen/kitchen.mutations";
 import { useKitchenOrdersQuery } from "@/lib/query/kitchen/kitchen.queries";
-import { KitchenCopilotSheet } from "./kitchen-copilot-sheet";
+import { KitchenCopilotDialog } from "./kitchen-copilot-dialog";
 import { KitchenDetailDrawer } from "./kitchen-detail-drawer";
 import { KitchenEmptyState } from "./kitchen-empty-state";
 import { KitchenHeader } from "./kitchen-header";
@@ -44,14 +50,29 @@ const defaultFilters: KitchenFiltersState = {
   channel: "all",
 };
 
+const KITCHEN_POLL_INTERVAL_MS = 30_000;
+
 export function KitchenPageClient({
   labels,
   insightLabels,
   restaurantId,
 }: KitchenPageClientProps) {
   const kitchenQuery = useKitchenOrdersQuery(restaurantId);
+  const { refetch, isError, isLoading } = kitchenQuery;
   const updateKitchenOrderMutation =
     useUpdateKitchenOrderMutation(restaurantId);
+
+  useEffect(() => {
+    if (!restaurantId || isError) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refetch();
+    }, KITCHEN_POLL_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [restaurantId, isError, refetch]);
 
   const [filters, setFilters] = useState<KitchenFiltersState>(defaultFilters);
   const [view, setView] = useState<KitchenViewMode>("cards");
@@ -94,8 +115,12 @@ export function KitchenPageClient({
     [updateKitchenOrderMutation],
   );
 
+  const [isManualRefreshing, startManualRefresh] = useTransition();
+
   const handleRefresh = () => {
-    void kitchenQuery.refetch();
+    startManualRefresh(() => {
+      void kitchenQuery.refetch();
+    });
   };
 
   const handleMoveOrder = (orderId: string, status: KitchenKanbanStatus) => {
@@ -134,10 +159,8 @@ export function KitchenPageClient({
     setFilters(defaultFilters);
   };
 
-  const isLoading = kitchenQuery.isLoading || kitchenQuery.isFetching;
-
   const renderMainContent = () => {
-    if (kitchenQuery.isLoading) {
+    if (isLoading) {
       return (
         <div
           className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
@@ -203,9 +226,9 @@ export function KitchenPageClient({
       <KitchenHeader
         labels={labels}
         onRefresh={handleRefresh}
-        isRefreshing={isLoading}
+        isRefreshing={isManualRefreshing}
         copilot={
-          <KitchenCopilotSheet
+          <KitchenCopilotDialog
             labels={labels.copilot}
             actionLabel={labels.actions.viewSuggestions}
             items={insights}

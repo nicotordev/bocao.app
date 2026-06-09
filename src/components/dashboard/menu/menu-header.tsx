@@ -1,4 +1,4 @@
-import { Plus, RefreshCcw } from "lucide-react";
+import { Import, Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { MenuPageLabels } from "./types";
 
@@ -7,6 +7,7 @@ type MenuHeaderProps = {
   canEdit: boolean;
   onNewItem: () => void;
   onNewCategory: () => void;
+  onImportProducts?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 };
@@ -16,6 +17,7 @@ export function MenuHeader({
   canEdit,
   onNewItem,
   onNewCategory,
+  onImportProducts,
   onRefresh,
   isRefreshing = false,
 }: MenuHeaderProps) {
@@ -32,6 +34,16 @@ export function MenuHeader({
       <div className="flex flex-wrap gap-2">
         {canEdit ? (
           <>
+            {onImportProducts ? (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={onImportProducts}
+              >
+                <Import className="size-4" aria-hidden />
+                {labels.importProducts.button}
+              </Button>
+            ) : null}
             <Button variant="outline" className="gap-2" onClick={onNewCategory}>
               <Plus className="size-4" aria-hidden />
               {labels.actions.newCategory}

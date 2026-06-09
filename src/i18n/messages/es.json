@@ -775,6 +775,9 @@
       "copilot": {
         "title": "Copiloto de cocina",
         "subtitle": "Insights accionables para el turno actual.",
+        "emptyTitle": "Sin sugerencias por ahora",
+        "emptyDescription": "Cuando haya pedidos activos en cocina, las sugerencias aparecerán aquí.",
+        "footerHint": "Las sugerencias se actualizan a medida que avanzan los pedidos.",
         "insights": {
           "delayedSla": "{count} pedidos superan el SLA configurado.",
           "averagePrep": "El tiempo promedio en cocina es de {minutes} min en pedidos activos.",
@@ -1087,6 +1090,277 @@
         "cta": "Crear reserva"
       }
     },
+    "customers": {
+      "header": {
+        "title": "Clientes",
+        "subtitle": "Gestiona perfiles, historial y segmentos de tus clientes."
+      },
+      "actions": {
+        "newCustomer": "Nuevo cliente",
+        "importCsv": "Importar CSV",
+        "export": "Exportar",
+        "createCampaign": "Crear campaña",
+        "viewProfile": "Ver perfil",
+        "edit": "Editar",
+        "addTag": "Agregar etiqueta",
+        "archive": "Archivar",
+        "editProfile": "Editar perfil",
+        "sendWhatsapp": "Enviar WhatsApp",
+        "addNote": "Agregar nota",
+        "viewCustomers": "Ver clientes",
+        "suggestedCampaign": "Crear campaña sugerida",
+        "clearFilters": "Limpiar filtros",
+        "exportSuccess": "Clientes exportados correctamente",
+        "exportEmpty": "No hay clientes para exportar con los filtros actuales",
+        "comingSoon": "Esta acción estará disponible pronto"
+      },
+      "form": {
+        "name": "Nombre",
+        "namePlaceholder": "Nombre del cliente",
+        "phone": "Teléfono",
+        "phonePlaceholder": "+56 9 1234 5678",
+        "email": "Email",
+        "emailPlaceholder": "cliente@ejemplo.com",
+        "documentId": "Documento",
+        "documentIdPlaceholder": "RUT o documento de identidad",
+        "address": "Dirección",
+        "addressPlaceholder": "Dirección de entrega o contacto",
+        "notes": "Notas",
+        "notesPlaceholder": "Preferencias, alergias, etc.",
+        "searchPlaceholder": "Buscar clientes...",
+        "noResults": "No se encontraron clientes",
+        "selectedHint": "Selecciona uno o más clientes registrados",
+        "emptySelection": "Aún no hay clientes seleccionados.",
+        "picker": {
+          "title": "Nuevo cliente",
+          "description": "Completa los datos del cliente. Solo el nombre es obligatorio.",
+          "addCustomer": "Crear cliente",
+          "addSuccess": "Cliente creado correctamente"
+        }
+      },
+      "avatar": {
+        "changePhoto": "Cambiar",
+        "photoHint": "Haz clic para subir una foto (máx. 5MB, opcional)",
+        "photoUrl": "O introduce la URL de la foto",
+        "photoUrlPlaceholder": "https://ejemplo.com/avatar.jpg",
+        "invalidImageType": "El archivo debe ser una imagen válida",
+        "imageTooLarge": "La imagen excede el tamaño máximo permitido de 5MB",
+        "uploadError": "No pudimos subir la imagen. Intenta nuevamente."
+      },
+      "validation": {
+        "draftCustomerName": "Ingresa el nombre del cliente"
+      },
+      "feedback": {
+        "createError": "No pudimos crear el cliente. Intenta nuevamente."
+      },
+      "kpis": {
+        "total": "Clientes totales",
+        "frequent": "Clientes frecuentes",
+        "averageTicket": "Ticket promedio",
+        "inactive": "Clientes inactivos",
+        "notAvailable": "Sin datos comparativos"
+      },
+      "toolbar": {
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por nombre, teléfono, email o etiqueta",
+        "segment": "Segmento",
+        "channel": "Canal",
+        "sort": "Ordenar por",
+        "filters": "Filtros"
+      },
+      "segments": {
+        "all": "Todos",
+        "vip": "VIP",
+        "frequent": "Frecuentes",
+        "new": "Nuevos",
+        "inactive": "Inactivos",
+        "atRisk": "Riesgo de fuga",
+        "whatsapp": "WhatsApp",
+        "highValue": "Alto ticket",
+        "cards": {
+          "vip": {
+            "name": "VIP",
+            "description": "Clientes con alto gasto acumulado o visitas recurrentes."
+          },
+          "frequent": {
+            "name": "Frecuentes",
+            "description": "Compran o reservan con regularidad en las últimas semanas."
+          },
+          "new": {
+            "name": "Nuevos",
+            "description": "Se registraron recientemente en tu base de clientes."
+          },
+          "inactive": {
+            "name": "Inactivos",
+            "description": "Llevan tiempo sin pedidos ni reservas."
+          },
+          "atRisk": {
+            "name": "Riesgo de fuga",
+            "description": "Antes eran activos y ahora redujeron su frecuencia."
+          },
+          "whatsapp": {
+            "name": "Clientes WhatsApp",
+            "description": "Su canal principal de compra es WhatsApp."
+          },
+          "highValue": {
+            "name": "Alto ticket",
+            "description": "Gastan por encima del ticket promedio del restaurante."
+          },
+          "reservationFrequent": {
+            "name": "Reservas frecuentes",
+            "description": "Reservan mesa de forma recurrente."
+          }
+        }
+      },
+      "channels": {
+        "all": "Todos",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "inPerson": "Presencial",
+        "delivery": "Delivery",
+        "reservation": "Reserva"
+      },
+      "sort": {
+        "lastVisit": "Última visita",
+        "totalSpend": "Mayor gasto",
+        "orderCount": "Más pedidos",
+        "name": "Nombre",
+        "createdAt": "Fecha creación"
+      },
+      "tabs": {
+        "customers": "Clientes",
+        "segments": "Segmentos",
+        "activity": "Actividad"
+      },
+      "table": {
+        "customer": "Cliente",
+        "contact": "Contacto",
+        "segment": "Segmento",
+        "orders": "Pedidos",
+        "totalSpend": "Gasto total",
+        "averageTicket": "Ticket promedio",
+        "lastVisit": "Última visita",
+        "channel": "Canal principal",
+        "actions": "Acciones"
+      },
+      "drawer": {
+        "title": "Perfil de cliente",
+        "description": "Historial, preferencias y oportunidades de reactivación.",
+        "profile": "Perfil",
+        "metrics": "Métricas",
+        "preferences": "Preferencias",
+        "history": "Historial",
+        "name": "Nombre",
+        "phone": "Teléfono",
+        "email": "Email",
+        "channel": "Canal principal",
+        "createdAt": "Fecha de creación",
+        "lastVisit": "Última visita",
+        "orders": "Pedidos",
+        "reservations": "Reservas",
+        "totalSpend": "Gasto total",
+        "averageTicket": "Ticket promedio",
+        "frequency": "Frecuencia",
+        "favoriteDishes": "Platos favoritos",
+        "notes": "Notas",
+        "allergies": "Alergias",
+        "tags": "Etiquetas",
+        "noNotes": "Sin notas registradas",
+        "noAllergies": "Sin alergias registradas",
+        "noTags": "Sin etiquetas",
+        "noFavoriteDishes": "Aún no hay platos favoritos",
+        "frequencyLevels": {
+          "high": "Alta",
+          "medium": "Media",
+          "low": "Baja",
+          "none": "Sin actividad"
+        },
+        "tabs": {
+          "orders": "Pedidos",
+          "reservations": "Reservas",
+          "activity": "Actividad",
+          "notes": "Notas"
+        }
+      },
+      "insights": {
+        "title": "Insights IA",
+        "subtitle": "Señales accionables para retener y reactivar clientes.",
+        "frequentDeclining": "{count} clientes frecuentes bajaron su actividad esta semana.",
+        "whatsappSpend": "Los clientes de WhatsApp gastan {percent}% más que el promedio.",
+        "inactiveVip": "{count} clientes VIP no compran hace más de 30 días.",
+        "highValuePromo": "El segmento de alto ticket responde mejor a promociones de {dish}."
+      },
+      "activity": {
+        "title": "Actividad reciente",
+        "subtitle": "Pedidos, reservas y señales de riesgo en tiempo real.",
+        "order": "Cliente {name} hizo un pedido por {channel}",
+        "reservation": "Cliente {name} reservó una mesa",
+        "inactive": "Cliente {name} no compra hace {days} días",
+        "markedVip": "Cliente {name} fue marcado como VIP"
+      },
+      "empty": {
+        "title": "Aún no tienes clientes registrados",
+        "description": "Cuando recibas pedidos o reservas, los clientes aparecerán aquí automáticamente.",
+        "cta": "Importar clientes"
+      },
+      "accessibility": {
+        "openActions": "Abrir acciones del cliente",
+        "openDetails": "Abrir detalle del cliente",
+        "openFilters": "Abrir filtros"
+      },
+      "importCustomers": {
+        "button": "Importar clientes",
+        "title": "Importar clientes",
+        "description": "Reutiliza clientes de otras organizaciones o restaurantes a los que perteneces, o impórtalos desde un archivo.",
+        "importMode": "Modo de importación",
+        "reuseFromRestaurants": "Reutilizar de restaurantes",
+        "importFromFile": "Importar desde archivo",
+        "searchPlaceholder": "Buscar clientes...",
+        "empty": "No se encontraron clientes reutilizables en tus otros restaurantes.",
+        "error": "No pudimos cargar los clientes reutilizables. Intenta nuevamente.",
+        "loading": "Cargando clientes reutilizables...",
+        "selectedCount": "{count} seleccionados",
+        "importSelected": "Importar seleccionados",
+        "cancel": "Cancelar",
+        "importedSuccessfully": "Clientes importados correctamente.",
+        "importFailed": "No pudimos importar los clientes seleccionados.",
+        "organization": "Organización",
+        "restaurant": "Restaurante",
+        "customer": "Cliente",
+        "noCustomersSelected": "Selecciona al menos un cliente para importar.",
+        "noReusableCustomersFound": "No se encontraron clientes reutilizables.",
+        "allOrganizations": "Todas las organizaciones",
+        "allRestaurants": "Todos los restaurantes",
+        "uploadFile": "Subir archivo",
+        "downloadTemplate": "Descargar plantilla",
+        "previewImport": "Vista previa de importación",
+        "mapColumns": "Mapear columnas",
+        "invalidFileFormat": "El formato de archivo no es compatible. Usa CSV, XLSX o JSON.",
+        "invalidRows": "Algunas filas tienen errores de validación. Corrígelas o elimina las filas inválidas antes de importar.",
+        "importConfirmed": "Revisa la vista previa y confirma para importar las filas válidas.",
+        "importCompleted": "Importación completada correctamente.",
+        "fileTooLarge": "El archivo supera el límite de 2 MB.",
+        "emptyFile": "El archivo no contiene filas.",
+        "noValidRows": "No se encontraron filas válidas en el archivo.",
+        "dropFileHint": "Arrastra y suelta un archivo CSV, XLSX o JSON aquí, o haz clic para buscar.",
+        "row": "Fila",
+        "errors": "Errores",
+        "validRows": "{count} filas válidas",
+        "invalidRowsCount": "{count} filas inválidas",
+        "confirmImport": "Importar filas válidas",
+        "parsing": "Analizando archivo...",
+        "importing": "Importando...",
+        "fields": {
+          "name": "Nombre",
+          "email": "Email",
+          "phone": "Teléfono",
+          "documentId": "Documento",
+          "address": "Dirección",
+          "notes": "Notas",
+          "avatar": "URL de imagen"
+        }
+      }
+    },
     "menu": {
       "header": {
         "title": "Menú",
@@ -1185,6 +1459,59 @@
       },
       "feedback": {
         "error": "Algo salió mal. Intenta nuevamente."
+      },
+      "importProducts": {
+        "button": "Importar productos",
+        "title": "Importar productos",
+        "description": "Reutiliza categorías y productos de otras organizaciones o restaurantes a los que perteneces, o impórtalos desde un archivo.",
+        "importMode": "Modo de importación",
+        "reuseFromRestaurants": "Reutilizar de restaurantes",
+        "importFromFile": "Importar desde archivo",
+        "searchPlaceholder": "Buscar categorías o productos...",
+        "empty": "No se encontraron productos reutilizables en tus otros restaurantes.",
+        "error": "No pudimos cargar los productos reutilizables. Intenta nuevamente.",
+        "loading": "Cargando productos reutilizables...",
+        "selectedCount": "{count} seleccionados",
+        "importSelected": "Importar seleccionados",
+        "cancel": "Cancelar",
+        "importedSuccessfully": "Productos importados correctamente.",
+        "importFailed": "No pudimos importar los productos seleccionados.",
+        "organization": "Organización",
+        "restaurant": "Restaurante",
+        "category": "Categoría",
+        "product": "Producto",
+        "noProductsSelected": "Selecciona al menos un producto para importar.",
+        "noReusableProductsFound": "No se encontraron productos reutilizables.",
+        "allOrganizations": "Todas las organizaciones",
+        "allRestaurants": "Todos los restaurantes",
+        "allCategories": "Todas las categorías",
+        "uploadFile": "Subir archivo",
+        "downloadTemplate": "Descargar plantilla",
+        "previewImport": "Vista previa de importación",
+        "mapColumns": "Mapear columnas",
+        "invalidFileFormat": "El formato de archivo no es compatible. Usa CSV, XLSX o JSON.",
+        "invalidRows": "Algunas filas tienen errores de validación. Corrígelas o elimina las filas inválidas antes de importar.",
+        "importConfirmed": "Revisa la vista previa y confirma para importar las filas válidas.",
+        "importCompleted": "Importación completada correctamente.",
+        "fileTooLarge": "El archivo supera el límite de 2 MB.",
+        "emptyFile": "El archivo no contiene filas.",
+        "noValidRows": "No se encontraron filas válidas en el archivo.",
+        "dropFileHint": "Arrastra y suelta un archivo CSV, XLSX o JSON aquí, o haz clic para buscar.",
+        "row": "Fila",
+        "errors": "Errores",
+        "validRows": "{count} filas válidas",
+        "invalidRowsCount": "{count} filas inválidas",
+        "confirmImport": "Importar filas válidas",
+        "parsing": "Analizando archivo...",
+        "importing": "Importando...",
+        "fields": {
+          "categoryName": "Nombre de categoría",
+          "productName": "Nombre de producto",
+          "description": "Descripción",
+          "price": "Precio",
+          "imageUrl": "URL de imagen",
+          "isAvailable": "Disponible"
+        }
       },
       "tree": {
         "dragHint": "Arrastra categorías y productos para reordenarlos o mover productos entre categorías.",

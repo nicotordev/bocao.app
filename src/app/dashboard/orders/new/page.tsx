@@ -21,7 +21,9 @@ type NewOrderPageProps = {
   }>;
 };
 
-export default async function NewOrderPage({ searchParams }: NewOrderPageProps) {
+export default async function NewOrderPage({
+  searchParams,
+}: NewOrderPageProps) {
   const params = await searchParams;
   const t = await getTranslations("dashboard.orders.new");
   const tChannels = await getTranslations("dashboard.orders.channels");
@@ -133,7 +135,7 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
     },
     flowWizard: {
       title: t("flowWizard.title"),
-      description: t("flowWizard.description"),
+      description: t.raw("flowWizard.description"),
       stepOf: t.raw("flowWizard.stepOf"),
       back: t("flowWizard.back"),
       next: t("flowWizard.next"),

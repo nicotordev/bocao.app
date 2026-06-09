@@ -775,6 +775,9 @@
       "copilot": {
         "title": "Kitchen copilot",
         "subtitle": "Actionable insights for the current shift.",
+        "emptyTitle": "No suggestions right now",
+        "emptyDescription": "When the kitchen has active orders, insights will appear here.",
+        "footerHint": "Suggestions update as orders move through the kitchen.",
         "insights": {
           "delayedSla": "{count} orders exceed the configured SLA.",
           "averagePrep": "Average kitchen time is {minutes} min on active orders.",
@@ -1087,6 +1090,277 @@
         "cta": "Create reservation"
       }
     },
+    "customers": {
+      "header": {
+        "title": "Customers",
+        "subtitle": "Manage profiles, history, and customer segments."
+      },
+      "actions": {
+        "newCustomer": "New customer",
+        "importCsv": "Import CSV",
+        "export": "Export",
+        "createCampaign": "Create campaign",
+        "viewProfile": "View profile",
+        "edit": "Edit",
+        "addTag": "Add tag",
+        "archive": "Archive",
+        "editProfile": "Edit profile",
+        "sendWhatsapp": "Send WhatsApp",
+        "addNote": "Add note",
+        "viewCustomers": "View customers",
+        "suggestedCampaign": "Create suggested campaign",
+        "clearFilters": "Clear filters",
+        "exportSuccess": "Customers exported successfully",
+        "exportEmpty": "No customers to export with the current filters",
+        "comingSoon": "This action will be available soon"
+      },
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "Customer name",
+        "phone": "Phone",
+        "phonePlaceholder": "+1 555 123 4567",
+        "email": "Email",
+        "emailPlaceholder": "customer@example.com",
+        "documentId": "Document ID",
+        "documentIdPlaceholder": "National ID or tax number",
+        "address": "Address",
+        "addressPlaceholder": "Delivery or contact address",
+        "notes": "Notes",
+        "notesPlaceholder": "Preferences, allergies, etc.",
+        "searchPlaceholder": "Search customers...",
+        "noResults": "No customers found",
+        "selectedHint": "Select one or more registered customers",
+        "emptySelection": "No customers selected yet.",
+        "picker": {
+          "title": "New customer",
+          "description": "Fill in the customer details. Only the name is required.",
+          "addCustomer": "Create customer",
+          "addSuccess": "Customer created successfully"
+        }
+      },
+      "avatar": {
+        "changePhoto": "Change",
+        "photoHint": "Click to upload a photo (max 5MB, optional)",
+        "photoUrl": "Or enter the photo URL",
+        "photoUrlPlaceholder": "https://example.com/avatar.jpg",
+        "invalidImageType": "File must be a valid image",
+        "imageTooLarge": "Image exceeds the 5MB size limit",
+        "uploadError": "We could not upload the image. Please try again."
+      },
+      "validation": {
+        "draftCustomerName": "Enter the customer name"
+      },
+      "feedback": {
+        "createError": "We could not create the customer. Please try again."
+      },
+      "kpis": {
+        "total": "Total customers",
+        "frequent": "Frequent customers",
+        "averageTicket": "Average ticket",
+        "inactive": "Inactive customers",
+        "notAvailable": "No comparison data"
+      },
+      "toolbar": {
+        "search": "Search",
+        "searchPlaceholder": "Search by name, phone, email, or tag",
+        "segment": "Segment",
+        "channel": "Channel",
+        "sort": "Sort by",
+        "filters": "Filters"
+      },
+      "segments": {
+        "all": "All",
+        "vip": "VIP",
+        "frequent": "Frequent",
+        "new": "New",
+        "inactive": "Inactive",
+        "atRisk": "At risk",
+        "whatsapp": "WhatsApp",
+        "highValue": "High ticket",
+        "cards": {
+          "vip": {
+            "name": "VIP",
+            "description": "Customers with high lifetime spend or repeat visits."
+          },
+          "frequent": {
+            "name": "Frequent",
+            "description": "They order or reserve regularly in recent weeks."
+          },
+          "new": {
+            "name": "New",
+            "description": "Recently added to your customer base."
+          },
+          "inactive": {
+            "name": "Inactive",
+            "description": "No orders or reservations for a while."
+          },
+          "atRisk": {
+            "name": "At risk",
+            "description": "Previously active customers now buying less often."
+          },
+          "whatsapp": {
+            "name": "WhatsApp customers",
+            "description": "Their primary purchase channel is WhatsApp."
+          },
+          "highValue": {
+            "name": "High ticket",
+            "description": "They spend above the restaurant average ticket."
+          },
+          "reservationFrequent": {
+            "name": "Frequent reservations",
+            "description": "They book tables on a recurring basis."
+          }
+        }
+      },
+      "channels": {
+        "all": "All",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "inPerson": "In person",
+        "delivery": "Delivery",
+        "reservation": "Reservation"
+      },
+      "sort": {
+        "lastVisit": "Last visit",
+        "totalSpend": "Highest spend",
+        "orderCount": "Most orders",
+        "name": "Name",
+        "createdAt": "Created date"
+      },
+      "tabs": {
+        "customers": "Customers",
+        "segments": "Segments",
+        "activity": "Activity"
+      },
+      "table": {
+        "customer": "Customer",
+        "contact": "Contact",
+        "segment": "Segment",
+        "orders": "Orders",
+        "totalSpend": "Total spend",
+        "averageTicket": "Average ticket",
+        "lastVisit": "Last visit",
+        "channel": "Primary channel",
+        "actions": "Actions"
+      },
+      "drawer": {
+        "title": "Customer profile",
+        "description": "History, preferences, and reactivation opportunities.",
+        "profile": "Profile",
+        "metrics": "Metrics",
+        "preferences": "Preferences",
+        "history": "History",
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "channel": "Primary channel",
+        "createdAt": "Created at",
+        "lastVisit": "Last visit",
+        "orders": "Orders",
+        "reservations": "Reservations",
+        "totalSpend": "Total spend",
+        "averageTicket": "Average ticket",
+        "frequency": "Frequency",
+        "favoriteDishes": "Favorite dishes",
+        "notes": "Notes",
+        "allergies": "Allergies",
+        "tags": "Tags",
+        "noNotes": "No notes yet",
+        "noAllergies": "No allergies recorded",
+        "noTags": "No tags",
+        "noFavoriteDishes": "No favorite dishes yet",
+        "frequencyLevels": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low",
+          "none": "No activity"
+        },
+        "tabs": {
+          "orders": "Orders",
+          "reservations": "Reservations",
+          "activity": "Activity",
+          "notes": "Notes"
+        }
+      },
+      "insights": {
+        "title": "AI insights",
+        "subtitle": "Actionable signals to retain and reactivate customers.",
+        "frequentDeclining": "{count} frequent customers reduced activity this week.",
+        "whatsappSpend": "WhatsApp customers spend {percent}% more than average.",
+        "inactiveVip": "{count} VIP customers have not purchased in over 30 days.",
+        "highValuePromo": "The high-ticket segment responds best to {dish} promotions."
+      },
+      "activity": {
+        "title": "Recent activity",
+        "subtitle": "Orders, reservations, and risk signals in real time.",
+        "order": "Customer {name} placed an order via {channel}",
+        "reservation": "Customer {name} booked a table",
+        "inactive": "Customer {name} has not purchased in {days} days",
+        "markedVip": "Customer {name} was marked as VIP"
+      },
+      "empty": {
+        "title": "No customers registered yet",
+        "description": "When you receive orders or reservations, customers will appear here automatically.",
+        "cta": "Import customers"
+      },
+      "accessibility": {
+        "openActions": "Open customer actions",
+        "openDetails": "Open customer details",
+        "openFilters": "Open filters"
+      },
+      "importCustomers": {
+        "button": "Import customers",
+        "title": "Import customers",
+        "description": "Reuse customers from other organizations or restaurants you belong to, or import them from a file.",
+        "importMode": "Import mode",
+        "reuseFromRestaurants": "Reuse from restaurants",
+        "importFromFile": "Import from file",
+        "searchPlaceholder": "Search customers...",
+        "empty": "No reusable customers were found in your other restaurants.",
+        "error": "We could not load reusable customers. Please try again.",
+        "loading": "Loading reusable customers...",
+        "selectedCount": "{count} selected",
+        "importSelected": "Import selected",
+        "cancel": "Cancel",
+        "importedSuccessfully": "Customers imported successfully.",
+        "importFailed": "We could not import the selected customers.",
+        "organization": "Organization",
+        "restaurant": "Restaurant",
+        "customer": "Customer",
+        "noCustomersSelected": "Select at least one customer to import.",
+        "noReusableCustomersFound": "No reusable customers found.",
+        "allOrganizations": "All organizations",
+        "allRestaurants": "All restaurants",
+        "uploadFile": "Upload file",
+        "downloadTemplate": "Download template",
+        "previewImport": "Import preview",
+        "mapColumns": "Map columns",
+        "invalidFileFormat": "Unsupported file format. Use CSV, XLSX, or JSON.",
+        "invalidRows": "Some rows have validation errors. Fix them or remove invalid rows before importing.",
+        "importConfirmed": "Review the preview and confirm to import the valid rows.",
+        "importCompleted": "Import completed successfully.",
+        "fileTooLarge": "The file exceeds the 2 MB limit.",
+        "emptyFile": "The file contains no rows.",
+        "noValidRows": "No valid rows were found in the file.",
+        "dropFileHint": "Drag and drop a CSV, XLSX, or JSON file here, or click to browse.",
+        "row": "Row",
+        "errors": "Errors",
+        "validRows": "{count} valid rows",
+        "invalidRowsCount": "{count} invalid rows",
+        "confirmImport": "Import valid rows",
+        "parsing": "Parsing file...",
+        "importing": "Importing...",
+        "fields": {
+          "name": "Name",
+          "email": "Email",
+          "phone": "Phone",
+          "documentId": "Document ID",
+          "address": "Address",
+          "notes": "Notes",
+          "avatar": "Image URL"
+        }
+      }
+    },
     "menu": {
       "header": {
         "title": "Menu",
@@ -1185,6 +1459,59 @@
       },
       "feedback": {
         "error": "Something went wrong. Please try again."
+      },
+      "importProducts": {
+        "button": "Import products",
+        "title": "Import products",
+        "description": "Reuse categories and products from other organizations or restaurants you belong to, or import them from a file.",
+        "importMode": "Import mode",
+        "reuseFromRestaurants": "Reuse from restaurants",
+        "importFromFile": "Import from file",
+        "searchPlaceholder": "Search categories or products...",
+        "empty": "No reusable products found in your other restaurants.",
+        "error": "We couldn't load reusable products. Please try again.",
+        "loading": "Loading reusable products...",
+        "selectedCount": "{count} selected",
+        "importSelected": "Import selected",
+        "cancel": "Cancel",
+        "importedSuccessfully": "Products imported successfully.",
+        "importFailed": "We couldn't import the selected products.",
+        "organization": "Organization",
+        "restaurant": "Restaurant",
+        "category": "Category",
+        "product": "Product",
+        "noProductsSelected": "Select at least one product to import.",
+        "noReusableProductsFound": "No reusable products found.",
+        "allOrganizations": "All organizations",
+        "allRestaurants": "All restaurants",
+        "allCategories": "All categories",
+        "uploadFile": "Upload file",
+        "downloadTemplate": "Download template",
+        "previewImport": "Preview import",
+        "mapColumns": "Map columns",
+        "invalidFileFormat": "The file format is not supported. Use CSV, XLSX, or JSON.",
+        "invalidRows": "Some rows have validation errors. Fix them or remove invalid rows before importing.",
+        "importConfirmed": "Review the preview and confirm to import valid rows.",
+        "importCompleted": "Import completed successfully.",
+        "fileTooLarge": "The file exceeds the 2 MB size limit.",
+        "emptyFile": "The file does not contain any rows.",
+        "noValidRows": "No valid rows found in the file.",
+        "dropFileHint": "Drag and drop a CSV, XLSX, or JSON file here, or click to browse.",
+        "row": "Row",
+        "errors": "Errors",
+        "validRows": "{count} valid rows",
+        "invalidRowsCount": "{count} invalid rows",
+        "confirmImport": "Import valid rows",
+        "parsing": "Parsing file...",
+        "importing": "Importing...",
+        "fields": {
+          "categoryName": "Category name",
+          "productName": "Product name",
+          "description": "Description",
+          "price": "Price",
+          "imageUrl": "Image URL",
+          "isAvailable": "Available"
+        }
       },
       "tree": {
         "dragHint": "Drag categories and products to reorder them or move products between categories.",

@@ -21,6 +21,14 @@ export function DebouncedSearchDraft({
   }, [onDebouncedChange]);
 
   useEffect(() => {
+    setDraft(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
+    if (urlSearch === draft) {
+      return;
+    }
+
     const timer = window.setTimeout(() => {
       if (urlSearch === draft) {
         return;

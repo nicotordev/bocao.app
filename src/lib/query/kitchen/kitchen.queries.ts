@@ -8,7 +8,7 @@ export function kitchenOrdersQueryOptions(restaurantId: string) {
     queryFn: () => fetchKitchenOrders(restaurantId),
     enabled: restaurantId.length > 0,
     staleTime: 15_000,
-    refetchInterval: 30_000,
+    refetchOnWindowFocus: false,
   });
 }
 

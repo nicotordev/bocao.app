@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
+import { ImportProductsDialog } from "./import-products-dialog";
 import { MenuCategoryDialog } from "./menu-category-dialog";
 import { MenuFilters } from "./menu-filters";
 import { MenuHeader } from "./menu-header";
@@ -226,6 +227,7 @@ function MenuPageClientBody({
     useState<MenuCategoryRecord | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [flowBlocks] = useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
   const [flowTemplates, setFlowTemplates] =
     useState<ProductFlowTemplateRecord[]>(initialFlowTemplates);
@@ -380,6 +382,7 @@ function MenuPageClientBody({
         canEdit={canEdit}
         onNewItem={handleCreateItem}
         onNewCategory={handleCreateCategory}
+        onImportProducts={canEdit ? () => setImportDialogOpen(true) : undefined}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
@@ -497,6 +500,14 @@ function MenuPageClientBody({
             onCreated={handleCategoryCreated}
             onUpdated={handleCategoryUpdated}
             onDeleted={handleCategoryDeleted}
+          />
+          <ImportProductsDialog
+            open={importDialogOpen}
+            onOpenChange={setImportDialogOpen}
+            labels={labels}
+            restaurantId={restaurantId}
+            currency={currency}
+            onSuccess={handleRefresh}
           />
         </>
       ) : null}

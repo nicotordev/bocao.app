@@ -117,6 +117,9 @@ export type KitchenLabels = {
   copilot: {
     title: string;
     subtitle: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    footerHint: string;
   };
   empty: {
     title: string;

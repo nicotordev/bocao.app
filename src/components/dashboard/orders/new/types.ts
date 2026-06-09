@@ -35,6 +35,7 @@ export type NewOrderNewCustomerInput = {
   documentId: string;
   address: string;
   notes: string;
+  avatar: string;
 };
 
 export type NewOrderFormValues = {

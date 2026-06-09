@@ -23,8 +23,19 @@ export type CustomerFormLabels = {
   };
 };
 
+export type CustomerAvatarFieldLabels = {
+  changePhoto: string;
+  photoHint: string;
+  photoUrl: string;
+  photoUrlPlaceholder: string;
+  invalidImageType: string;
+  imageTooLarge: string;
+  uploadError: string;
+};
+
 export type CustomerFormDialogLabels = {
   customer: CustomerFormLabels;
+  avatar?: CustomerAvatarFieldLabels;
   validation: {
     draftCustomerName: string;
     customers: string;
