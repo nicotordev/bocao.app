@@ -1,4 +1,4 @@
-import { isKitchenOrderDelayed } from "@/lib/kitchen/filters";
+import { isKitchenOrderActiveDelayed } from "@/lib/kitchen/filters";
 import type { KitchenOrder } from "@/lib/kitchen/types";
 
 export type KitchenKpiTrend = {
@@ -27,7 +27,9 @@ export function computeKitchenKpiTrends(
   const preparingOrders = orders.filter((order) =>
     ["received", "in_preparation", "waiting", "delayed"].includes(order.status),
   );
-  const delayedOrders = orders.filter((order) => isKitchenOrderDelayed(order));
+  const delayedOrders = orders.filter((order) =>
+    isKitchenOrderActiveDelayed(order),
+  );
   const readyOrders = orders.filter((order) => order.status === "ready");
 
   return {

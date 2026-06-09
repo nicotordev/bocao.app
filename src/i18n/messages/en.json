@@ -650,6 +650,7 @@
         "pause": "Pause",
         "resume": "Resume",
         "markReady": "Ready",
+        "markDelivered": "Deliver",
         "viewDetail": "View detail",
         "changeStatus": "Change status",
         "reassignStation": "Reassign station",
@@ -707,6 +708,7 @@
         "waiting": "Waiting",
         "ready": "Ready",
         "delivered": "Delivered",
+        "deliveredLate": "Delivered late",
         "delayed": "Delayed"
       },
       "views": {
@@ -724,6 +726,8 @@
         "minutes": "min",
         "paused": "Paused",
         "items": "Items",
+        "noItems": "No items",
+        "moreItems": "+{count} more",
         "kitchenNote": "Note",
         "importantNote": "Important note",
         "allergen": "Contains",

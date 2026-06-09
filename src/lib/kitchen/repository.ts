@@ -9,6 +9,7 @@ import {
   mapKitchenStatusToDbStatus,
   mapKitchenStatusToKitchenDetails,
   parseOrderDetails,
+  shouldMarkKitchenCompletedLate,
 } from "@/lib/kitchen/kitchen-mapper";
 import type { KitchenOrder, KitchenStation } from "@/lib/kitchen/types";
 import type { z } from "zod";
@@ -136,6 +137,19 @@ export async function updateKitchenOrder(
   if (input.status) {
     nextStatus = mapKitchenStatusToDbStatus(input.status);
     nextKitchen = mapKitchenStatusToKitchenDetails(input.status, nextKitchen);
+
+    if (input.status === "delivered") {
+      const slaMinutes = nextKitchen.slaMinutes ?? 20;
+      if (
+        shouldMarkKitchenCompletedLate(
+          nextKitchen,
+          existing.createdAt,
+          slaMinutes,
+        )
+      ) {
+        nextKitchen.completedLate = true;
+      }
+    }
 
     const timelineKey = kitchenStatusToTimelineKey(input.status);
 

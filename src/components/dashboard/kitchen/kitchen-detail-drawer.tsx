@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { isKitchenOrderCompletedLate } from "@/lib/kitchen/filters";
 import type { KitchenKanbanStatus, KitchenStation } from "@/lib/kitchen/types";
 import { KitchenPriorityBadge } from "./kitchen-priority-badge";
 import { KitchenStatusBadge } from "./kitchen-status-badge";
@@ -96,9 +97,14 @@ export function KitchenDetailDrawer({
 
             <div className="space-y-6 px-6 pb-8">
               <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">{labels.drawer.order}</h3>
+                <h3 className="font-heading font-medium">
+                  {labels.drawer.order}
+                </h3>
                 <div className="mt-4 grid gap-3">
-                  <DetailRow label={labels.drawer.number} value={order.number} />
+                  <DetailRow
+                    label={labels.drawer.number}
+                    value={order.number}
+                  />
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm text-muted-foreground">
                       {labels.drawer.status}
@@ -106,6 +112,7 @@ export function KitchenDetailDrawer({
                     <KitchenStatusBadge
                       status={order.status}
                       labels={labels.statuses}
+                      completedLate={isKitchenOrderCompletedLate(order)}
                     />
                   </div>
                   <DetailRow
@@ -128,7 +135,9 @@ export function KitchenDetailDrawer({
               </section>
 
               <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">{labels.drawer.items}</h3>
+                <h3 className="font-heading font-medium">
+                  {labels.drawer.items}
+                </h3>
                 <div className="mt-4 space-y-4">
                   {order.items.map((item) => (
                     <div
@@ -161,7 +170,9 @@ export function KitchenDetailDrawer({
               </section>
 
               <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">{labels.drawer.operation}</h3>
+                <h3 className="font-heading font-medium">
+                  {labels.drawer.operation}
+                </h3>
                 <div className="mt-4 grid gap-3">
                   <DetailRow
                     label={labels.drawer.station}
@@ -188,16 +199,23 @@ export function KitchenDetailDrawer({
               </section>
 
               <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">{labels.drawer.timeline}</h3>
+                <h3 className="font-heading font-medium">
+                  {labels.drawer.timeline}
+                </h3>
                 <ol className="relative mt-4 space-y-2 before:absolute before:top-2 before:bottom-2 before:left-2 before:w-px before:bg-border">
                   {order.timeline.map((event, index) => (
-                    <li key={`${event.time}-${index}`} className="relative pl-7 text-sm">
+                    <li
+                      key={`${event.time}-${index}`}
+                      className="relative pl-7 text-sm"
+                    >
                       <span className="absolute top-1.5 left-0 size-2 rounded-full bg-primary" />
                       <p className="font-medium">
                         {event.time} · {labels.timeline[event.titleKey]}
                       </p>
                       {event.actor ? (
-                        <p className="text-xs text-muted-foreground">{event.actor}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {event.actor}
+                        </p>
                       ) : null}
                     </li>
                   ))}
@@ -205,7 +223,9 @@ export function KitchenDetailDrawer({
               </section>
 
               <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">{labels.drawer.actions}</h3>
+                <h3 className="font-heading font-medium">
+                  {labels.drawer.actions}
+                </h3>
                 <div className="mt-4 space-y-3">
                   <div className="space-y-1.5">
                     <label className="text-xs text-muted-foreground">

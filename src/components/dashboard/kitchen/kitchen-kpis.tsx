@@ -58,37 +58,32 @@ function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
 
 export function KitchenKpis({ labels, values }: KitchenKpisProps) {
   return (
-    <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
         const trend = values.trends?.[kpi.key];
         const TrendIcon = resolveTrendIcon(trend?.trend);
 
         return (
-          <Card
-            key={kpi.key}
-            size="sm"
-            className="border-border/60 bg-card/80 transition duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-lg"
-          >
-            <CardHeader className="grid grid-cols-[1fr_auto] items-start gap-3">
+          <Card key={kpi.key} size="sm" className="border-border/60 bg-card/80">
+            <CardHeader className="grid grid-cols-[1fr_auto] items-center gap-2 py-3">
               <div>
-                <p className="text-xs font-medium uppercase text-muted-foreground">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                   {labels[kpi.key]}
                 </p>
-                <CardTitle className="mt-2 text-2xl font-semibold">
+                <CardTitle className="mt-1 text-xl font-semibold">
                   {values[kpi.key]}
                 </CardTitle>
               </div>
-              <div className="rounded-2xl border border-border bg-muted/40 p-2">
-                <Icon className={`size-4 ${kpi.accent}`} aria-hidden />
+              <div className="rounded-xl border border-border bg-muted/40 p-1.5">
+                <Icon className={`size-3.5 ${kpi.accent}`} aria-hidden />
               </div>
             </CardHeader>
-            <CardContent className="flex items-center justify-between gap-3">
+            <CardContent className="pt-0 pb-3">
               <Badge variant="outline" className={kpi.trendClass}>
                 <TrendIcon className="size-3" aria-hidden />
                 {trend?.change ?? labels.notAvailable}
               </Badge>
-              <span className="h-7 w-20 rounded-full bg-linear-to-r from-primary/10 via-chart-2/20 to-chart-1/10" />
             </CardContent>
           </Card>
         );

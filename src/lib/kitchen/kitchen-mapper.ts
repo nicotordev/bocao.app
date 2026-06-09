@@ -22,6 +22,7 @@ type KitchenDetailsJson = {
   priority?: KitchenPriority;
   slaMinutes?: number;
   isPaused?: boolean;
+  completedLate?: boolean;
   importantNote?: string;
 };
 
@@ -242,6 +243,11 @@ export function mapDbOrderToKitchen(
     importantNote: kitchen.importantNote,
     assignedTo: order.assignedTo ?? undefined,
     isPaused: kitchen.isPaused ?? false,
+    completedLate:
+      status === "delivered" &&
+      (kitchen.completedLate === true ||
+        kitchen.priority === "delayed" ||
+        elapsedMinutes > slaMinutes),
     timeline: mapTimeline(details, channel),
   };
 }
@@ -294,10 +300,16 @@ export function mapKitchenStatusToKitchenDetails(
         isPaused: false,
       };
     case "ready":
+      return {
+        ...current,
+        isPaused: false,
+      };
     case "delivered":
       return {
         ...current,
         isPaused: false,
+        completedLate:
+          current.completedLate === true || current.priority === "delayed",
       };
     default:
       return current;
@@ -355,4 +367,16 @@ export function kitchenStatusToTimelineKey(
 
 export function parseOrderDetails(details: unknown): OrderDetailsJson {
   return parseDetails(details);
+}
+
+export function shouldMarkKitchenCompletedLate(
+  kitchen: KitchenDetailsJson,
+  createdAt: Date,
+  slaMinutes: number,
+): boolean {
+  return (
+    kitchen.completedLate === true ||
+    kitchen.priority === "delayed" ||
+    getElapsedMinutes(createdAt) > slaMinutes
+  );
 }

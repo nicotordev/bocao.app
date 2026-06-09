@@ -70,6 +70,7 @@ export type KitchenOrder = {
   importantNote?: string;
   assignedTo?: string;
   isPaused?: boolean;
+  completedLate?: boolean;
   timeline: KitchenTimelineEvent[];
 };
 

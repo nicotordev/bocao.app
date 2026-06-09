@@ -16,7 +16,7 @@ import type {
 } from "@/lib/kitchen/types";
 import { useUpdateKitchenOrderMutation } from "@/lib/query/kitchen/kitchen.mutations";
 import { useKitchenOrdersQuery } from "@/lib/query/kitchen/kitchen.queries";
-import { KitchenCopilotCard } from "./kitchen-copilot-card";
+import { KitchenCopilotSheet } from "./kitchen-copilot-sheet";
 import { KitchenDetailDrawer } from "./kitchen-detail-drawer";
 import { KitchenEmptyState } from "./kitchen-empty-state";
 import { KitchenHeader } from "./kitchen-header";
@@ -116,6 +116,10 @@ export function KitchenPageClient({
     persistOrderUpdate(orderId, { status: "ready" });
   };
 
+  const handleMarkDelivered = (orderId: string) => {
+    persistOrderUpdate(orderId, { status: "delivered" });
+  };
+
   const handleMarkDelayed = (orderId: string) => {
     persistOrderUpdate(orderId, { status: "delayed", priority: "delayed" });
   };
@@ -134,11 +138,11 @@ export function KitchenPageClient({
     if (kitchenQuery.isLoading) {
       return (
         <div
-          className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
           aria-busy="true"
         >
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-72 rounded-3xl" />
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Skeleton key={index} className="h-44 rounded-3xl" />
           ))}
         </div>
       );
@@ -175,7 +179,7 @@ export function KitchenPageClient({
     }
 
     return (
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {filteredOrders.map((order) => (
           <KitchenTicketCard
             key={order.id}
@@ -185,6 +189,7 @@ export function KitchenPageClient({
             onStart={handleStart}
             onPause={handlePause}
             onMarkReady={(current) => handleMarkReady(current.id)}
+            onMarkDelivered={(current) => handleMarkDelivered(current.id)}
           />
         ))}
       </div>
@@ -192,44 +197,33 @@ export function KitchenPageClient({
   };
 
   return (
-    <main className="flex flex-col gap-6 p-4 md:p-6">
+    <main className="flex min-h-0 flex-1 flex-col gap-4 p-4 md:gap-5 md:p-6">
       <KitchenHeader
         labels={labels}
         onRefresh={handleRefresh}
         isRefreshing={isLoading}
-      />
-
-      <KitchenKpis labels={labels.kpis} values={kpiValues} />
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0 space-y-4">
-          <KitchenToolbar
-            labels={labels}
-            filters={filters}
-            view={view}
-            onFiltersChange={setFilters}
-            onViewChange={setView}
-            onClearFilters={clearFilters}
-          />
-
-          {renderMainContent()}
-        </div>
-
-        <aside className="hidden xl:block">
-          <KitchenCopilotCard
+        copilot={
+          <KitchenCopilotSheet
             labels={labels.copilot}
             actionLabel={labels.actions.viewSuggestions}
             items={insights}
           />
-        </aside>
-      </div>
+        }
+      />
 
-      <div className="xl:hidden">
-        <KitchenCopilotCard
-          labels={labels.copilot}
-          actionLabel={labels.actions.viewSuggestions}
-          items={insights}
+      <KitchenKpis labels={labels.kpis} values={kpiValues} />
+
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <KitchenToolbar
+          labels={labels}
+          filters={filters}
+          view={view}
+          onFiltersChange={setFilters}
+          onViewChange={setView}
+          onClearFilters={clearFilters}
         />
+
+        <div className="min-h-0 flex-1">{renderMainContent()}</div>
       </div>
 
       <KitchenDetailDrawer

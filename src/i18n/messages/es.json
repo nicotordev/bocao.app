@@ -650,6 +650,7 @@
         "pause": "Pausar",
         "resume": "Reanudar",
         "markReady": "Listo",
+        "markDelivered": "Entregar",
         "viewDetail": "Ver detalle",
         "changeStatus": "Cambiar estado",
         "reassignStation": "Reasignar estación",
@@ -707,6 +708,7 @@
         "waiting": "En espera",
         "ready": "Listo",
         "delivered": "Entregado",
+        "deliveredLate": "Entregado con atraso",
         "delayed": "Atrasado"
       },
       "views": {
@@ -724,6 +726,8 @@
         "minutes": "min",
         "paused": "Pausado",
         "items": "Productos",
+        "noItems": "Sin productos",
+        "moreItems": "+{count} más",
         "kitchenNote": "Nota",
         "importantNote": "Nota importante",
         "allergen": "Contiene",

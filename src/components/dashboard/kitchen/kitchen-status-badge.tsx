@@ -6,6 +6,7 @@ import type { KitchenLabels } from "./types";
 type KitchenStatusBadgeProps = {
   status: KitchenOrderStatus;
   labels: KitchenLabels["statuses"];
+  completedLate?: boolean;
   className?: string;
 };
 
@@ -21,15 +22,27 @@ const statusClassName: Record<KitchenOrderStatus, string> = {
 export function KitchenStatusBadge({
   status,
   labels,
+  completedLate = false,
   className,
 }: KitchenStatusBadgeProps) {
+  const lateDeliveredClassName =
+    "border-warning/35 bg-warning/15 text-warning-foreground";
+
   return (
     <Badge
       variant="outline"
-      className={cn("whitespace-nowrap font-medium", statusClassName[status], className)}
+      className={cn(
+        "whitespace-nowrap font-medium",
+        completedLate && status === "delivered"
+          ? lateDeliveredClassName
+          : statusClassName[status],
+        className,
+      )}
     >
       <span className="mr-1.5 size-1.5 rounded-full bg-current" />
-      {labels[status]}
+      {completedLate && status === "delivered"
+        ? labels.deliveredLate
+        : labels[status]}
     </Badge>
   );
 }

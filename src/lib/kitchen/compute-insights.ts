@@ -1,4 +1,4 @@
-import { isKitchenOrderDelayed } from "@/lib/kitchen/filters";
+import { isKitchenOrderActiveDelayed } from "@/lib/kitchen/filters";
 import type { KitchenOrder } from "@/lib/kitchen/types";
 
 type KitchenInsightLabels = {
@@ -11,7 +11,9 @@ export function computeKitchenInsights(
   orders: KitchenOrder[],
   labels: KitchenInsightLabels,
 ): string[] {
-  const delayedOrders = orders.filter((order) => isKitchenOrderDelayed(order));
+  const delayedOrders = orders.filter((order) =>
+    isKitchenOrderActiveDelayed(order),
+  );
 
   const preparingOrders = orders.filter((order) =>
     ["received", "in_preparation", "waiting", "delayed"].includes(order.status),

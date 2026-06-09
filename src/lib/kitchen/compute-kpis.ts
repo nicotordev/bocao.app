@@ -1,10 +1,8 @@
-import { isKitchenOrderDelayed } from "./filters";
+import { isKitchenOrderActiveDelayed } from "./filters";
 import type { KitchenKpiValues, KitchenOrder } from "./types";
 
 export function computeKitchenKpis(orders: KitchenOrder[]): KitchenKpiValues {
-  const activeOrders = orders.filter(
-    (order) => order.status !== "delivered",
-  );
+  const activeOrders = orders.filter((order) => order.status !== "delivered");
 
   const preparingOrders = orders.filter(
     (order) =>
@@ -16,7 +14,9 @@ export function computeKitchenKpis(orders: KitchenOrder[]): KitchenKpiValues {
 
   const readyOrders = orders.filter((order) => order.status === "ready");
 
-  const delayedOrders = orders.filter((order) => isKitchenOrderDelayed(order));
+  const delayedOrders = orders.filter((order) =>
+    isKitchenOrderActiveDelayed(order),
+  );
 
   const averageMinutes =
     preparingOrders.length === 0

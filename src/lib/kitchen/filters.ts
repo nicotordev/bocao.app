@@ -5,11 +5,30 @@ import type {
   KitchenOrderStatus,
 } from "./types";
 
-export function isKitchenOrderDelayed(order: KitchenOrder): boolean {
+export function isKitchenOrderCompletedLate(order: KitchenOrder): boolean {
+  return (
+    order.status === "delivered" &&
+    (order.completedLate === true ||
+      order.priority === "delayed" ||
+      order.elapsedMinutes > order.slaMinutes)
+  );
+}
+
+export function isKitchenOrderActiveDelayed(order: KitchenOrder): boolean {
+  if (order.status === "delivered") {
+    return false;
+  }
+
   return (
     order.status === "delayed" ||
     order.priority === "delayed" ||
     order.elapsedMinutes > order.slaMinutes
+  );
+}
+
+export function isKitchenOrderDelayed(order: KitchenOrder): boolean {
+  return (
+    isKitchenOrderActiveDelayed(order) || isKitchenOrderCompletedLate(order)
   );
 }
 

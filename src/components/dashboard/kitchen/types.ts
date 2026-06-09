@@ -19,6 +19,7 @@ export type KitchenLabels = {
     pause: string;
     resume: string;
     markReady: string;
+    markDelivered: string;
     viewDetail: string;
     changeStatus: string;
     reassignStation: string;
@@ -53,7 +54,9 @@ export type KitchenLabels = {
   stations: Record<KitchenStation | "all", string>;
   priorities: Record<KitchenPriority | "all", string>;
   channels: Record<KitchenChannel | "all", string>;
-  statuses: Record<KitchenOrderStatus, string>;
+  statuses: Record<KitchenOrderStatus, string> & {
+    deliveredLate: string;
+  };
   views: Record<KitchenViewMode, string>;
   tabs: {
     cards: string;
@@ -65,6 +68,8 @@ export type KitchenLabels = {
     minutes: string;
     paused: string;
     items: string;
+    noItems: string;
+    moreItems: string;
     kitchenNote: string;
     importantNote: string;
     allergen: string;
