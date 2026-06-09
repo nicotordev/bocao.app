@@ -62,7 +62,7 @@ export function KitchenHeader({
             {labels.actions.refresh}
           </Button>
           <Button variant="outline" className="gap-2" asChild>
-            <Link href="/dashboard/settings">
+            <Link href="/dashboard/kitchen/stations">
               <Settings2 className="size-4" aria-hidden />
               {labels.actions.configureStations}
             </Link>

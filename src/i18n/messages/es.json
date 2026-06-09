@@ -678,7 +678,7 @@
         "view": "Vista",
         "all": "Todas"
       },
-      "stations": {
+      "stationTypes": {
         "all": "Todas",
         "grill": "Parrilla",
         "fryer": "Freidora",
@@ -792,6 +792,84 @@
       "accessibility": {
         "openDetails": "Abrir detalle del pedido",
         "orderNumber": "Número de pedido"
+      },
+      "stations": {
+        "header": {
+          "title": "Estaciones de cocina",
+          "subtitle": "Organiza el flujo operativo por área de preparación, prioridad visual y asignación de tickets.",
+          "backToKitchen": "Volver a cocina",
+          "createStation": "Nueva estación"
+        },
+        "card": {
+          "description": "Descripción",
+          "noDescription": "Sin descripción operativa",
+          "category": "Tipo",
+          "activeOrders": "Pedidos activos",
+          "activeOrdersCount": "{count}",
+          "sortOrder": "Orden",
+          "edit": "Editar",
+          "activate": "Activar",
+          "deactivate": "Desactivar",
+          "delete": "Eliminar",
+          "moveUp": "Subir en el orden",
+          "moveDown": "Bajar en el orden",
+          "deleteBlocked": "No se puede eliminar mientras tenga pedidos activos"
+        },
+        "status": {
+          "active": "Activa",
+          "inactive": "Inactiva"
+        },
+        "categories": {
+          "grill": "Parrilla",
+          "fryer": "Freidora",
+          "sushi": "Sushi",
+          "bar": "Bar",
+          "desserts": "Postres",
+          "delivery": "Delivery",
+          "prep": "Preparación",
+          "other": "Otro"
+        },
+        "form": {
+          "createTitle": "Crear estación",
+          "createDescription": "Define un área operativa para filtrar y asignar tickets de cocina.",
+          "editTitle": "Editar estación",
+          "editDescription": "Actualiza nombre, tipo y visibilidad de la estación.",
+          "name": "Nombre",
+          "namePlaceholder": "Ej. Parrilla caliente",
+          "description": "Descripción",
+          "descriptionPlaceholder": "Qué prepara esta estación y cuándo usarla",
+          "category": "Tipo / categoría",
+          "categoryPlaceholder": "Selecciona un tipo",
+          "sortOrder": "Orden visual",
+          "sortOrderHint": "Posición en la vista de cocina. Los números más bajos aparecen primero.",
+          "isActive": "Estación activa",
+          "isActiveHint": "Las estaciones inactivas no aparecen en filtros ni asignación.",
+          "save": "Guardar",
+          "saving": "Guardando...",
+          "cancel": "Cancelar",
+          "delete": "Eliminar",
+          "confirmDelete": "¿Eliminar esta estación? Esta acción no se puede deshacer."
+        },
+        "empty": {
+          "title": "Aún no hay estaciones configuradas",
+          "description": "Crea estaciones para separar parrilla, freidora, bar y otras áreas. Los tickets podrán filtrarse y asignarse por estación.",
+          "cta": "Crear primera estación"
+        },
+        "loading": "Cargando estaciones...",
+        "feedback": {
+          "createSuccess": "Estación creada correctamente.",
+          "updateSuccess": "Estación actualizada correctamente.",
+          "deleteSuccess": "Estación eliminada correctamente.",
+          "toggleSuccess": "Estado de la estación actualizado.",
+          "error": "No pudimos guardar los cambios. Intenta nuevamente.",
+          "deleteBlocked": "No se puede eliminar una estación con pedidos activos."
+        },
+        "validation": {
+          "name": "Ingresa un nombre para la estación."
+        },
+        "permissions": {
+          "deniedDescription": "Tu rol no tiene acceso a la configuración de estaciones de cocina."
+        }
       }
     },
     "floorPlan": {

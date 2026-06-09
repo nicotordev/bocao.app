@@ -678,7 +678,7 @@
         "view": "View",
         "all": "All"
       },
-      "stations": {
+      "stationTypes": {
         "all": "All",
         "grill": "Grill",
         "fryer": "Fryer",
@@ -792,6 +792,84 @@
       "accessibility": {
         "openDetails": "Open order details",
         "orderNumber": "Order number"
+      },
+      "stations": {
+        "header": {
+          "title": "Kitchen stations",
+          "subtitle": "Organize prep flow by area, visual order, and ticket assignment.",
+          "backToKitchen": "Back to kitchen",
+          "createStation": "New station"
+        },
+        "card": {
+          "description": "Description",
+          "noDescription": "No operational description",
+          "category": "Type",
+          "activeOrders": "Active orders",
+          "activeOrdersCount": "{count}",
+          "sortOrder": "Order",
+          "edit": "Edit",
+          "activate": "Activate",
+          "deactivate": "Deactivate",
+          "delete": "Delete",
+          "moveUp": "Move up",
+          "moveDown": "Move down",
+          "deleteBlocked": "Cannot delete while active orders are assigned"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive"
+        },
+        "categories": {
+          "grill": "Grill",
+          "fryer": "Fryer",
+          "sushi": "Sushi",
+          "bar": "Bar",
+          "desserts": "Desserts",
+          "delivery": "Delivery",
+          "prep": "Prep",
+          "other": "Other"
+        },
+        "form": {
+          "createTitle": "Create station",
+          "createDescription": "Define an operational area to filter and assign kitchen tickets.",
+          "editTitle": "Edit station",
+          "editDescription": "Update the station name, type, and visibility.",
+          "name": "Name",
+          "namePlaceholder": "e.g. Hot grill",
+          "description": "Description",
+          "descriptionPlaceholder": "What this station prepares and when to use it",
+          "category": "Type / category",
+          "categoryPlaceholder": "Select a type",
+          "sortOrder": "Visual order",
+          "sortOrderHint": "Position in the kitchen view. Lower numbers appear first.",
+          "isActive": "Active station",
+          "isActiveHint": "Inactive stations are hidden from filters and assignment.",
+          "save": "Save",
+          "saving": "Saving...",
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "confirmDelete": "Delete this station? This action cannot be undone."
+        },
+        "empty": {
+          "title": "No stations configured yet",
+          "description": "Create stations to separate grill, fryer, bar, and other areas. Tickets can then be filtered and assigned by station.",
+          "cta": "Create first station"
+        },
+        "loading": "Loading stations...",
+        "feedback": {
+          "createSuccess": "Station created successfully.",
+          "updateSuccess": "Station updated successfully.",
+          "deleteSuccess": "Station deleted successfully.",
+          "toggleSuccess": "Station status updated.",
+          "error": "We could not save your changes. Please try again.",
+          "deleteBlocked": "Cannot delete a station with active orders."
+        },
+        "validation": {
+          "name": "Enter a station name."
+        },
+        "permissions": {
+          "deniedDescription": "Your role does not have access to kitchen station configuration."
+        }
       }
     },
     "floorPlan": {

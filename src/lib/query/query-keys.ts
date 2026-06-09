@@ -44,5 +44,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.kitchen.all, "list"] as const,
     list: (restaurantId: string) =>
       [...queryKeys.kitchen.lists(), restaurantId] as const,
+    stations: () => [...queryKeys.kitchen.all, "stations"] as const,
+    stationsList: (restaurantId: string) =>
+      [...queryKeys.kitchen.stations(), restaurantId] as const,
   },
 } as const;
