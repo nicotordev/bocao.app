@@ -6,28 +6,30 @@ import {
 } from "@/lib/menu/item-translations";
 import { menuItemTranslationsPayloadSchema } from "@/lib/menu/item-translations-schema";
 
+const menuEntityIdSchema = z.string().trim().min(1);
+
 export const updateMenuItemImagesSchema = z.object({
-  restaurantId: z.string().cuid(),
-  menuItemId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
+  menuItemId: menuEntityIdSchema,
   images: z.array(z.string().url()).max(8),
 });
 
 export const createMenuCategorySchema = z.object({
-  restaurantId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
   name: z.string().trim().min(1).max(80),
 });
 
 export const updateMenuCategorySchema = z.object({
-  restaurantId: z.string().cuid(),
-  categoryId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
+  categoryId: menuEntityIdSchema,
   name: z.string().trim().min(1).max(80).optional(),
   isActive: z.boolean().optional(),
 });
 
 export const createMenuItemSchema = z
   .object({
-    restaurantId: z.string().cuid(),
-    categoryId: z.string().cuid(),
+    restaurantId: menuEntityIdSchema,
+    categoryId: menuEntityIdSchema,
     priceCents: z.number().int().min(0),
     isAvailable: z.boolean().default(true),
     images: z.array(z.string().url()).max(8).default([]),
@@ -48,9 +50,9 @@ export const createMenuItemSchema = z
 
 export const updateMenuItemSchema = z
   .object({
-    restaurantId: z.string().cuid(),
-    menuItemId: z.string().cuid(),
-    categoryId: z.string().cuid().optional(),
+    restaurantId: menuEntityIdSchema,
+    menuItemId: menuEntityIdSchema,
+    categoryId: menuEntityIdSchema.optional(),
     priceCents: z.number().int().min(0).optional(),
     isAvailable: z.boolean().optional(),
     images: z.array(z.string().url()).max(8).optional(),
@@ -74,27 +76,27 @@ export const updateMenuItemSchema = z
   });
 
 export const deleteMenuCategorySchema = z.object({
-  restaurantId: z.string().cuid(),
-  categoryId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
+  categoryId: menuEntityIdSchema,
 });
 
 export const deleteMenuItemSchema = z.object({
-  restaurantId: z.string().cuid(),
-  menuItemId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
+  menuItemId: menuEntityIdSchema,
 });
 
 export const reorderMenuLayoutSchema = z.object({
-  restaurantId: z.string().cuid(),
+  restaurantId: menuEntityIdSchema,
   categories: z.array(
     z.object({
-      id: z.string().cuid(),
+      id: menuEntityIdSchema,
       sortOrder: z.number().int().min(0),
     }),
   ),
   items: z.array(
     z.object({
-      id: z.string().cuid(),
-      categoryId: z.string().cuid(),
+      id: menuEntityIdSchema,
+      categoryId: menuEntityIdSchema,
       sortOrder: z.number().int().min(0),
     }),
   ),

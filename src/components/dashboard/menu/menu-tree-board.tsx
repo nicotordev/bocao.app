@@ -6,7 +6,7 @@ import {
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  closestCorners,
+  pointerWithin,
   useDraggable,
   useDroppable,
   useSensor,
@@ -99,33 +99,21 @@ export function MenuTreeBoard({
     () => buildMenuTreeLayout(categories, items),
     [categories, items],
   );
-  const [dragOverride, setDragOverride] = useState<{
-    source: MenuTreeLayout;
-    layout: MenuTreeLayout;
-  } | null>(null);
-  const layout =
-    dragOverride && dragOverride.source === baseLayout
-      ? dragOverride.layout
-      : baseLayout;
+  const [dragLayout, setDragLayoutState] = useState<MenuTreeLayout | null>(
+    null,
+  );
+  const layout = dragLayout ?? baseLayout;
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const layoutRef = useRef(layout);
   const layoutSnapshotRef = useRef<MenuTreeLayout | null>(null);
 
   function setDragLayout(
-    next:
-      | MenuTreeLayout
-      | ((current: MenuTreeLayout) => MenuTreeLayout),
+    next: MenuTreeLayout | ((current: MenuTreeLayout) => MenuTreeLayout),
   ) {
-    setDragOverride((current) => {
-      const resolvedBase =
-        current && current.source === baseLayout
-          ? current.layout
-          : baseLayout;
-      const resolvedLayout =
-        typeof next === "function" ? next(resolvedBase) : next;
-
-      return { source: baseLayout, layout: resolvedLayout };
+    setDragLayoutState((current) => {
+      const resolvedBase = current ?? baseLayout;
+      return typeof next === "function" ? next(resolvedBase) : next;
     });
   }
 
@@ -133,8 +121,14 @@ export function MenuTreeBoard({
     layoutRef.current = layout;
   }, [layout]);
 
+  useEffect(() => {
+    setDragLayoutState(null);
+    setActiveId(null);
+  }, [categories, items]);
+
   const isFiltered = search.trim().length > 0 || !showUnavailable;
-  const dragEnabled = canEdit && !isFiltered && !isSaving;
+  const dndEnabled = canEdit && !isFiltered;
+  const dragEnabled = dndEnabled && !isSaving;
 
   const displayLayout = useMemo(
     () =>
@@ -195,11 +189,10 @@ export function MenuTreeBoard({
 
       const records = layoutToMenuRecords(nextLayout);
       onLayoutChange(records.categories, records.items);
+      setDragLayoutState(null);
     } catch {
       const snapshot = layoutSnapshotRef.current;
-      if (snapshot) {
-        setDragLayout(snapshot);
-      }
+      setDragLayoutState(snapshot);
       toast.error(labels.feedback.error);
     } finally {
       setIsSaving(false);
@@ -248,10 +241,7 @@ export function MenuTreeBoard({
     }
 
     if (!over) {
-      const snapshot = layoutSnapshotRef.current;
-      if (snapshot) {
-        setDragLayout(snapshot);
-      }
+      setDragLayoutState(null);
       layoutSnapshotRef.current = null;
       return;
     }
@@ -272,10 +262,7 @@ export function MenuTreeBoard({
 
   function handleDragCancel() {
     setActiveId(null);
-    const snapshot = layoutSnapshotRef.current;
-    if (snapshot) {
-      setDragLayout(snapshot);
-    }
+    setDragLayoutState(null);
     layoutSnapshotRef.current = null;
   }
 
@@ -319,17 +306,17 @@ export function MenuTreeBoard({
         {isFiltered ? labels.tree.searchLocked : labels.tree.dragHint}
       </div>
 
-      {dragEnabled ? (
+      {dndEnabled ? (
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={pointerWithin}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
           {treeBody}
-          <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+          <DragOverlay dropAnimation={null} className="cursor-grabbing">
             {activeCategory ? (
               <MenuTreeCategoryPreview
                 category={activeCategory}
@@ -387,17 +374,19 @@ function MenuTreeCategorySection({
       data: { type: "category" },
     });
 
-  const style = {
-    transform: transform ? CSS.Translate.toString(transform) : undefined,
-  };
+  const style = isDragging
+    ? undefined
+    : {
+        transform: transform ? CSS.Translate.toString(transform) : undefined,
+      };
 
   return (
     <section
       ref={setNodeRef}
       style={style}
       className={cn(
-        "rounded-3xl border border-border bg-card shadow-sm",
-        isDragging && "opacity-50",
+        "rounded-3xl border border-border bg-card shadow-sm transition-opacity",
+        isDragging && "invisible",
       )}
     >
       <div className="flex items-center gap-2 border-b border-border px-3 py-3">
@@ -477,7 +466,7 @@ function MenuTreeCategoryDropZone({
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: categoryDropId(categoryId),
-    disabled: !dragEnabled,
+    disabled: !dragEnabled || itemCount > 0,
     data: { type: "category-drop", categoryId },
   });
 
@@ -533,17 +522,19 @@ function MenuTreeItemRow({
       data: { type: "item", categoryId: item.categoryId },
     });
 
-  const style = {
-    transform: transform ? CSS.Translate.toString(transform) : undefined,
-  };
+  const style = isDragging
+    ? undefined
+    : {
+        transform: transform ? CSS.Translate.toString(transform) : undefined,
+      };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-2.5",
-        isDragging && "opacity-50",
+        "flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-2.5 transition-opacity",
+        isDragging && "invisible",
       )}
     >
       {dragEnabled ? (
@@ -620,7 +611,7 @@ function MenuTreeCategoryPreview({
   labels: MenuPageLabels;
 }) {
   return (
-    <div className="flex min-w-[260px] items-center gap-2 rounded-3xl border border-border bg-card px-4 py-3 shadow-lg">
+    <div className="flex min-w-[260px] items-center gap-2 rounded-3xl border border-primary/30 bg-card px-4 py-3 shadow-md ring-2 ring-primary/15">
       <FolderTree className="size-4 text-primary" aria-hidden />
       <div>
         <p className="font-medium">{category.name}</p>
@@ -645,7 +636,7 @@ function MenuTreeItemPreview({
   const displayName = resolveMenuItemName(item, locale, defaultLocale);
 
   return (
-    <div className="flex min-w-[280px] items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 shadow-lg">
+    <div className="flex min-w-[280px] items-center gap-3 rounded-2xl border border-primary/30 bg-card px-3 py-2.5 shadow-md ring-2 ring-primary/15">
       <MenuItemThumbnail name={displayName} imageUrl={item.images[0]} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{displayName}</p>
