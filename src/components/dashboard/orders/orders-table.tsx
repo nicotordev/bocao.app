@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Copy, Edit3, Eye, MoreHorizontal, Printer, RefreshCcw, XCircle } from "lucide-react";
+import {
+  Copy,
+  Edit3,
+  Eye,
+  MoreHorizontal,
+  Printer,
+  RefreshCcw,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +29,14 @@ import {
 import { OrderChannelBadge } from "./order-channel-badge";
 import { OrderStatusBadge } from "./order-status-badge";
 import type { DashboardOrder, OrdersLabels } from "./types";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 
 type OrdersTableProps = {
   labels: OrdersLabels;
@@ -28,7 +44,11 @@ type OrdersTableProps = {
   onSelectOrder: (order: DashboardOrder) => void;
 };
 
-export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps) {
+export function OrdersTable({
+  labels,
+  orders,
+  onSelectOrder,
+}: OrdersTableProps) {
   if (orders.length === 0) {
     return <OrdersEmptyState labels={labels} />;
   }
@@ -47,7 +67,9 @@ export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps)
               <TableHead>{labels.table.time}</TableHead>
               <TableHead>{labels.table.wait}</TableHead>
               <TableHead>{labels.table.owner}</TableHead>
-              <TableHead className="text-right">{labels.table.actions}</TableHead>
+              <TableHead className="text-right">
+                {labels.table.actions}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -65,7 +87,9 @@ export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps)
                 <TableCell>
                   <div>
                     <p className="font-medium">{order.customerName}</p>
-                    <p className="text-xs text-muted-foreground">{order.phone}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {order.phone}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -76,7 +100,10 @@ export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps)
                   />
                 </TableCell>
                 <TableCell>
-                  <OrderStatusBadge status={order.status} labels={labels.statuses} />
+                  <OrderStatusBadge
+                    status={order.status}
+                    labels={labels.statuses}
+                  />
                 </TableCell>
                 <TableCell className="font-medium">{order.total}</TableCell>
                 <TableCell>{order.createdAt}</TableCell>
@@ -85,7 +112,10 @@ export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps)
                 </TableCell>
                 <TableCell>{order.owner}</TableCell>
                 <TableCell className="text-right">
-                  <OrderActions labels={labels} onSelect={() => onSelectOrder(order)} />
+                  <OrderActions
+                    labels={labels}
+                    onSelect={() => onSelectOrder(order)}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -111,7 +141,10 @@ export function OrdersTable({ labels, orders, onSelectOrder }: OrdersTableProps)
               <p className="text-sm font-semibold">{order.total}</p>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <OrderStatusBadge status={order.status} labels={labels.statuses} />
+              <OrderStatusBadge
+                status={order.status}
+                labels={labels.statuses}
+              />
               <OrderChannelBadge
                 channel={order.channel}
                 labels={labels.channels}
@@ -147,7 +180,10 @@ function OrderActions({
           <MoreHorizontal className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+      <DropdownMenuContent
+        align="end"
+        onClick={(event) => event.stopPropagation()}
+      >
         <DropdownMenuItem onSelect={onSelect}>
           <Eye className="size-4" aria-hidden />
           {labels.actions.viewDetail}
@@ -180,17 +216,19 @@ function OrderActions({
 
 export function OrdersEmptyState({ labels }: { labels: OrdersLabels }) {
   return (
-    <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center">
-      <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-border bg-muted/40">
-        <Eye className="size-7 text-muted-foreground" aria-hidden />
-      </div>
-      <h3 className="mt-5 font-heading text-lg font-semibold">{labels.empty.title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        {labels.empty.description}
-      </p>
-      <Button className="mt-5" asChild>
-        <Link href="/dashboard/orders/new">{labels.empty.cta}</Link>
-      </Button>
-    </div>
+    <Empty className="border border-dashed border-border/70 bg-card/50">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Eye className="size-7 text-muted-foreground" aria-hidden />
+        </EmptyMedia>
+        <EmptyTitle>{labels.empty.title}</EmptyTitle>
+        <EmptyDescription>{labels.empty.description}</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button asChild>
+          <Link href="/dashboard/orders/new">{labels.empty.cta}</Link>
+        </Button>
+      </EmptyContent>
+    </Empty>
   );
 }
