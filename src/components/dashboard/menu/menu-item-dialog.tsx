@@ -283,10 +283,13 @@ export function MenuItemDialog({
       }
 
       if (savedItem) {
-        if (
-          form.purchaseFlow.isActive &&
-          form.purchaseFlow.steps.length > 0
-        ) {
+        const shouldSaveFlow =
+          form.purchaseFlow.isActive && form.purchaseFlow.steps.length > 0;
+        const hadExistingFlow = Boolean(
+          item?.id && productFlowsByMenuItemId[item.id],
+        );
+
+        if (shouldSaveFlow) {
           const flowResult = await upsertProductFlowAction({
             restaurantId,
             menuItemId: savedItem.id,
@@ -294,11 +297,7 @@ export function MenuItemDialog({
             steps: form.purchaseFlow.steps,
           });
           onFlowSaved?.(savedItem.id, flowResult.flow);
-        } else if (
-          item?.id &&
-          (productFlowsByMenuItemId[item.id] ||
-            form.purchaseFlow.steps.length > 0)
-        ) {
+        } else if (hadExistingFlow) {
           await deleteProductFlowAction({
             restaurantId,
             menuItemId: savedItem.id,
@@ -359,110 +358,117 @@ export function MenuItemDialog({
             </TabsList>
 
             <TabsContent value="general" className="space-y-5">
-          <LocalizedProductFields
-            labels={{
-              languages: labels.itemDialog.tagsLanguages,
-              name: labels.itemDialog.name,
-              namePlaceholder: labels.itemDialog.namePlaceholder,
-              description: labels.itemDialog.description,
-              descriptionPlaceholder: labels.itemDialog.descriptionPlaceholder,
-            }}
-            localeOptions={localeOptions}
-            value={form.translations}
-            onChange={(translations) => updateField("translations", translations)}
-          />
+              <LocalizedProductFields
+                labels={{
+                  languages: labels.itemDialog.tagsLanguages,
+                  name: labels.itemDialog.name,
+                  namePlaceholder: labels.itemDialog.namePlaceholder,
+                  description: labels.itemDialog.description,
+                  descriptionPlaceholder:
+                    labels.itemDialog.descriptionPlaceholder,
+                }}
+                localeOptions={localeOptions}
+                value={form.translations}
+                onChange={(translations) =>
+                  updateField("translations", translations)
+                }
+              />
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field>
-              <FieldLabel className="required">
-                {labels.itemDialog.price}
-              </FieldLabel>
-              <InputGroup>
-                <InputGroupAddon align="inline-start">
-                  <InputGroupText>{currency}</InputGroupText>
-                </InputGroupAddon>
-                <InputGroupInput
-                  type="number"
-                  min={0}
-                  value={form.price}
-                  onChange={(event) => updateField("price", event.target.value)}
-                  placeholder="0"
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel className="required">
+                    {labels.itemDialog.price}
+                  </FieldLabel>
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start">
+                      <InputGroupText>{currency}</InputGroupText>
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      type="number"
+                      min={0}
+                      value={form.price}
+                      onChange={(event) =>
+                        updateField("price", event.target.value)
+                      }
+                      placeholder="0"
+                    />
+                  </InputGroup>
+                </Field>
+
+                <Field>
+                  <FieldLabel className="required">
+                    {labels.itemDialog.category}
+                  </FieldLabel>
+                  <Select
+                    value={form.categoryId || undefined}
+                    onValueChange={(value) => updateField("categoryId", value)}
+                  >
+                    <SelectTrigger className="rounded-3xl">
+                      <SelectValue
+                        placeholder={labels.itemDialog.categoryPlaceholder}
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {categories.map((category) => (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id}
+                          className="rounded-lg"
+                        >
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-border px-3 py-2">
+                <Switch
+                  id="menu-item-available"
+                  checked={form.isAvailable}
+                  onCheckedChange={(checked) =>
+                    updateField("isAvailable", checked)
+                  }
                 />
-              </InputGroup>
-            </Field>
+                <FieldLabel
+                  htmlFor="menu-item-available"
+                  className="cursor-pointer"
+                >
+                  {labels.itemDialog.available}
+                </FieldLabel>
+              </div>
 
-            <Field>
-              <FieldLabel className="required">
-                {labels.itemDialog.category}
-              </FieldLabel>
-              <Select
-                value={form.categoryId || undefined}
-                onValueChange={(value) => updateField("categoryId", value)}
-              >
-                <SelectTrigger className="rounded-3xl">
-                  <SelectValue
-                    placeholder={labels.itemDialog.categoryPlaceholder}
-                  />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id}
-                      className="rounded-lg"
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
+              <MenuItemTagsField
+                labels={{
+                  label: labels.itemDialog.tags,
+                  catalog: labels.itemDialog.tagsCatalog,
+                  customLabel: labels.itemDialog.tagsCustom,
+                  customPlaceholder: labels.itemDialog.tagsPlaceholder,
+                  add: labels.itemDialog.tagsAdd,
+                  remove: labels.itemDialog.tagsRemove,
+                  suggestions: labels.itemDialog.tagsSuggestions,
+                  pickIcon: labels.itemDialog.tagsPickIcon,
+                  languages: labels.itemDialog.tagsLanguages,
+                }}
+                localeOptions={localeOptions}
+                catalogTags={catalogTags}
+                catalogLabels={tagCatalogLabels}
+                customTagDefinitions={customTagDefinitions}
+                value={form.tags}
+                suggestions={tagSuggestions}
+                onChange={(tags) => updateField("tags", tags)}
+              />
 
-          <div className="flex items-center gap-3 rounded-2xl border border-border px-3 py-2">
-            <Switch
-              id="menu-item-available"
-              checked={form.isAvailable}
-              onCheckedChange={(checked) => updateField("isAvailable", checked)}
-            />
-            <FieldLabel
-              htmlFor="menu-item-available"
-              className="cursor-pointer"
-            >
-              {labels.itemDialog.available}
-            </FieldLabel>
-          </div>
-
-          <MenuItemTagsField
-            labels={{
-              label: labels.itemDialog.tags,
-              catalog: labels.itemDialog.tagsCatalog,
-              customLabel: labels.itemDialog.tagsCustom,
-              customPlaceholder: labels.itemDialog.tagsPlaceholder,
-              add: labels.itemDialog.tagsAdd,
-              remove: labels.itemDialog.tagsRemove,
-              suggestions: labels.itemDialog.tagsSuggestions,
-              pickIcon: labels.itemDialog.tagsPickIcon,
-              languages: labels.itemDialog.tagsLanguages,
-            }}
-            localeOptions={localeOptions}
-            catalogTags={catalogTags}
-            catalogLabels={tagCatalogLabels}
-            customTagDefinitions={customTagDefinitions}
-            value={form.tags}
-            suggestions={tagSuggestions}
-            onChange={(tags) => updateField("tags", tags)}
-          />
-
-          <div>
-            <p className="mb-2 text-sm font-medium">{labels.item.photos}</p>
-            <ProductImagesField
-              labels={photoLabels}
-              imageUrls={form.images}
-              onChange={(images) => updateField("images", images)}
-              onUpload={handleUpload}
-            />
-          </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">{labels.item.photos}</p>
+                <ProductImagesField
+                  labels={photoLabels}
+                  imageUrls={form.images}
+                  onChange={(images) => updateField("images", images)}
+                  onUpload={handleUpload}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="flow" className="min-h-0 flex-1">

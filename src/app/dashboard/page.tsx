@@ -59,23 +59,25 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <AiInsightsCard insights={data.insights} />
+          {await AiInsightsCard({ insights: data.insights })}
         </div>
-        <WhatsappStatusCard
-          connected={data.whatsapp.connected}
-          unreadCount={data.whatsapp.unreadCount}
-          lastMessageAt={data.whatsapp.lastMessageAt}
-          responseRate={data.whatsapp.responseRate}
-        />
+        {await WhatsappStatusCard({
+          connected: data.whatsapp.connected,
+          unreadCount: data.whatsapp.unreadCount,
+          lastMessageAt: data.whatsapp.lastMessageAt,
+          responseRate: data.whatsapp.responseRate,
+        })}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <RecentOrdersList orders={data.recentOrders} />
-        <UpcomingReservationsList reservations={data.upcomingReservations} />
+        {await RecentOrdersList({ orders: data.recentOrders })}
+        {await UpcomingReservationsList({
+          reservations: data.upcomingReservations,
+        })}
       </section>
 
       <section>
-        <TeamActivityCard members={data.teamActivity} />
+        {await TeamActivityCard({ members: data.teamActivity })}
       </section>
     </main>
   );
