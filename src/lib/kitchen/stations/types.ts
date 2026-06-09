@@ -16,6 +16,7 @@ export type KitchenStationConfig = {
   name: string;
   description: string;
   category: KitchenStationCategory;
+  customCategoryLabel: string | null;
   imageUrl: string | null;
   iconId: MenuTagIconId | null;
   isActive: boolean;

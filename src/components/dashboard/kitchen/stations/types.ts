@@ -39,6 +39,9 @@ export type KitchenStationsLabels = {
     descriptionPlaceholder: string;
     category: string;
     categoryPlaceholder: string;
+    otherCategoryLabel: string;
+    otherCategoryLabelPlaceholder: string;
+    otherCategoryLabelHint: string;
     sortOrder: string;
     sortOrderHint: string;
     isActive: string;
@@ -66,6 +69,7 @@ export type KitchenStationsLabels = {
   };
   validation: {
     name: string;
+    otherCategoryLabel: string;
   };
   permissions: {
     deniedDescription: string;

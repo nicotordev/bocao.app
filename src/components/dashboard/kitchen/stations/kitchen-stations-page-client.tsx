@@ -65,6 +65,7 @@ export function KitchenStationsPageClient({
     name: string;
     description: string;
     category: KitchenStationWithStats["category"];
+    customCategoryLabel: string | null;
     imageUrl: string | null;
     iconId: KitchenStationWithStats["iconId"];
     isActive: boolean;

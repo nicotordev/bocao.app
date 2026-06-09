@@ -840,6 +840,9 @@
           "descriptionPlaceholder": "What this station prepares and when to use it",
           "category": "Type / category",
           "categoryPlaceholder": "Select a type",
+          "otherCategoryLabel": "Specify the type",
+          "otherCategoryLabelPlaceholder": "e.g. Salads, Wok, Pastry",
+          "otherCategoryLabelHint": "Visible type name when it does not fit the predefined categories.",
           "sortOrder": "Visual order",
           "sortOrderHint": "Position in the kitchen view. Lower numbers appear first.",
           "isActive": "Active station",
@@ -881,7 +884,11 @@
           "deleteBlocked": "Cannot delete a station with active orders."
         },
         "validation": {
-          "name": "Enter a station name."
+          "name": "Enter a station name.",
+          "otherCategoryLabel": "Specify the station type when you choose Other.",
+          "otherCategoryLabelOnlyForOther": "Custom type label only applies when category is Other.",
+          "requiredFields": "At least one field is required to update.",
+          "invalidBody": "The submitted data is not valid."
         },
         "permissions": {
           "deniedDescription": "Your role does not have access to kitchen station configuration."

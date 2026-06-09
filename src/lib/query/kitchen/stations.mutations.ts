@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { z } from "zod";
-import type {
+import {
   createKitchenStationBodySchema,
-  updateKitchenStationBodySchema,
+  createUpdateKitchenStationBodySchema,
 } from "@/lib/kitchen/stations/schemas";
 import {
   createKitchenStationRequest,
@@ -13,8 +13,12 @@ import {
 } from "@/lib/query/kitchen/stations.api";
 import { queryKeys } from "@/lib/query/query-keys";
 
-type CreateKitchenStationInput = z.infer<typeof createKitchenStationBodySchema>;
-type UpdateKitchenStationInput = z.infer<typeof updateKitchenStationBodySchema>;
+type CreateKitchenStationInput = z.infer<
+  ReturnType<typeof createKitchenStationBodySchema>
+>;
+type UpdateKitchenStationInput = z.infer<
+  ReturnType<typeof createUpdateKitchenStationBodySchema>
+>;
 
 export function useKitchenStationMutations(restaurantId: string) {
   const queryClient = useQueryClient();

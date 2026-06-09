@@ -258,8 +258,10 @@ model KitchenStation {
   restaurantId String
   name         String
   description  String                 @default("")
-  category     KitchenStationCategory
-  imageUrl     String?
+  category            KitchenStationCategory
+  /// User-defined label when category is OTHER.
+  customCategoryLabel String?
+  imageUrl            String?
   /// Menu tag icon key used when no custom image is set.
   iconId       String?
   isActive     Boolean                @default(true)

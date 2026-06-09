@@ -1,14 +1,18 @@
 import type { KitchenStationsListResponse } from "@/lib/kitchen/stations/types";
 import type { z } from "zod";
-import type {
+import {
   createKitchenStationBodySchema,
-  updateKitchenStationBodySchema,
+  createUpdateKitchenStationBodySchema,
 } from "@/lib/kitchen/stations/schemas";
 import { apiRequest } from "@/lib/query/api-client";
 import type { KitchenStationWithStats } from "@/lib/kitchen/stations/types";
 
-type CreateKitchenStationInput = z.infer<typeof createKitchenStationBodySchema>;
-type UpdateKitchenStationInput = z.infer<typeof updateKitchenStationBodySchema>;
+type CreateKitchenStationInput = z.infer<
+  ReturnType<typeof createKitchenStationBodySchema>
+>;
+type UpdateKitchenStationInput = z.infer<
+  ReturnType<typeof createUpdateKitchenStationBodySchema>
+>;
 
 export async function fetchKitchenStations(
   restaurantId: string,

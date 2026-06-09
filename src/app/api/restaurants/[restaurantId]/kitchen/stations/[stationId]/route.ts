@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import {
-  requireRestaurantAccess,
-  requireRestaurantWriteAccess,
-} from "@/lib/orders/api-auth";
-import {
-  reorderKitchenStationBodySchema,
-  updateKitchenStationBodySchema,
-} from "@/lib/kitchen/stations/schemas";
-import {
   deleteKitchenStation,
   reorderKitchenStation,
   toggleKitchenStationActive,
   updateKitchenStation,
 } from "@/lib/kitchen/stations/repository";
+import {
+  createUpdateKitchenStationBodySchema,
+  reorderKitchenStationBodySchema,
+} from "@/lib/kitchen/stations/schemas";
+import { getKitchenStationValidationMessages } from "@/lib/kitchen/stations/validation-messages";
+import {
+  requireRestaurantAccess,
+  requireRestaurantWriteAccess,
+} from "@/lib/orders/api-auth";
 
 type RouteContext = {
   params: Promise<{ restaurantId: string; stationId: string }>;
@@ -72,11 +73,16 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ station });
   }
 
-  const parsed = updateKitchenStationBodySchema.safeParse(body);
+  const validationMessages = await getKitchenStationValidationMessages();
+  const parsed =
+    createUpdateKitchenStationBodySchema(validationMessages).safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid request body" },
+      {
+        error:
+          parsed.error.issues[0]?.message ?? validationMessages.invalidBody,
+      },
       { status: 400 },
     );
   }

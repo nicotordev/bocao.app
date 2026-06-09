@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import {
-  requireRestaurantAccess,
-  requireRestaurantWriteAccess,
-} from "@/lib/orders/api-auth";
-import { createKitchenStationBodySchema } from "@/lib/kitchen/stations/schemas";
-import {
   createKitchenStation,
   listKitchenStations,
 } from "@/lib/kitchen/stations/repository";
+import { createKitchenStationBodySchema } from "@/lib/kitchen/stations/schemas";
+import { getKitchenStationValidationMessages } from "@/lib/kitchen/stations/validation-messages";
+import {
+  requireRestaurantAccess,
+  requireRestaurantWriteAccess,
+} from "@/lib/orders/api-auth";
 
 type RouteContext = {
   params: Promise<{ restaurantId: string }>;
@@ -40,11 +41,16 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = createKitchenStationBodySchema.safeParse(body);
+  const validationMessages = await getKitchenStationValidationMessages();
+  const parsed =
+    createKitchenStationBodySchema(validationMessages).safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid request body" },
+      {
+        error:
+          parsed.error.issues[0]?.message ?? validationMessages.invalidBody,
+      },
       { status: 400 },
     );
   }

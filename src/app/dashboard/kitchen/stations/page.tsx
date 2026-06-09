@@ -69,6 +69,9 @@ export default async function KitchenStationsPage() {
       descriptionPlaceholder: t("form.descriptionPlaceholder"),
       category: t("form.category"),
       categoryPlaceholder: t("form.categoryPlaceholder"),
+      otherCategoryLabel: t("form.otherCategoryLabel"),
+      otherCategoryLabelPlaceholder: t("form.otherCategoryLabelPlaceholder"),
+      otherCategoryLabelHint: t("form.otherCategoryLabelHint"),
       sortOrder: t("form.sortOrder"),
       sortOrderHint: t("form.sortOrderHint"),
       isActive: t("form.isActive"),
@@ -111,6 +114,7 @@ export default async function KitchenStationsPage() {
     },
     validation: {
       name: t("validation.name"),
+      otherCategoryLabel: t("validation.otherCategoryLabel"),
     },
     permissions: {
       deniedDescription: t("permissions.deniedDescription"),

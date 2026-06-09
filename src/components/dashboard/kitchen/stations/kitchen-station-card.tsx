@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MenuTagIconGlyph } from "@/components/dashboard/menu/menu-tag-icon-picker";
+import { getKitchenStationCategoryLabel } from "@/lib/kitchen/stations/display";
 import type { KitchenStationWithStats } from "@/lib/kitchen/stations/types";
 import { cn } from "@/lib/utils";
 import { KitchenStationStatusBadge } from "./kitchen-station-status-badge";
@@ -99,7 +100,8 @@ export function KitchenStationCard({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary" className="font-normal">
-            {labels.card.category}: {labels.categories[station.category]}
+            {labels.card.category}:{" "}
+            {getKitchenStationCategoryLabel(station, labels.categories)}
           </Badge>
           <Badge variant="outline" className="font-normal">
             {labels.card.sortOrder}: {station.sortOrder + 1}

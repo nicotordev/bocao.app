@@ -49,6 +49,7 @@ type KitchenStationFormDialogProps = {
     name: string;
     description: string;
     category: KitchenStationCategory;
+    customCategoryLabel: string | null;
     imageUrl: string | null;
     iconId: MenuTagIconId | null;
     isActive: boolean;
@@ -69,11 +70,13 @@ export function KitchenStationFormDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<KitchenStationCategory>("grill");
+  const [customCategoryLabel, setCustomCategoryLabel] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [iconId, setIconId] = useState<MenuTagIconId | null>(null);
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [otherCategoryError, setOtherCategoryError] = useState("");
 
   const isEditing = Boolean(station);
 
@@ -81,11 +84,13 @@ export function KitchenStationFormDialog({
     setName(station?.name ?? "");
     setDescription(station?.description ?? "");
     setCategory(station?.category ?? "grill");
+    setCustomCategoryLabel(station?.customCategoryLabel ?? "");
     setImageUrl(station?.imageUrl ?? null);
     setIconId(station?.iconId ?? null);
     setIsActive(station?.isActive ?? true);
     setSortOrder(station ? String(station.sortOrder + 1) : "");
     setValidationError("");
+    setOtherCategoryError("");
   }, [station, open]);
 
   async function handleSubmit() {
@@ -93,6 +98,13 @@ export function KitchenStationFormDialog({
 
     if (!trimmedName) {
       setValidationError(labels.validation.name);
+      return;
+    }
+
+    const trimmedOtherCategoryLabel = customCategoryLabel.trim();
+
+    if (category === "other" && !trimmedOtherCategoryLabel) {
+      setOtherCategoryError(labels.validation.otherCategoryLabel);
       return;
     }
 
@@ -112,6 +124,8 @@ export function KitchenStationFormDialog({
         name: trimmedName,
         description: description.trim(),
         category,
+        customCategoryLabel:
+          category === "other" ? trimmedOtherCategoryLabel : null,
         imageUrl,
         iconId,
         isActive,
@@ -180,9 +194,14 @@ export function KitchenStationFormDialog({
             <FieldLabel>{labels.form.category}</FieldLabel>
             <Select
               value={category}
-              onValueChange={(value) =>
-                setCategory(value as KitchenStationCategory)
-              }
+              onValueChange={(value) => {
+                const nextCategory = value as KitchenStationCategory;
+                setCategory(nextCategory);
+                if (nextCategory !== "other") {
+                  setCustomCategoryLabel("");
+                  setOtherCategoryError("");
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder={labels.form.categoryPlaceholder} />
@@ -196,6 +215,32 @@ export function KitchenStationFormDialog({
               </SelectContent>
             </Select>
           </Field>
+
+          {category === "other" ? (
+            <Field>
+              <FieldLabel htmlFor="station-other-category">
+                {labels.form.otherCategoryLabel}
+              </FieldLabel>
+              <Input
+                id="station-other-category"
+                value={customCategoryLabel}
+                onChange={(event) => {
+                  setCustomCategoryLabel(event.target.value);
+                  if (otherCategoryError) {
+                    setOtherCategoryError("");
+                  }
+                }}
+                placeholder={labels.form.otherCategoryLabelPlaceholder}
+                maxLength={40}
+              />
+              <FieldDescription>
+                {labels.form.otherCategoryLabelHint}
+              </FieldDescription>
+              {otherCategoryError ? (
+                <p className="text-sm text-destructive">{otherCategoryError}</p>
+              ) : null}
+            </Field>
+          ) : null}
 
           <Field>
             <FieldLabel htmlFor="station-sort-order">

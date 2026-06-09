@@ -840,6 +840,9 @@
           "descriptionPlaceholder": "Qué prepara esta estación y cuándo usarla",
           "category": "Tipo / categoría",
           "categoryPlaceholder": "Selecciona un tipo",
+          "otherCategoryLabel": "Especifica el tipo",
+          "otherCategoryLabelPlaceholder": "Ej. Ensaladas, Wok, Pastelería",
+          "otherCategoryLabelHint": "Nombre visible del tipo cuando no encaja en las categorías predefinidas.",
           "sortOrder": "Orden visual",
           "sortOrderHint": "Posición en la vista de cocina. Los números más bajos aparecen primero.",
           "isActive": "Estación activa",
@@ -881,7 +884,11 @@
           "deleteBlocked": "No se puede eliminar una estación con pedidos activos."
         },
         "validation": {
-          "name": "Ingresa un nombre para la estación."
+          "name": "Ingresa un nombre para la estación.",
+          "otherCategoryLabel": "Especifica el tipo de estación cuando eliges Otro.",
+          "otherCategoryLabelOnlyForOther": "El tipo personalizado solo aplica cuando la categoría es Otro.",
+          "requiredFields": "Debes enviar al menos un campo para actualizar.",
+          "invalidBody": "Los datos enviados no son válidos."
         },
         "permissions": {
           "deniedDescription": "Tu rol no tiene acceso a la configuración de estaciones de cocina."

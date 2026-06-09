@@ -12,14 +12,18 @@ import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import { isMenuTagIconId } from "@/lib/menu/tag-icons";
 import { prisma } from "@/lib/prisma";
 import type { z } from "zod";
-import type {
+import {
   createKitchenStationBodySchema,
+  createUpdateKitchenStationBodySchema,
   reorderKitchenStationBodySchema,
-  updateKitchenStationBodySchema,
 } from "@/lib/kitchen/stations/schemas";
 
-type CreateKitchenStationInput = z.infer<typeof createKitchenStationBodySchema>;
-type UpdateKitchenStationInput = z.infer<typeof updateKitchenStationBodySchema>;
+type CreateKitchenStationInput = z.infer<
+  ReturnType<typeof createKitchenStationBodySchema>
+>;
+type UpdateKitchenStationInput = z.infer<
+  ReturnType<typeof createUpdateKitchenStationBodySchema>
+>;
 type ReorderKitchenStationInput = z.infer<
   typeof reorderKitchenStationBodySchema
 >;
@@ -72,6 +76,27 @@ function normalizeStationIconId(
   return value;
 }
 
+function normalizeCustomCategoryLabel(
+  category: KitchenStationCategory,
+  value: string | null | undefined,
+): string | null {
+  if (category !== "other") {
+    return null;
+  }
+
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function assertOtherCategoryLabel(
+  category: KitchenStationCategory,
+  customCategoryLabel: string | null,
+) {
+  if (category === "other" && !customCategoryLabel) {
+    throw new Error("Custom category label is required when category is other");
+  }
+}
+
 function mapKitchenStationRecord(
   record: PrismaKitchenStation,
 ): KitchenStationConfig {
@@ -81,6 +106,7 @@ function mapKitchenStationRecord(
     name: record.name,
     description: record.description,
     category: categoryFromDb[record.category],
+    customCategoryLabel: record.customCategoryLabel,
     imageUrl: record.imageUrl,
     iconId: normalizeStationIconId(record.iconId),
     isActive: record.isActive,
@@ -194,6 +220,11 @@ export async function createKitchenStation(
   input: CreateKitchenStationInput,
 ): Promise<KitchenStationWithStats> {
   const sortOrder = input.sortOrder ?? (await getNextSortOrder(restaurantId));
+  const customCategoryLabel = normalizeCustomCategoryLabel(
+    input.category,
+    input.customCategoryLabel,
+  );
+  assertOtherCategoryLabel(input.category, customCategoryLabel);
 
   const record = await prisma.kitchenStation.create({
     data: {
@@ -201,6 +232,7 @@ export async function createKitchenStation(
       name: input.name,
       description: input.description ?? "",
       category: categoryToDb[input.category],
+      customCategoryLabel,
       imageUrl: normalizeStationImageUrl(input.imageUrl),
       iconId: normalizeStationIconId(input.iconId),
       isActive: input.isActive ?? true,
@@ -230,6 +262,21 @@ export async function updateKitchenStation(
     return null;
   }
 
+  const nextCategory =
+    input.category !== undefined
+      ? input.category
+      : categoryFromDb[existing.category];
+  const nextCustomCategoryLabel =
+    input.customCategoryLabel !== undefined || input.category !== undefined
+      ? normalizeCustomCategoryLabel(
+          nextCategory,
+          input.customCategoryLabel !== undefined
+            ? input.customCategoryLabel
+            : existing.customCategoryLabel,
+        )
+      : existing.customCategoryLabel;
+  assertOtherCategoryLabel(nextCategory, nextCustomCategoryLabel);
+
   const record = await prisma.kitchenStation.update({
     where: { id: stationId },
     data: {
@@ -239,6 +286,10 @@ export async function updateKitchenStation(
         : {}),
       ...(input.category !== undefined
         ? { category: categoryToDb[input.category] }
+        : {}),
+      ...(input.customCategoryLabel !== undefined ||
+      input.category !== undefined
+        ? { customCategoryLabel: nextCustomCategoryLabel }
         : {}),
       ...(input.imageUrl !== undefined
         ? { imageUrl: normalizeStationImageUrl(input.imageUrl) }
