@@ -12,7 +12,7 @@ AI-assisted operating system for restaurants — dashboard, order operations, Wh
 | Edition | License | Get it |
 | --- | --- | --- |
 | **Community** | [AGPL-3.0](LICENSE) | This repository (free, open source) |
-| **Commercial** | Envato + [Commercial License](COMMERCIAL-LICENSE.md) | [CodeCanyon](https://codecanyon.net) *(planned)* |
+| **Commercial** | [Commercial License](COMMERCIAL-LICENSE.md) | Contact the author |
 
 The community edition is free to self-host under AGPL-3.0 terms. The commercial edition is for buyers who need proprietary licensing without copyleft obligations. See the [licensing guide](docs/en/licensing.md) for details.
 
@@ -174,6 +174,6 @@ Report vulnerabilities privately via [GitHub Security Advisories](https://github
 
 **Community Edition** — [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
 
-**Commercial Edition** — sold on CodeCanyon under Envato license terms. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+**Commercial Edition** — available under a separate commercial license. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
 
 Copyright (c) 2026 Nicolas Torres.

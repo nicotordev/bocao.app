@@ -5,38 +5,38 @@
 
 ## Commercial Edition
 
-The commercial edition of Bocao.app is sold exclusively through [CodeCanyon](https://codecanyon.net) (Envato Market).
+The commercial edition of Bocao.app is sold directly by the copyright holder under this Commercial License.
 
-When you purchase Bocao.app on CodeCanyon, your use is governed by:
+When you purchase a commercial license, your use is governed by:
 
-1. **Envato Market Regular or Extended License** — [License terms](https://codecanyon.net/licenses/standard)
-2. **This Commercial License addendum** — clarifies the relationship with the open-source community edition
+1. **This Commercial License** — proprietary terms without AGPL-3.0 copyleft obligations
+2. **The purchase agreement** provided at the time of sale
 
 ## What you receive
 
 Commercial license holders receive:
 
 - A production-ready distribution package (not necessarily identical to the public GitHub `main` branch at all times)
-- Updates via CodeCanyon for the support period defined by Envato
-- The right to use the software under Envato license terms **without AGPL-3.0 copyleft obligations**
-- Permission to keep modifications private, subject to Envato license limits
+- Updates for the support period defined in your purchase agreement
+- The right to use the software under commercial license terms **without AGPL-3.0 copyleft obligations**
+- Permission to keep modifications private, subject to your license limits
 
 ## What you do **not** receive
 
 - Ownership of the underlying copyright (remains with the author)
-- The right to sublicense or resell the source code itself (unless your Envato Extended License permits selling an End Product)
+- The right to sublicense or resell the source code itself (unless explicitly granted in your purchase agreement)
 - A grant to remove third-party dependency licenses (MIT, Apache, etc. still apply to those packages)
 
 ## Relationship with the Community Edition
 
 The author also publishes a **Community Edition** of Bocao.app under **AGPL-3.0** on GitHub.
 
-| Topic | Community Edition (GitHub) | Commercial Edition (CodeCanyon) |
+| Topic | Community Edition (GitHub) | Commercial Edition |
 | --- | --- | --- |
-| License | AGPL-3.0 | Envato Regular / Extended |
+| License | AGPL-3.0 | Commercial License |
 | Source disclosure | Required for network deployments | Not required by AGPL |
-| Price | Free | Per Envato pricing |
-| Support channel | GitHub Issues / Discussions | CodeCanyon item support |
+| Price | Free | Per purchase agreement |
+| Support channel | GitHub Issues / Discussions | Per purchase agreement |
 
 Purchasing the commercial edition is **not required** for personal self-hosting if you comply with AGPL-3.0.
 
@@ -52,5 +52,5 @@ Bocao.app includes third-party open-source libraries. Each dependency retains it
 
 ## Contact
 
-- **Commercial / CodeCanyon purchases:** via the CodeCanyon item support tab
+- **Commercial licensing:** open a [GitHub Issue](https://github.com/nicotordev/bocao.app/issues) or Discussion
 - **Community / AGPL edition:** [GitHub Issues](https://github.com/nicotordev/bocao.app/issues)

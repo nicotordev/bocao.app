@@ -69,4 +69,4 @@ Do **not** open public issues for security vulnerabilities. See [SECURITY.md](..
 
 ## Commercial edition
 
-Contributions to this repository apply to the AGPL-3.0 Community Edition. The commercial edition sold on CodeCanyon is a separate distribution channel with different licensing. See [COMMERCIAL-LICENSE.md](../COMMERCIAL-LICENSE.md).
+Contributions to this repository apply to the AGPL-3.0 Community Edition. The commercial edition is a separate distribution channel with different licensing. See [COMMERCIAL-LICENSE.md](../COMMERCIAL-LICENSE.md).

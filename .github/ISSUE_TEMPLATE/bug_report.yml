@@ -66,7 +66,7 @@ body:
       description: Which edition are you using?
       options:
         - Community Edition (GitHub / AGPL)
-        - Commercial Edition (CodeCanyon)
+        - Commercial Edition
         - Not sure
     validations:
       required: true

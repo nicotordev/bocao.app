@@ -17,7 +17,7 @@ Use this file as the operating contract for automated coding agents working in t
 - Data: PostgreSQL through Prisma 7. Generated client output lives in `src/generated/prisma`.
 - UI: shadcn-style primitives in `src/components/ui`, Tabler/Lucide icons, Sonner toasts.
 - i18n: `next-intl`, cookie-based locale persistence, no locale prefixes in URLs.
-- License: Community Edition is **AGPL-3.0** (see `LICENSE`). Commercial edition is sold separately on CodeCanyon.
+- License: Community Edition is **AGPL-3.0** (see `LICENSE`). Commercial edition is sold separately under a commercial license.
 
 ## Repository Layout
 
@@ -99,7 +99,6 @@ Run the narrowest useful verification first. For behavior changes, prefer `bunx 
 - Do not remove or weaken license headers. Do not change `LICENSE` without explicit user request.
 - Contributions are AGPL-3.0. See `.github/CONTRIBUTING.md`.
 - Commercial edition licensing is documented in `COMMERCIAL-LICENSE.md` and `docs/en/licensing.md`.
-- When publishing CodeCanyon distribution, do **not** mark the item as "100% GPL" — use standard Envato licensing for the commercial channel.
 
 ## GitHub And CI
 

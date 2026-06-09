@@ -1,13 +1,13 @@
 # Licenciamiento
 
-Bocao.app usa un modelo de **licencia dual** para poder venderse en CodeCanyon y, al mismo tiempo, compartirse con la comunidad.
+Bocao.app usa un modelo de **licencia dual** para poder ofrecerse comercialmente y, al mismo tiempo, compartirse con la comunidad.
 
 ## Ediciones
 
 | Edición | Dónde | Licencia | Para quién |
 | --- | --- | --- | --- |
 | **Comunidad** | Este repositorio de GitHub | [AGPL-3.0](../../LICENSE) | Desarrolladores, contribuidores, self-hosting, evaluación |
-| **Comercial** | [CodeCanyon](https://codecanyon.net) (planificado) | Envato Regular / Extended + [Licencia Comercial](../../COMMERCIAL-LICENSE.md) | Compradores que necesitan términos propietarios sin obligaciones copyleft |
+| **Comercial** | Directamente del autor | [Licencia Comercial](../../COMMERCIAL-LICENSE.md) | Compradores que necesitan términos propietarios sin obligaciones copyleft |
 
 ## ¿Por qué AGPL-3.0 para la edición comunidad?
 
@@ -24,23 +24,11 @@ Esto protege el proyecto de competidores que tomen el código comunitario, lo me
 Como titular del copyright, el autor puede licenciar el mismo código bajo términos distintos:
 
 1. **Gratis / abierto** bajo AGPL-3.0 en GitHub — se aceptan contribuciones de la comunidad.
-2. **De pago / propietario** en CodeCanyon — los compradores reciben la licencia Envato sin obligaciones AGPL.
+2. **De pago / propietario** mediante licencia comercial directa — los compradores reciben términos propietarios sin obligaciones AGPL.
 
-Es el mismo patrón usado por Qt, MongoDB (históricamente) y muchos autores de Envato que publican una edición comunitaria o "split license".
+Es el mismo patrón usado por Qt, MongoDB (históricamente) y otros proyectos que publican una edición comunitaria junto a una licencia comercial.
 
-## Compatibilidad con CodeCanyon
-
-Envato soporta tres modos de licencia para ítems de código:
-
-| Modo | Descripción | Plan de Bocao.app |
-| --- | --- | --- |
-| **Envato estándar** | Solo Regular / Extended License | Usado para compradores de la edición comercial |
-| **Split license** | Parte GPL, parte Envato | Opcional si se incluyen dependencias solo GPL |
-| **100% GPL** | Todo el ítem bajo GPL | **No se usa** — eliminaría la exclusividad comercial |
-
-Bocao.app se listará en CodeCanyon bajo **licencia Envato estándar** (no "100% GPL"). El repositorio público en GitHub permanece bajo AGPL-3.0 como edición comunidad.
-
-> **Importante:** Los compradores de CodeCanyon y quienes clonan desde GitHub reciben **licencias distintas**. Comprar en CodeCanyon no otorga exenciones AGPL; clonar desde GitHub no otorga derechos de redistribución comercial.
+> **Importante:** Los titulares de licencia comercial y quienes clonan desde GitHub reciben **licencias distintas**. Comprar una licencia comercial no otorga exenciones AGPL; clonar desde GitHub no otorga derechos de redistribución comercial.
 
 ## ¿Qué edición elegir?
 
@@ -55,7 +43,6 @@ Bocao.app se listará en CodeCanyon bajo **licencia Envato estándar** (no "100%
 
 - Quieres revender o white-label sin copyleft AGPL.
 - Necesitas mantener modificaciones privadas en un producto hospedado.
-- Requieres soporte Envato y canales de actualización.
 - Quieres una licencia que no exija divulgación del código fuente.
 
 ## Contribuir
@@ -69,4 +56,4 @@ Las dependencias en `package.json` tienen sus propias licencias (MIT, Apache-2.0
 ## Preguntas
 
 - Preguntas sobre comunidad / AGPL: abre una [GitHub Discussion](https://github.com/nicotordev/bocao.app/discussions) o Issue.
-- Licenciamiento comercial: contacto vía la página del ítem en CodeCanyon (cuando esté publicado).
+- Licenciamiento comercial: abre un [GitHub Issue](https://github.com/nicotordev/bocao.app/issues) o Discussion.
