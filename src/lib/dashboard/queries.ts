@@ -199,7 +199,11 @@ export async function getDashboardHomeData(
       include: {
         customer: {
           select: {
+            id: true,
             avatar: true,
+            email: true,
+            phone: true,
+            notes: true,
           },
         },
       },
@@ -390,6 +394,12 @@ export async function getDashboardHomeData(
         locale: dateFnsLocale,
       }),
       status: mapReservationStatusToPreview(reservation.status),
+      guestPhone:
+        reservation.guestPhone ?? reservation.customer?.phone ?? undefined,
+      guestEmail: reservation.customer?.email ?? undefined,
+      guestNotes: reservation.notes ?? reservation.customer?.notes ?? undefined,
+      customerId:
+        reservation.customerId ?? reservation.customer?.id ?? undefined,
     })),
     insights: [],
     whatsapp: {

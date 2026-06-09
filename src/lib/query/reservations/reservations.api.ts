@@ -34,6 +34,19 @@ function buildReservationsSearchParams(filters?: {
   return query.length > 0 ? `?${query}` : "";
 }
 
+export async function fetchReservation(
+  restaurantId: string,
+  reservationId: string,
+): Promise<Reservation> {
+  const response = await apiRequest<{ reservation: Reservation }>(
+    `/api/restaurants/${restaurantId}/reservations/${encodeURIComponent(
+      reservationId,
+    )}`,
+  );
+
+  return response.reservation;
+}
+
 export async function fetchReservationsList(
   restaurantId: string,
   filters?: {

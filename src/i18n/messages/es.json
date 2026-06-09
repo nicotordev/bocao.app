@@ -286,6 +286,15 @@
         "title": "Próximas reservas",
         "description": "Agenda de las próximas horas",
         "guestCount": "{count} personas",
+        "viewReservation": "Ver reserva de {name}",
+        "guestButton": {
+          "ariaLabel": "Ver información de {name}",
+          "phone": "Teléfono",
+          "email": "Correo",
+          "notes": "Notas",
+          "reservationNotes": "Notas de la reserva",
+          "noContactInfo": "Sin información de contacto registrada."
+        },
         "status": {
           "confirmed": "Confirmada",
           "pending": "Pendiente",
@@ -868,6 +877,9 @@
       }
     },
     "reservations": {
+      "detail": {
+        "backToList": "Volver a reservas"
+      },
       "header": {
         "title": "Reservas",
         "subtitle": "Gestiona y organiza las reservas de mesas de tu restaurante."

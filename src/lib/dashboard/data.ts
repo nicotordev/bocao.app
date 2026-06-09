@@ -22,6 +22,10 @@ export type DashboardReservationPreview = {
   guestCount: number;
   scheduledAt: string;
   status: "confirmed" | "pending" | "seated";
+  guestPhone?: string;
+  guestEmail?: string;
+  guestNotes?: string;
+  customerId?: string;
 };
 
 export type DashboardInsight = {

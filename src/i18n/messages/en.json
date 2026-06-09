@@ -286,6 +286,15 @@
         "title": "Upcoming reservations",
         "description": "Schedule for the next few hours",
         "guestCount": "{count} guests",
+        "viewReservation": "View reservation for {name}",
+        "guestButton": {
+          "ariaLabel": "View information for {name}",
+          "phone": "Phone",
+          "email": "Email",
+          "notes": "Notes",
+          "reservationNotes": "Reservation notes",
+          "noContactInfo": "No contact information on file."
+        },
         "status": {
           "confirmed": "Confirmed",
           "pending": "Pending",
@@ -868,6 +877,9 @@
       }
     },
     "reservations": {
+      "detail": {
+        "backToList": "Back to reservations"
+      },
       "header": {
         "title": "Reservations",
         "subtitle": "Manage and organize your restaurant's table reservations."

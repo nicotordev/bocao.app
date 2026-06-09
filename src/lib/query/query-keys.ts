@@ -26,6 +26,13 @@ export const queryKeys = {
     lists: () => [...queryKeys.reservations.all, "list"] as const,
     list: (restaurantId: string, filters?: any) =>
       [...queryKeys.reservations.lists(), restaurantId, filters ?? {}] as const,
+    details: () => [...queryKeys.reservations.all, "detail"] as const,
+    detail: (restaurantId: string, reservationId: string) =>
+      [
+        ...queryKeys.reservations.details(),
+        restaurantId,
+        reservationId,
+      ] as const,
   },
   kitchen: {
     all: ["kitchen"] as const,

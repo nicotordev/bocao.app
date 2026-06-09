@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import {
+  requireRestaurantReservationsAccess,
   requireRestaurantReservationsWriteAccess,
 } from "@/lib/reservations/api-auth";
 import {
   deleteReservation,
+  getReservation,
   updateReservation,
 } from "@/lib/reservations/repository";
 import { updateReservationSchema } from "@/lib/reservations/schemas";
@@ -11,6 +13,29 @@ import { updateReservationSchema } from "@/lib/reservations/schemas";
 type RouteContext = {
   params: Promise<{ restaurantId: string; reservationId: string }>;
 };
+
+export async function GET(_request: Request, { params }: RouteContext) {
+  const { restaurantId, reservationId } = await params;
+  const access = await requireRestaurantReservationsAccess(restaurantId);
+
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
+  }
+
+  const reservation = await getReservation(restaurantId, reservationId);
+
+  if (!reservation) {
+    return NextResponse.json(
+      { error: "Reservation not found" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ reservation });
+}
 
 export async function PATCH(request: Request, { params }: RouteContext) {
   const { restaurantId, reservationId } = await params;

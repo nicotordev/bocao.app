@@ -89,6 +89,24 @@ export async function listReservations(
   return dbReservations.map((res) => mapReservation(res));
 }
 
+export async function getReservation(
+  restaurantId: string,
+  reservationId: string,
+): Promise<Reservation | null> {
+  const reservation = await prisma.reservation.findFirst({
+    where: {
+      id: reservationId,
+      restaurantId,
+    },
+  });
+
+  if (!reservation) {
+    return null;
+  }
+
+  return mapReservation(reservation);
+}
+
 export async function createReservation(
   restaurantId: string,
   input: CreateReservationInput,
