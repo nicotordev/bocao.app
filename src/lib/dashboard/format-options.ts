@@ -17,6 +17,9 @@ export async function getDashboardHomeFormatOptions() {
       relativeMinutes: tMetrics.raw("relativeMinutes"),
       inKitchen: tMetrics.raw("inKitchen"),
       minutesShort: tMetrics.raw("minutesShort"),
+      vsYesterday: tMetrics.raw("vsYesterday"),
+      reservationsNextHours: tMetrics.raw("reservationsNextHours"),
+      prepTimeVsLastWeek: tMetrics.raw("prepTimeVsLastWeek"),
     },
     customerLabels: {
       fallbackCustomer: tDrawer("fallbackCustomer"),

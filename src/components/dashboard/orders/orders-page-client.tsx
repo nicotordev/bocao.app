@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { QueryResultState } from "@/components/query/query-result-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
+import { computeOrdersKpiTrends } from "@/lib/orders/compute-kpi-trends";
 import {
   buildOrdersCsv,
   buildOrdersCsvFilename,
@@ -76,7 +77,16 @@ export function OrdersPageClient({
     filters.to,
   ]);
 
-  const kpiValues = useMemo(() => computeOrdersKpis(allOrders), [allOrders]);
+  const kpiValues = useMemo(() => {
+    const values = computeOrdersKpis(allOrders);
+    const trends = computeOrdersKpiTrends(allOrders, {
+      notAvailable: labels.kpis.notAvailable,
+      preparingCount: labels.kpis.preparingCount,
+      readyCount: labels.kpis.readyCount,
+    });
+
+    return { ...values, trends };
+  }, [allOrders, labels.kpis]);
 
   const clearFilters = () => {
     const { from, to } = createDefaultOrdersDateRange(timezone);

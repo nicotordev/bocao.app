@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   ChefHat,
   Clock3,
+  Minus,
   PackageCheck,
   TrendingDown,
   TrendingUp,
@@ -20,43 +21,48 @@ const kpis = [
   {
     key: "active",
     icon: Clock3,
-    trend: "activeTrend",
     accent: "text-chart-4",
-    trendIcon: TrendingUp,
     trendClass: "border-primary/30 bg-primary/10 text-primary",
   },
   {
     key: "averageTime",
     icon: ChefHat,
-    trend: "averageTrend",
     accent: "text-chart-2",
-    trendIcon: TrendingUp,
     trendClass: "border-chart-2/30 bg-chart-2/10 text-chart-2",
   },
   {
     key: "delayed",
     icon: AlertTriangle,
-    trend: "delayedTrend",
     accent: "text-destructive",
-    trendIcon: TrendingDown,
     trendClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   {
     key: "ready",
     icon: PackageCheck,
-    trend: "readyTrend",
     accent: "text-chart-1",
-    trendIcon: TrendingUp,
     trendClass: "border-chart-1/30 bg-chart-1/10 text-chart-1",
   },
 ] as const;
+
+function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
+  if (trend === "down") {
+    return TrendingDown;
+  }
+
+  if (trend === "up") {
+    return TrendingUp;
+  }
+
+  return Minus;
+}
 
 export function KitchenKpis({ labels, values }: KitchenKpisProps) {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
-        const TrendIcon = kpi.trendIcon;
+        const trend = values.trends?.[kpi.key];
+        const TrendIcon = resolveTrendIcon(trend?.trend);
 
         return (
           <Card
@@ -80,7 +86,7 @@ export function KitchenKpis({ labels, values }: KitchenKpisProps) {
             <CardContent className="flex items-center justify-between gap-3">
               <Badge variant="outline" className={kpi.trendClass}>
                 <TrendIcon className="size-3" aria-hidden />
-                {labels[kpi.trend]}
+                {trend?.change ?? labels.notAvailable}
               </Badge>
               <span className="h-7 w-20 rounded-full bg-linear-to-r from-primary/10 via-chart-2/20 to-chart-1/10" />
             </CardContent>

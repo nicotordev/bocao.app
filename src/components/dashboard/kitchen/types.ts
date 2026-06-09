@@ -37,10 +37,9 @@ export type KitchenLabels = {
     averageTime: string;
     delayed: string;
     ready: string;
-    activeTrend: string;
-    averageTrend: string;
-    delayedTrend: string;
-    readyTrend: string;
+    notAvailable: string;
+    preparingCount: string;
+    delayedAttention: string;
   };
   toolbar: {
     search: string;

@@ -26,9 +26,6 @@ async function getRestaurantContext(restaurantId: string) {
     select: {
       currency: true,
       timezone: true,
-      demoProfile: {
-        select: { orderInsights: true },
-      },
     },
   });
 }
@@ -154,9 +151,7 @@ export async function listOrders(
     orders,
     restaurantId,
     updatedAt: new Date().toISOString(),
-    insights: Array.isArray(restaurant.demoProfile?.orderInsights)
-      ? (restaurant.demoProfile.orderInsights as string[])
-      : [],
+    insights: [],
   };
 }
 

@@ -215,7 +215,10 @@
       "avgPrepTime": "Average prep time",
       "relativeMinutes": "{minutes} min ago",
       "inKitchen": "{count} in kitchen",
-      "minutesShort": "{minutes} min"
+      "minutesShort": "{minutes} min",
+      "vsYesterday": "{change}% vs yesterday",
+      "reservationsNextHours": "{count} in the next {hours}h",
+      "prepTimeVsLastWeek": "{change} min vs last week"
     },
     "shell": {
       "brandSubtitle": "Restaurant OS",
@@ -412,10 +415,9 @@
         "preparing": "Preparing",
         "ready": "Ready for delivery",
         "sales": "Daily sales",
-        "activeTrend": "+12% vs yesterday",
-        "preparingTrend": "3 above target",
-        "readyTrend": "Stable handoff",
-        "salesTrend": "+8% average ticket"
+        "notAvailable": "No comparison",
+        "preparingCount": "{count} preparing",
+        "readyCount": "{count} ready"
       },
       "kanban": {
         "dragHelp": "Drag orders across statuses to update the flow.",
@@ -652,10 +654,9 @@
         "averageTime": "Average time",
         "delayed": "Delayed",
         "ready": "Ready",
-        "activeTrend": "+3 vs last hour",
-        "averageTrend": "+11% in 60 min",
-        "delayedTrend": "Needs attention",
-        "readyTrend": "Steady output"
+        "notAvailable": "No comparison",
+        "preparingCount": "{count} active",
+        "delayedAttention": "{count} need attention"
       },
       "toolbar": {
         "search": "Search",
@@ -759,7 +760,12 @@
       },
       "copilot": {
         "title": "Kitchen copilot",
-        "subtitle": "Actionable insights for the current shift."
+        "subtitle": "Actionable insights for the current shift.",
+        "insights": {
+          "delayedSla": "{count} orders exceed the configured SLA.",
+          "averagePrep": "Average kitchen time is {minutes} min on active orders.",
+          "busiestStation": "The {station} station has {count} active orders."
+        }
       },
       "empty": {
         "title": "Kitchen is caught up",

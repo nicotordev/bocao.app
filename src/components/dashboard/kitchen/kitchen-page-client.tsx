@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useMemo, useState, useTransition } from "react";
+import { QueryErrorState } from "@/components/query/query-result-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyKitchenFilters, sortKitchenOrders } from "@/lib/kitchen/filters";
 import { computeKitchenKpis } from "@/lib/kitchen/compute-kpis";
-import { KITCHEN_MOCK_INSIGHTS, KITCHEN_MOCK_ORDERS } from "@/lib/kitchen/mock-data";
+import { computeKitchenInsights } from "@/lib/kitchen/compute-insights";
+import { computeKitchenKpiTrends } from "@/lib/kitchen/compute-kpi-trends";
 import type {
   KitchenFiltersState,
   KitchenKanbanStatus,
@@ -12,6 +14,8 @@ import type {
   KitchenStation,
   KitchenViewMode,
 } from "@/lib/kitchen/types";
+import { useUpdateKitchenOrderMutation } from "@/lib/query/kitchen/kitchen.mutations";
+import { useKitchenOrdersQuery } from "@/lib/query/kitchen/kitchen.queries";
 import { KitchenCopilotCard } from "./kitchen-copilot-card";
 import { KitchenDetailDrawer } from "./kitchen-detail-drawer";
 import { KitchenEmptyState } from "./kitchen-empty-state";
@@ -25,6 +29,12 @@ import type { KitchenLabels } from "./types";
 
 type KitchenPageClientProps = {
   labels: KitchenLabels;
+  insightLabels: {
+    delayedSla: string;
+    averagePrep: string;
+    busiestStation: string;
+  };
+  restaurantId: string;
 };
 
 const defaultFilters: KitchenFiltersState = {
@@ -34,101 +44,108 @@ const defaultFilters: KitchenFiltersState = {
   channel: "all",
 };
 
-export function KitchenPageClient({ labels }: KitchenPageClientProps) {
-  const [orders, setOrders] = useState<KitchenOrder[]>(KITCHEN_MOCK_ORDERS);
+export function KitchenPageClient({
+  labels,
+  insightLabels,
+  restaurantId,
+}: KitchenPageClientProps) {
+  const kitchenQuery = useKitchenOrdersQuery(restaurantId);
+  const updateKitchenOrderMutation =
+    useUpdateKitchenOrderMutation(restaurantId);
+
   const [filters, setFilters] = useState<KitchenFiltersState>(defaultFilters);
   const [view, setView] = useState<KitchenViewMode>("cards");
   const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [isMoving, startMoving] = useTransition();
+
+  const orders = kitchenQuery.data?.orders ?? [];
+  const insights = useMemo(
+    () => computeKitchenInsights(orders, insightLabels),
+    [insightLabels, orders],
+  );
 
   const filteredOrders = useMemo(() => {
     return sortKitchenOrders(applyKitchenFilters(orders, filters));
   }, [filters, orders]);
 
-  const kpiValues = useMemo(() => computeKitchenKpis(orders), [orders]);
+  const kpiValues = useMemo(() => {
+    const values = computeKitchenKpis(orders);
+    const trends = computeKitchenKpiTrends(orders, {
+      notAvailable: labels.kpis.notAvailable,
+      preparingCount: labels.kpis.preparingCount,
+      delayedAttention: labels.kpis.delayedAttention,
+    });
 
-  const updateOrder = useCallback(
-    (orderId: string, updater: (order: KitchenOrder) => KitchenOrder) => {
-      setOrders((current) =>
-        current.map((order) => (order.id === orderId ? updater(order) : order)),
-      );
-      setSelectedOrder((current) =>
-        current?.id === orderId ? updater(current) : current,
-      );
+    return { ...values, trends };
+  }, [labels.kpis, orders]);
+
+  const persistOrderUpdate = useCallback(
+    (
+      orderId: string,
+      input: Omit<
+        Parameters<typeof updateKitchenOrderMutation.mutate>[0],
+        "orderId"
+      >,
+    ) => {
+      updateKitchenOrderMutation.mutate({ orderId, ...input });
     },
-    [],
+    [updateKitchenOrderMutation],
   );
 
   const handleRefresh = () => {
-    setIsLoading(true);
-
-    window.setTimeout(() => {
-      setOrders(KITCHEN_MOCK_ORDERS);
-      setIsLoading(false);
-    }, 600);
+    void kitchenQuery.refetch();
   };
 
   const handleMoveOrder = (orderId: string, status: KitchenKanbanStatus) => {
     startMoving(() => {
-      updateOrder(orderId, (order) => ({
-        ...order,
-        status,
-        isPaused: status === "waiting" ? order.isPaused : false,
-      }));
+      persistOrderUpdate(orderId, { status });
     });
   };
 
   const handleStart = (order: KitchenOrder) => {
-    updateOrder(order.id, (current) => ({
-      ...current,
-      status: "in_preparation",
-      isPaused: false,
-      assignedTo: current.assignedTo ?? "Equipo cocina",
-    }));
+    persistOrderUpdate(order.id, { status: "in_preparation" });
   };
 
   const handlePause = (order: KitchenOrder) => {
-    updateOrder(order.id, (current) => ({
-      ...current,
-      isPaused: !current.isPaused,
-      status: current.isPaused ? "in_preparation" : "waiting",
-    }));
+    persistOrderUpdate(order.id, {
+      status: order.isPaused ? "in_preparation" : "waiting",
+    });
   };
 
   const handleMarkReady = (orderId: string) => {
-    updateOrder(orderId, (order) => ({
-      ...order,
-      status: "ready",
-      isPaused: false,
-    }));
+    persistOrderUpdate(orderId, { status: "ready" });
   };
 
   const handleMarkDelayed = (orderId: string) => {
-    updateOrder(orderId, (order) => ({
-      ...order,
-      status: "delayed",
-      priority: "delayed",
-    }));
+    persistOrderUpdate(orderId, { status: "delayed", priority: "delayed" });
   };
 
   const handleStationChange = (orderId: string, station: KitchenStation) => {
-    updateOrder(orderId, (order) => ({ ...order, station }));
+    persistOrderUpdate(orderId, { station });
   };
 
   const clearFilters = () => {
     setFilters(defaultFilters);
   };
 
+  const isLoading = kitchenQuery.isLoading || kitchenQuery.isFetching;
+
   const renderMainContent = () => {
-    if (isLoading) {
+    if (kitchenQuery.isLoading) {
       return (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+        <div
+          className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+          aria-busy="true"
+        >
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-72 rounded-3xl" />
           ))}
         </div>
       );
+    }
+
+    if (kitchenQuery.isError) {
+      return <QueryErrorState onRetry={handleRefresh} />;
     }
 
     if (filteredOrders.length === 0) {
@@ -142,7 +159,7 @@ export function KitchenPageClient({ labels }: KitchenPageClientProps) {
           orders={filteredOrders}
           onSelectOrder={setSelectedOrder}
           onMoveOrder={handleMoveOrder}
-          isMoving={isMoving}
+          isMoving={isMoving || updateKitchenOrderMutation.isPending}
         />
       );
     }
@@ -202,7 +219,7 @@ export function KitchenPageClient({ labels }: KitchenPageClientProps) {
           <KitchenCopilotCard
             labels={labels.copilot}
             actionLabel={labels.actions.viewSuggestions}
-            items={KITCHEN_MOCK_INSIGHTS}
+            items={insights}
           />
         </aside>
       </div>
@@ -211,7 +228,7 @@ export function KitchenPageClient({ labels }: KitchenPageClientProps) {
         <KitchenCopilotCard
           labels={labels.copilot}
           actionLabel={labels.actions.viewSuggestions}
-          items={KITCHEN_MOCK_INSIGHTS}
+          items={insights}
         />
       </div>
 

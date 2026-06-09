@@ -2,55 +2,63 @@ import {
   ChefHat,
   Clock3,
   DollarSign,
+  Minus,
   PackageCheck,
+  TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { OrdersKpiValues } from "@/lib/orders/compute-kpis";
 import type { OrdersLabels } from "./types";
 
 type OrdersKpisProps = {
   labels: OrdersLabels["kpis"];
-  values: {
-    active: string;
-    preparing: string;
-    ready: string;
-    sales: string;
-  };
+  values: OrdersKpiValues;
 };
 
 const kpis = [
   {
     key: "active",
     icon: Clock3,
-    trend: "activeTrend",
     accent: "text-chart-4",
   },
   {
     key: "preparing",
     icon: ChefHat,
-    trend: "preparingTrend",
     accent: "text-chart-2",
   },
   {
     key: "ready",
     icon: PackageCheck,
-    trend: "readyTrend",
     accent: "text-chart-1",
   },
   {
     key: "sales",
     icon: DollarSign,
-    trend: "salesTrend",
     accent: "text-primary",
   },
 ] as const;
+
+function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
+  if (trend === "down") {
+    return TrendingDown;
+  }
+
+  if (trend === "up") {
+    return TrendingUp;
+  }
+
+  return Minus;
+}
 
 export function OrdersKpis({ labels, values }: OrdersKpisProps) {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
+        const trend = values.trends?.[kpi.key];
+        const TrendIcon = resolveTrendIcon(trend?.trend);
 
         return (
           <Card
@@ -76,8 +84,8 @@ export function OrdersKpis({ labels, values }: OrdersKpisProps) {
                 variant="outline"
                 className="gap-1 border-primary/30 bg-primary/10 text-primary"
               >
-                <TrendingUp className="size-3" aria-hidden />
-                {labels[kpi.trend]}
+                <TrendIcon className="size-3" aria-hidden />
+                {trend?.change ?? labels.notAvailable}
               </Badge>
               <span className="h-7 w-20 rounded-full bg-linear-to-r from-primary/10 via-chart-2/20 to-chart-1/10" />
             </CardContent>

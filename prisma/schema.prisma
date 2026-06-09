@@ -206,55 +206,54 @@ enum FlowLibraryScope {
 
 /// Restaurant (location) operating under an organization.
 model Restaurant {
-  id           String        @id @default(cuid())
-  name         String
-  city         String?
-  phone        String?
-  businessType BusinessType?
-  primaryGoal  PrimaryGoal?
-  serviceModes OrderType[]   @default([])
+  id             String        @id @default(cuid())
+  name           String
+  city           String?
+  phone          String?
+  businessType   BusinessType?
+  primaryGoal    PrimaryGoal?
+  serviceModes   OrderType[]   @default([])
   /// IANA timezone, e.g. America/Santiago
-  timezone     String        @default("America/Santiago")
+  timezone       String        @default("America/Santiago")
   /// ISO 4217, e.g. CLP, MXN, COP
-  currency     String        @default("CLP")
+  currency       String        @default("CLP")
   /// BCP 47 / ISO 639-1 codes enabled for menu and flow translations
-  contentLocales String[]    @default(["es", "en"])
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  contentLocales String[]      @default(["es", "en"])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  customers      Customer[]
-  menuCategories MenuCategory[]
-  menuItems      MenuItem[]
-  orders         Order[]
-  reservations   Reservation[]
-  demoProfile    RestaurantDemoProfile?
-  diningSurfaces DiningSurface[]
-  menuCustomTags MenuCustomTag[]
-  dbTranslations DbTranslation[]
-  productFlowBlocks     ProductFlowBlock[]
-  productFlowTemplates  ProductFlowTemplate[]
-  productPurchaseFlows  ProductPurchaseFlow[]
+  customers            Customer[]
+  menuCategories       MenuCategory[]
+  menuItems            MenuItem[]
+  orders               Order[]
+  reservations         Reservation[]
+  diningSurfaces       DiningSurface[]
+  menuCustomTags       MenuCustomTag[]
+  dbTranslations       DbTranslation[]
+  productFlowBlocks    ProductFlowBlock[]
+  productFlowTemplates ProductFlowTemplate[]
+  productPurchaseFlows ProductPurchaseFlow[]
 
   @@index([organizationId])
 }
 
 /// Configurable dining area with a custom polygon boundary and table layout.
 model DiningSurface {
-  id             String   @id @default(cuid())
-  restaurantId   String
-  name           String   @default("Salón principal")
+  id            String   @id @default(cuid())
+  restaurantId  String
+  name          String   @default("Salón principal")
   /// Floor level number, e.g. 1 = ground floor, 2 = second floor.
-  floor          Int      @default(1)
+  floor         Int      @default(1)
   /// Real-world area in square meters entered by the user.
-  surfaceAreaM2  Float
+  surfaceAreaM2 Float
   /// Polygon vertices as normalized coordinates [{x,y}] in 0..1 space.
-  boundary       Json
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  boundary      Json
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   restaurant Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   tables     DiningTable[]
@@ -297,10 +296,11 @@ model Customer {
   documentId   String?
   address      String?
   notes        String?
+  avatar       String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   orderLinks   OrderCustomer[]
   reservations Reservation[]
 
@@ -319,9 +319,9 @@ model MenuCategory {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant         Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  items              MenuItem[]
-  productFlowBlocks  ProductFlowBlock[]
+  restaurant           Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items                MenuItem[]
+  productFlowBlocks    ProductFlowBlock[]
   productFlowTemplates ProductFlowTemplate[]
 
   @@index([restaurantId])
@@ -343,10 +343,10 @@ model MenuItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant         Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category           MenuCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  purchaseFlow       ProductPurchaseFlow?
-  productFlowBlocks  ProductFlowBlock[]
+  restaurant           Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category             MenuCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  purchaseFlow         ProductPurchaseFlow?
+  productFlowBlocks    ProductFlowBlock[]
   productFlowTemplates ProductFlowTemplate[]
 
   @@index([restaurantId])
@@ -501,20 +501,6 @@ model Order {
   @@index([restaurantId])
   @@index([status])
   @@index([createdAt])
-}
-
-/// Demo-only dashboard extras seeded by `db:seed:demo` (insights, WhatsApp stats, team).
-model RestaurantDemoProfile {
-  restaurantId  String   @id
-  insights      Json     @default("[]")
-  orderInsights Json     @default("[]")
-  whatsapp      Json     @default("{}")
-  teamActivity  Json     @default("[]")
-  metricTrends  Json     @default("{}")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model Reservation {

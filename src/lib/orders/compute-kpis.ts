@@ -1,10 +1,21 @@
 import type { Order } from "@/lib/orders/types";
 
+export type OrdersKpiTrend = {
+  change: string;
+  trend: "up" | "down" | "neutral";
+};
+
 export type OrdersKpiValues = {
   active: string;
   preparing: string;
   ready: string;
   sales: string;
+  trends?: {
+    active?: OrdersKpiTrend;
+    preparing?: OrdersKpiTrend;
+    ready?: OrdersKpiTrend;
+    sales?: OrdersKpiTrend;
+  };
 };
 
 function formatCurrency(amountCents: number, currency: string): string {

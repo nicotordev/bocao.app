@@ -1,4 +1,10 @@
-import { differenceInMinutes, format, startOfDay } from "date-fns";
+import {
+  addHours,
+  differenceInMinutes,
+  format,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import { enUS, es } from "date-fns/locale";
 import type { DashboardHomeData, DashboardMetric } from "@/lib/dashboard/data";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
@@ -18,6 +24,9 @@ type DashboardMetricLabels = {
   relativeMinutes: string;
   inKitchen: string;
   minutesShort: string;
+  vsYesterday: string;
+  reservationsNextHours: string;
+  prepTimeVsLastWeek: string;
 };
 
 type GetDashboardHomeDataOptions = {
@@ -29,6 +38,11 @@ type GetDashboardHomeDataOptions = {
     tableOnly: string;
     tableWithCustomers: string;
   };
+};
+
+type MetricTrend = {
+  change: string;
+  trend: DashboardMetric["trend"];
 };
 
 function resolveIntlLocale(locale: string): string {
@@ -50,6 +64,55 @@ function formatCurrency(
 function formatRelativeMinutes(date: Date, template: string): string {
   const minutes = Math.max(1, differenceInMinutes(new Date(), date));
   return template.replace("{minutes}", String(minutes));
+}
+
+function formatPercentChange(
+  current: number,
+  previous: number,
+  template: string,
+  notAvailable: string,
+): MetricTrend {
+  if (current === 0 && previous === 0) {
+    return { change: notAvailable, trend: "neutral" };
+  }
+
+  if (previous === 0) {
+    return {
+      change: template.replace("{change}", "+100"),
+      trend: "up",
+    };
+  }
+
+  const percent = Math.round(((current - previous) / previous) * 100);
+  const signedChange = percent > 0 ? `+${percent}` : String(percent);
+
+  return {
+    change: template.replace("{change}", signedChange),
+    trend: percent > 0 ? "up" : percent < 0 ? "down" : "neutral",
+  };
+}
+
+function formatPrepTimeChange(
+  currentAvg: number,
+  previousAvg: number,
+  template: string,
+  notAvailable: string,
+): MetricTrend {
+  if (currentAvg === 0 && previousAvg === 0) {
+    return { change: notAvailable, trend: "neutral" };
+  }
+
+  if (previousAvg === 0) {
+    return { change: notAvailable, trend: "neutral" };
+  }
+
+  const delta = currentAvg - previousAvg;
+  const signedChange = delta > 0 ? `+${delta}` : String(delta);
+
+  return {
+    change: template.replace("{change}", signedChange),
+    trend: delta < 0 ? "up" : delta > 0 ? "down" : "neutral",
+  };
 }
 
 function mapOrderStatusToPreview(
@@ -103,100 +166,203 @@ export async function getDashboardHomeData(
     };
   }
 
-  const todayStart = startOfDay(new Date());
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const yesterdayStart = startOfDay(subDays(now, 1));
+  const weekAgo = subDays(now, 7);
+  const twoWeeksAgo = subDays(now, 14);
+  const nextThreeHours = addHours(now, 3);
 
-  const [orders, reservations, demoProfile] = await Promise.all([
+  const [
+    recentOrders,
+    reservations,
+    teamMemberships,
+    revenueTodayAgg,
+    revenueYesterdayAgg,
+    openOrdersCount,
+    preparingCount,
+    avgPrepCurrentAgg,
+    avgPrepPreviousAgg,
+    reservationsNextThreeHours,
+  ] = await Promise.all([
     prisma.order.findMany({
       where: { restaurantId: restaurant.id },
       include: orderCustomerInclude,
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 4,
     }),
     prisma.reservation.findMany({
       where: {
         restaurantId: restaurant.id,
-        scheduledAt: { gte: new Date() },
+        scheduledAt: { gte: now },
+      },
+      include: {
+        customer: {
+          select: {
+            avatar: true,
+          },
+        },
       },
       orderBy: { scheduledAt: "asc" },
       take: 10,
     }),
-    prisma.restaurantDemoProfile.findUnique({
-      where: { restaurantId: restaurant.id },
+    prisma.membership.findMany({
+      where: { organizationId: restaurant.organizationId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            sessions: {
+              where: { expiresAt: { gt: now } },
+              select: { id: true },
+              take: 1,
+            },
+          },
+        },
+        role: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+      take: 8,
+    }),
+    prisma.order.aggregate({
+      where: {
+        restaurantId: restaurant.id,
+        status: "COMPLETED",
+        createdAt: { gte: todayStart },
+      },
+      _sum: { totalCents: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        restaurantId: restaurant.id,
+        status: "COMPLETED",
+        createdAt: { gte: yesterdayStart, lt: todayStart },
+      },
+      _sum: { totalCents: true },
+    }),
+    prisma.order.count({
+      where: {
+        restaurantId: restaurant.id,
+        status: { notIn: ["COMPLETED", "CANCELLED"] },
+      },
+    }),
+    prisma.order.count({
+      where: {
+        restaurantId: restaurant.id,
+        status: "PREPARING",
+      },
+    }),
+    prisma.order.aggregate({
+      where: {
+        restaurantId: restaurant.id,
+        status: "COMPLETED",
+        createdAt: { gte: weekAgo },
+        preparationMins: { not: null },
+      },
+      _avg: { preparationMins: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        restaurantId: restaurant.id,
+        status: "COMPLETED",
+        createdAt: { gte: twoWeeksAgo, lt: weekAgo },
+        preparationMins: { not: null },
+      },
+      _avg: { preparationMins: true },
+    }),
+    prisma.reservation.count({
+      where: {
+        restaurantId: restaurant.id,
+        scheduledAt: { gte: now, lte: nextThreeHours },
+        status: { notIn: ["CANCELLED", "NO_SHOW", "COMPLETED"] },
+      },
     }),
   ]);
 
-  const revenueTodayCents = orders
-    .filter(
-      (order) => order.createdAt >= todayStart && order.status === "COMPLETED",
-    )
-    .reduce((sum, order) => sum + order.totalCents, 0);
-
-  const openOrders = orders.filter(
-    (order) => !["COMPLETED", "CANCELLED"].includes(order.status),
+  const revenueTodayCents = revenueTodayAgg._sum.totalCents ?? 0;
+  const revenueYesterdayCents = revenueYesterdayAgg._sum.totalCents ?? 0;
+  const avgPrepCurrent = Math.round(
+    avgPrepCurrentAgg._avg.preparationMins ?? 0,
+  );
+  const avgPrepPrevious = Math.round(
+    avgPrepPreviousAgg._avg.preparationMins ?? 0,
   );
 
-  const preparingCount = openOrders.filter(
-    (order) => order.status === "PREPARING",
-  ).length;
+  const revenueTrend = formatPercentChange(
+    revenueTodayCents,
+    revenueYesterdayCents,
+    metricLabels.vsYesterday,
+    notAvailable,
+  );
 
-  const prepTimes = orders
-    .map((order) => order.preparationMins)
-    .filter((value): value is number => value !== null);
+  const openOrdersTrend: MetricTrend = {
+    change:
+      preparingCount > 0
+        ? metricLabels.inKitchen.replace("{count}", String(preparingCount))
+        : notAvailable,
+    trend: "neutral",
+  };
 
-  const avgPrep =
-    prepTimes.length > 0
-      ? Math.round(
-          prepTimes.reduce((sum, value) => sum + value, 0) / prepTimes.length,
-        )
-      : 0;
+  const reservationsTrend: MetricTrend =
+    reservationsNextThreeHours > 0
+      ? {
+          change: metricLabels.reservationsNextHours
+            .replace("{count}", String(reservationsNextThreeHours))
+            .replace("{hours}", "3"),
+          trend: "up",
+        }
+      : { change: notAvailable, trend: "neutral" };
 
-  const metricTrends =
-    (demoProfile?.metricTrends as Record<
-      string,
-      { change: string; trend: DashboardMetric["trend"] }
-    >) ?? {};
+  const avgPrepTrend = formatPrepTimeChange(
+    avgPrepCurrent,
+    avgPrepPrevious,
+    metricLabels.prepTimeVsLastWeek,
+    notAvailable,
+  );
 
   const metrics: DashboardMetric[] = [
     {
       id: "revenue-today",
       label: metricLabels.revenueToday,
       value: formatCurrency(revenueTodayCents, restaurant.currency, locale),
-      change: metricTrends["revenue-today"]?.change ?? notAvailable,
-      trend: metricTrends["revenue-today"]?.trend ?? "neutral",
+      change: revenueTrend.change,
+      trend: revenueTrend.trend,
     },
     {
       id: "open-orders",
       label: metricLabels.openOrders,
-      value: String(openOrders.length),
-      change:
-        metricTrends["open-orders"]?.change ??
-        (preparingCount > 0
-          ? metricLabels.inKitchen.replace("{count}", String(preparingCount))
-          : notAvailable),
-      trend: metricTrends["open-orders"]?.trend ?? "neutral",
+      value: String(openOrdersCount),
+      change: openOrdersTrend.change,
+      trend: openOrdersTrend.trend,
     },
     {
       id: "upcoming-reservations",
       label: metricLabels.upcomingReservations,
       value: String(reservations.length),
-      change: metricTrends["upcoming-reservations"]?.change ?? notAvailable,
-      trend: metricTrends["upcoming-reservations"]?.trend ?? "neutral",
+      change: reservationsTrend.change,
+      trend: reservationsTrend.trend,
     },
     {
       id: "avg-prep-time",
       label: metricLabels.avgPrepTime,
       value:
-        avgPrep > 0
-          ? metricLabels.minutesShort.replace("{minutes}", String(avgPrep))
+        avgPrepCurrent > 0
+          ? metricLabels.minutesShort.replace(
+              "{minutes}",
+              String(avgPrepCurrent),
+            )
           : notAvailable,
-      change: metricTrends["avg-prep-time"]?.change ?? notAvailable,
-      trend: metricTrends["avg-prep-time"]?.trend ?? "neutral",
+      change: avgPrepTrend.change,
+      trend: avgPrepTrend.trend,
     },
   ];
 
   return {
     metrics,
-    recentOrders: orders.slice(0, 4).map((order) => {
+    recentOrders: recentOrders.map((order) => {
       const customerLabel = formatOrderCustomerLabel({
         customers: getOrderCustomers(order),
         tableNumber: order.tableNumber,
@@ -218,28 +384,25 @@ export async function getDashboardHomeData(
     upcomingReservations: reservations.slice(0, 3).map((reservation) => ({
       id: reservation.id,
       guestName: reservation.guestName,
+      guestPhoto: reservation.customer?.avatar ?? "",
       guestCount: reservation.guestCount,
       scheduledAt: format(reservation.scheduledAt, "HH:mm", {
         locale: dateFnsLocale,
       }),
       status: mapReservationStatusToPreview(reservation.status),
     })),
-    insights: Array.isArray(demoProfile?.insights)
-      ? (demoProfile.insights as DashboardHomeData["insights"])
-      : [],
-    whatsapp:
-      demoProfile?.whatsapp &&
-      typeof demoProfile.whatsapp === "object" &&
-      !Array.isArray(demoProfile.whatsapp)
-        ? (demoProfile.whatsapp as DashboardHomeData["whatsapp"])
-        : {
-            connected: false,
-            unreadCount: 0,
-            lastMessageAt: notAvailable,
-            responseRate: notAvailable,
-          },
-    teamActivity: Array.isArray(demoProfile?.teamActivity)
-      ? (demoProfile.teamActivity as DashboardHomeData["teamActivity"])
-      : [],
+    insights: [],
+    whatsapp: {
+      connected: false,
+      unreadCount: 0,
+      lastMessageAt: notAvailable,
+      responseRate: notAvailable,
+    },
+    teamActivity: teamMemberships.map((membership) => ({
+      id: membership.user.id,
+      name: membership.user.name,
+      role: membership.role.name,
+      status: membership.user.sessions.length > 0 ? "online" : "offline",
+    })),
   };
 }

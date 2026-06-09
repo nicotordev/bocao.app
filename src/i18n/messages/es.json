@@ -215,7 +215,10 @@
       "avgPrepTime": "Tiempo promedio de preparación",
       "relativeMinutes": "Hace {minutes} min",
       "inKitchen": "{count} en cocina",
-      "minutesShort": "{minutes} min"
+      "minutesShort": "{minutes} min",
+      "vsYesterday": "{change}% vs ayer",
+      "reservationsNextHours": "{count} en las próximas {hours}h",
+      "prepTimeVsLastWeek": "{change} min vs semana pasada"
     },
     "shell": {
       "brandSubtitle": "Restaurant OS",
@@ -412,10 +415,9 @@
         "preparing": "En preparación",
         "ready": "Listos para entrega",
         "sales": "Ventas del día",
-        "activeTrend": "+12% vs ayer",
-        "preparingTrend": "3 por sobre meta",
-        "readyTrend": "Salida estable",
-        "salesTrend": "+8% ticket promedio"
+        "notAvailable": "Sin comparativa",
+        "preparingCount": "{count} en preparación",
+        "readyCount": "{count} listos"
       },
       "kanban": {
         "dragHelp": "Arrastra pedidos entre estados para actualizar el flujo.",
@@ -652,10 +654,9 @@
         "averageTime": "Tiempo promedio",
         "delayed": "Atrasados",
         "ready": "Listos",
-        "activeTrend": "+3 vs última hora",
-        "averageTrend": "+11% en 60 min",
-        "delayedTrend": "Requiere atención",
-        "readyTrend": "Salida estable"
+        "notAvailable": "Sin comparativa",
+        "preparingCount": "{count} activos",
+        "delayedAttention": "{count} requieren atención"
       },
       "toolbar": {
         "search": "Buscar",
@@ -759,7 +760,12 @@
       },
       "copilot": {
         "title": "Copiloto de cocina",
-        "subtitle": "Insights accionables para el turno actual."
+        "subtitle": "Insights accionables para el turno actual.",
+        "insights": {
+          "delayedSla": "{count} pedidos superan el SLA configurado.",
+          "averagePrep": "El tiempo promedio en cocina es de {minutes} min en pedidos activos.",
+          "busiestStation": "La estación {station} concentra {count} pedidos activos."
+        }
       },
       "empty": {
         "title": "La cocina está al día",

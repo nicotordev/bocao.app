@@ -9,7 +9,6 @@ import { PERMISSION_CATALOG } from "../src/lib/rbac/permissions";
 import { seedOrganizationRoles } from "../src/lib/rbac/seed-organization-roles";
 import { ensureDemoAdminMemberships } from "./seed/admin-memberships";
 import {
-  buildDemoProfile,
   DEMO_MENU,
   DEMO_ORDERS,
   DEMO_RESERVATIONS,
@@ -36,7 +35,14 @@ async function seedDemoFloorPlan(restaurantId: string) {
     { number: "3", positionX: 0.54, positionY: 0.28, shape: "ROUND" as const },
     { number: "4", positionX: 0.7, positionY: 0.28, shape: "ROUND" as const },
     { number: "6", positionX: 0.22, positionY: 0.52, shape: "SQUARE" as const },
-    { number: "8", positionX: 0.46, positionY: 0.52, shape: "RECT" as const, width: 0.12, height: 0.07 },
+    {
+      number: "8",
+      positionX: 0.46,
+      positionY: 0.52,
+      shape: "RECT" as const,
+      width: 0.12,
+      height: 0.07,
+    },
     { number: "10", positionX: 0.7, positionY: 0.52, shape: "SQUARE" as const },
     { number: "12", positionX: 0.46, positionY: 0.74, shape: "ROUND" as const },
   ];
@@ -140,27 +146,6 @@ async function seedDemoOrganization() {
       }));
 
     restaurantsBySlug[restaurantSeed.slug] = restaurant.id;
-
-    const profile = buildDemoProfile(restaurantSeed.name);
-
-    await prisma.restaurantDemoProfile.upsert({
-      where: { restaurantId: restaurant.id },
-      update: {
-        insights: profile.insights,
-        orderInsights: profile.orderInsights,
-        whatsapp: profile.whatsapp,
-        teamActivity: profile.teamActivity,
-        metricTrends: profile.metricTrends,
-      },
-      create: {
-        restaurantId: restaurant.id,
-        insights: profile.insights,
-        orderInsights: profile.orderInsights,
-        whatsapp: profile.whatsapp,
-        teamActivity: profile.teamActivity,
-        metricTrends: profile.metricTrends,
-      },
-    });
   }
 
   const primaryRestaurantId = restaurantsBySlug.providencia;

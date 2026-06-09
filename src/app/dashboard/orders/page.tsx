@@ -8,6 +8,7 @@ import { ordersListQueryOptions } from "@/lib/query/orders/orders.queries";
 
 export default async function OrdersPage() {
   const t = await getTranslations("dashboard.orders");
+  const tCommon = await getTranslations("common");
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
   const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
@@ -90,10 +91,9 @@ export default async function OrdersPage() {
       preparing: t("kpis.preparing"),
       ready: t("kpis.ready"),
       sales: t("kpis.sales"),
-      activeTrend: t("kpis.activeTrend"),
-      preparingTrend: t("kpis.preparingTrend"),
-      readyTrend: t("kpis.readyTrend"),
-      salesTrend: t("kpis.salesTrend"),
+      notAvailable: tCommon("notAvailable"),
+      preparingCount: t.raw("kpis.preparingCount"),
+      readyCount: t.raw("kpis.readyCount"),
     },
     kanban: {
       dragHelp: t("kanban.dragHelp"),

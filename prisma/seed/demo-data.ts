@@ -106,7 +106,11 @@ export const DEMO_ORDERS: DemoOrderSeed[] = [
   {
     orderNumber: "#1040",
     customerName: "Valentina Rojas",
-    additionalCustomerNames: ["Diego Fuentes", "Camila Morales", "Nicolas Soto"],
+    additionalCustomerNames: [
+      "Diego Fuentes",
+      "Camila Morales",
+      "Nicolas Soto",
+    ],
     phone: "+56 9 8421 3344",
     tableNumber: "12",
     channel: "dineIn",
@@ -352,54 +356,3 @@ export const DEMO_RESERVATIONS = [
     status: "CONFIRMED" as const,
   },
 ];
-
-export function buildDemoProfile(restaurantName: string) {
-  return {
-    insights: [
-      {
-        id: "insight-1",
-        title: "Pico de demanda detectado",
-        description: `Entre 20:00 y 21:30 se proyecta un aumento del 28% en pedidos para ${restaurantName}. Considera reforzar cocina.`,
-        priority: "high",
-      },
-      {
-        id: "insight-2",
-        title: "Oportunidad de upsell",
-        description:
-          "El 34% de clientes que piden hamburguesas aceptan postre cuando se ofrece por WhatsApp.",
-        priority: "medium",
-      },
-      {
-        id: "insight-3",
-        title: "Menú con baja rotación",
-        description:
-          "3 platos no se han vendido en 7 días. La IA sugiere un combo promocional.",
-        priority: "low",
-      },
-    ],
-    orderInsights: [
-      "El ticket promedio subió 8% en las últimas 4 horas.",
-      "WhatsApp concentra el 46% de los pedidos activos.",
-      "3 pedidos llevan más de 30 min en preparación.",
-      "La IA sugiere ofrecer postre en pedidos con hamburguesas.",
-    ],
-    whatsapp: {
-      connected: true,
-      unreadCount: 7,
-      lastMessageAt: "Hace 3 min",
-      responseRate: "94%",
-    },
-    teamActivity: [
-      { id: "team-1", name: "Valentina", role: "Cocina", status: "busy" },
-      { id: "team-2", name: "Diego", role: "Salón", status: "online" },
-      { id: "team-3", name: "Camila", role: "WhatsApp", status: "online" },
-      { id: "team-4", name: "Andrés", role: "Manager", status: "offline" },
-    ],
-    metricTrends: {
-      "revenue-today": { change: "+12.4% vs ayer", trend: "up" },
-      "open-orders": { change: "6 en cocina", trend: "neutral" },
-      "upcoming-reservations": { change: "8 en las próximas 3h", trend: "up" },
-      "avg-prep-time": { change: "-2 min vs semana pasada", trend: "up" },
-    },
-  };
-}

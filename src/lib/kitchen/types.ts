@@ -73,11 +73,22 @@ export type KitchenOrder = {
   timeline: KitchenTimelineEvent[];
 };
 
+export type KitchenKpiTrend = {
+  change: string;
+  trend: "up" | "down" | "neutral";
+};
+
 export type KitchenKpiValues = {
   active: string;
   averageTime: string;
   delayed: string;
   ready: string;
+  trends?: {
+    active?: KitchenKpiTrend;
+    averageTime?: KitchenKpiTrend;
+    delayed?: KitchenKpiTrend;
+    ready?: KitchenKpiTrend;
+  };
 };
 
 export type KitchenFiltersState = {

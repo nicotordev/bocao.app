@@ -18,6 +18,7 @@ export type DashboardOrderPreview = {
 export type DashboardReservationPreview = {
   id: string;
   guestName: string;
+  guestPhoto: string;
   guestCount: number;
   scheduledAt: string;
   status: "confirmed" | "pending" | "seated";

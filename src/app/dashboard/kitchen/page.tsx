@@ -1,9 +1,21 @@
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getTranslations } from "next-intl/server";
 import { KitchenPageClient } from "@/components/dashboard/kitchen/kitchen-page-client";
 import type { KitchenLabels } from "@/components/dashboard/kitchen/types";
+import { getDashboardContext } from "@/lib/dashboard/context";
+import { getQueryClient } from "@/lib/query/get-query-client";
+import { kitchenOrdersQueryOptions } from "@/lib/query/kitchen/kitchen.queries";
 
 export default async function KitchenPage() {
   const t = await getTranslations("dashboard.kitchen");
+  const tCommon = await getTranslations("common");
+  const context = await getDashboardContext();
+  const restaurantId = context?.activeRestaurant?.id ?? "";
+  const queryClient = getQueryClient();
+
+  if (restaurantId) {
+    await queryClient.prefetchQuery(kitchenOrdersQueryOptions(restaurantId));
+  }
 
   const labels: KitchenLabels = {
     actions: {
@@ -33,10 +45,9 @@ export default async function KitchenPage() {
       averageTime: t("kpis.averageTime"),
       delayed: t("kpis.delayed"),
       ready: t("kpis.ready"),
-      activeTrend: t("kpis.activeTrend"),
-      averageTrend: t("kpis.averageTrend"),
-      delayedTrend: t("kpis.delayedTrend"),
-      readyTrend: t("kpis.readyTrend"),
+      notAvailable: tCommon("notAvailable"),
+      preparingCount: t.raw("kpis.preparingCount"),
+      delayedAttention: t.raw("kpis.delayedAttention"),
     },
     toolbar: {
       search: t("toolbar.search"),
@@ -156,5 +167,17 @@ export default async function KitchenPage() {
     },
   };
 
-  return <KitchenPageClient labels={labels} />;
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <KitchenPageClient
+        labels={labels}
+        insightLabels={{
+          delayedSla: t.raw("copilot.insights.delayedSla"),
+          averagePrep: t.raw("copilot.insights.averagePrep"),
+          busiestStation: t.raw("copilot.insights.busiestStation"),
+        }}
+        restaurantId={restaurantId}
+      />
+    </HydrationBoundary>
+  );
 }

@@ -65,10 +65,9 @@ export type OrdersLabels = {
     preparing: string;
     ready: string;
     sales: string;
-    activeTrend: string;
-    preparingTrend: string;
-    readyTrend: string;
-    salesTrend: string;
+    notAvailable: string;
+    preparingCount: string;
+    readyCount: string;
   };
   kanban: {
     dragHelp: string;
