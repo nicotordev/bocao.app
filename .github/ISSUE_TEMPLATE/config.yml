@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/nicotordev/bocao.app/discussions
+    about: Ask questions, share ideas, or discuss architecture before opening an issue
+  - name: Security vulnerability
+    url: https://github.com/nicotordev/bocao.app/security/advisories/new
+    about: Report a security issue privately (do not open a public issue)

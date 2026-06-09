@@ -17,6 +17,21 @@ Use this file as the operating contract for automated coding agents working in t
 - Data: PostgreSQL through Prisma 7. Generated client output lives in `src/generated/prisma`.
 - UI: shadcn-style primitives in `src/components/ui`, Tabler/Lucide icons, Sonner toasts.
 - i18n: `next-intl`, cookie-based locale persistence, no locale prefixes in URLs.
+- License: Community Edition is **AGPL-3.0** (see `LICENSE`). Commercial edition is sold separately on CodeCanyon.
+
+## Repository Layout
+
+```txt
+.github/                  CI workflow, issue/PR templates, Dependabot, CONTRIBUTING
+docs/en/                  English documentation (licensing, i18n, product brief)
+docs/es/                  Spanish documentation (mirror of docs/en/)
+src/app/                  App Router routes, layouts, actions, API handlers
+src/components/           UI components (dashboard, auth, onboarding, ui primitives)
+src/lib/                  Business logic, RBAC, query layer, Prisma wrapper
+src/i18n/                 Locale config and message catalogs (en.json, es.json)
+prisma/                   Schema, migrations, seed scripts
+public/                   Static assets served from root path
+```
 
 ## Before Editing
 
@@ -24,6 +39,7 @@ Use this file as the operating contract for automated coding agents working in t
 2. Inspect the current files before making assumptions. Prefer `rg` and `rg --files`.
 3. Check the working tree with `git status --short`. This repo often has active local changes; never revert unrelated changes.
 4. Keep changes scoped to the user's request. Avoid broad refactors unless they are required to fix the issue.
+5. When adding user-facing copy, keep `src/i18n/messages/en.json` and `es.json` structurally in sync.
 
 ## Commands
 
@@ -36,6 +52,7 @@ Use this file as the operating contract for automated coding agents working in t
 - Prisma migration: `bun run db:migrate`
 - Prisma Studio: `bun run db:studio`
 - Seed database: `bun run db:seed`
+- Demo seed: `bun run db:seed:demo`
 - Better Auth generated artifacts: `bun run auth:generate`
 
 Run the narrowest useful verification first. For behavior changes, prefer `bunx tsc --noEmit` plus a focused browser/manual check. Report unrelated lint failures instead of editing unrelated files.
@@ -49,6 +66,7 @@ Run the narrowest useful verification first. For behavior changes, prefer `bunx 
 - Use `next-intl` ICU values correctly: messages with placeholders require `t("key", {value})`; use `t.raw("key")` only when intentionally passing an unformatted template string to the client.
 - Keep UI consistent with existing primitives in `src/components/ui`. Prefer Tabler or Lucide icons over custom inline SVGs.
 - Keep comments rare and useful. Do not add narration comments for obvious code.
+- Search for types in `node_modules` when modifying or creating TSX code.
 
 ## Important Areas
 
@@ -75,8 +93,25 @@ Run the narrowest useful verification first. For behavior changes, prefer `bunx 
 - URLs do not include `/es` or `/en`.
 - Keep `en.json` and `es.json` structurally in sync when adding messages.
 
+## Licensing Notes
+
+- This repository is the **Community Edition** under AGPL-3.0.
+- Do not remove or weaken license headers. Do not change `LICENSE` without explicit user request.
+- Contributions are AGPL-3.0. See `.github/CONTRIBUTING.md`.
+- Commercial edition licensing is documented in `COMMERCIAL-LICENSE.md` and `docs/en/licensing.md`.
+- When publishing CodeCanyon distribution, do **not** mark the item as "100% GPL" — use standard Envato licensing for the commercial channel.
+
+## GitHub And CI
+
+- CI runs on push/PR to `main`: typecheck + lint (`.github/workflows/ci.yml`).
+- Dependabot monitors npm and GitHub Actions weekly.
+- Issue templates: bug report and feature request (`.github/ISSUE_TEMPLATE/`).
+- Security issues: private advisories only (`SECURITY.md`).
+- Do not commit secrets. `.env` is local only; `.env.example` documents expected variables.
+
 ## Safety
 
 - Do not run destructive git commands (`reset --hard`, checkout/revert unrelated files, mass cleanups) unless the user explicitly asks.
 - Do not commit secrets. `.env` is local only; `.env.example` documents expected variables.
 - If a command fails because of unrelated existing errors, state the exact files and errors in the final response.
+- Only create git commits when the user explicitly requests them.

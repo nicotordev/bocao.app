@@ -1,0 +1,53 @@
+name: Feature Request
+description: Suggest an idea or improvement for Bocao.app
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem you want solved. Open-ended discussions can also go in [GitHub Discussions](https://github.com/nicotordev/bocao.app/discussions).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What problem does this solve? Who benefits?
+      placeholder: Kitchen staff need to see orders grouped by prep station without switching views.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative approaches you have thought about?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the product does this relate to?
+      options:
+        - Orders
+        - Kitchen
+        - Reservations
+        - Menu
+        - WhatsApp / messaging
+        - Auth / RBAC
+        - Analytics
+        - i18n
+        - Infrastructure / DevOps
+        - Other
+    validations:
+      required: true
