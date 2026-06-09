@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { TbUsers } from "react-icons/tb";
 import { ReservationGuestButton } from "@/components/dashboard/reservation-guest-button";
+import { ReservationStatusBadge } from "@/components/dashboard/reservations/reservation-status-badge";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
-import { Badge } from "@/components/ui/badge";
+import type { ReservationStatus } from "@/lib/reservations/types";
 import { cn } from "@/lib/utils";
 
 type UpcomingReservationItemLabels = {
   guestCount: string;
   viewReservation: string;
-  status: Record<DashboardReservationPreview["status"], string>;
+  status: Record<ReservationStatus, string>;
   guestButton: {
     ariaLabel: string;
     phone: string;
@@ -32,7 +33,7 @@ export function UpcomingReservationItem({
   return (
     <li>
       <Link
-        href={`/dashboard/reservations/${reservation.id}`}
+        href={`/dashboard/reservations?reservationId=${reservation.id}`}
         aria-label={labels.viewReservation.replace(
           "{name}",
           reservation.guestName,
@@ -68,7 +69,10 @@ export function UpcomingReservationItem({
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span className="text-sm font-medium">{reservation.scheduledAt}</span>
-          <Badge variant="outline">{labels.status[reservation.status]}</Badge>
+          <ReservationStatusBadge
+            status={reservation.status}
+            label={labels.status[reservation.status]}
+          />
         </div>
       </Link>
     </li>

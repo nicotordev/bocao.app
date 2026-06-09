@@ -28,3 +28,43 @@ export function isOrdersDefaultDateRange(
   const today = getTodayDateInputValue(timezone);
   return from === today && to === today;
 }
+
+function getHourInTimezone(date: Date, timezone: string) {
+  return Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hour: "numeric",
+      hour12: false,
+    }).format(date),
+  );
+}
+
+export function dateInputToUtcStart(dateStr: string, timezone: string): Date {
+  const [year, month, day] = dateStr.split("-").map((part) => Number(part));
+  let utcMs = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
+
+  while (utcMs < Date.UTC(year, month - 1, day + 2, 0, 0, 0, 0)) {
+    const candidate = new Date(utcMs);
+
+    if (
+      formatDateInputValue(candidate, timezone) === dateStr &&
+      getHourInTimezone(candidate, timezone) === 0
+    ) {
+      return candidate;
+    }
+
+    utcMs += 15 * 60 * 1000;
+  }
+
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+}
+
+export function dateInputToUtcEnd(dateStr: string, timezone: string): Date {
+  const start = dateInputToUtcStart(dateStr, timezone);
+  const nextDay = formatDateInputValue(
+    new Date(start.getTime() + 36 * 60 * 60 * 1000),
+    timezone,
+  );
+
+  return new Date(dateInputToUtcStart(nextDay, timezone).getTime() - 1);
+}

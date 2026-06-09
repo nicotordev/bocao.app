@@ -11,6 +11,11 @@ export const queryKeys = {
     lists: () => [...queryKeys.orders.all, "list"] as const,
     list: (restaurantId: string, filters?: OrdersListFilters) =>
       [...queryKeys.orders.lists(), restaurantId, filters ?? {}] as const,
+    boards: () => [...queryKeys.orders.all, "board"] as const,
+    board: (
+      restaurantId: string,
+      filters?: Omit<OrdersListFilters, "page" | "pageSize">,
+    ) => [...queryKeys.orders.boards(), restaurantId, filters ?? {}] as const,
     details: () => [...queryKeys.orders.all, "detail"] as const,
     detail: (restaurantId: string, orderId: string) =>
       [...queryKeys.orders.details(), restaurantId, orderId] as const,

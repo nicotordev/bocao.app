@@ -4,26 +4,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { MenuCategoryRecord } from "@/lib/menu/types";
 import type { MenuPageLabels } from "./types";
 
 type MenuFiltersProps = {
   labels: MenuPageLabels;
+  categories: MenuCategoryRecord[];
   search: string;
+  categoryId: string;
   showUnavailable: boolean;
   onSearchChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
   onShowUnavailableChange: (value: boolean) => void;
   onClear: () => void;
 };
 
 export function MenuFilters({
   labels,
+  categories,
   search,
+  categoryId,
   showUnavailable,
   onSearchChange,
+  onCategoryChange,
   onShowUnavailableChange,
   onClear,
 }: MenuFiltersProps) {
-  const hasActiveFilters = search.trim().length > 0 || !showUnavailable;
+  const hasActiveFilters =
+    search.trim().length > 0 || !showUnavailable || categoryId !== "all";
 
   return (
     <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-4 md:flex-row md:items-end md:flex-wrap">
@@ -36,6 +51,23 @@ export function MenuFilters({
           placeholder={labels.filters.searchPlaceholder}
           className="rounded-2xl"
         />
+      </div>
+
+      <div className="min-w-[180px] space-y-2">
+        <Label htmlFor="menu-category">{labels.filters.category}</Label>
+        <Select value={categoryId} onValueChange={onCategoryChange}>
+          <SelectTrigger id="menu-category" className="rounded-2xl">
+            <SelectValue placeholder={labels.filters.allCategories} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{labels.filters.allCategories}</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex min-h-10 items-center gap-3 rounded-2xl border border-border px-3">

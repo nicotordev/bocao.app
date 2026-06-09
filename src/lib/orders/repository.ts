@@ -1,9 +1,11 @@
 import { computeOrderTotals } from "@/lib/orders/compute-order-totals";
 import { formatCurrency } from "@/lib/orders/currency";
 import {
-  applyOrdersListFilters,
+  buildOrdersPrismaWhere,
   type OrdersListFilters,
+  type OrdersQueryFilters,
 } from "@/lib/orders/filters";
+import { buildPaginationMeta, getSkipTake } from "@/lib/pagination";
 import { generateOrderNumber } from "@/lib/orders/generate-order-number";
 import { orderCustomerInclude } from "@/lib/orders/order-customers";
 import type {
@@ -114,6 +116,8 @@ async function resolveOrderCustomers(
   return resolved;
 }
 
+const ORDERS_BOARD_LIMIT = 500;
+
 export async function listOrders(
   restaurantId: string,
   filters?: OrdersListFilters,
@@ -126,25 +130,43 @@ export async function listOrders(
       orders: [],
       restaurantId,
       updatedAt: new Date().toISOString(),
+      insights: [],
+      pagination: buildPaginationMeta(0, {
+        page: filters?.page ?? 1,
+        pageSize: filters?.pageSize ?? 20,
+      }),
     };
   }
 
-  const dbOrders = await prisma.order.findMany({
-    where: { restaurantId },
-    include: orderCustomerInclude,
-    orderBy: { createdAt: "desc" },
-  });
-
-  const orders = applyOrdersListFilters(
-    dbOrders.map((order) =>
-      mapDbOrderToUi(order, {
-        currency: restaurant.currency,
-        timezone: restaurant.timezone,
-        locale: formatOptions?.locale,
-        customerLabels: formatOptions?.customerLabels,
-      }),
-    ),
+  const where = buildOrdersPrismaWhere(
+    restaurantId,
     filters,
+    restaurant.timezone,
+  );
+  const pagination = {
+    page: filters?.page ?? 1,
+    pageSize: filters?.pageSize ?? 20,
+  };
+  const { skip, take } = getSkipTake(pagination);
+
+  const [total, dbOrders] = await Promise.all([
+    prisma.order.count({ where }),
+    prisma.order.findMany({
+      where,
+      include: orderCustomerInclude,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+  ]);
+
+  const orders = dbOrders.map((order) =>
+    mapDbOrderToUi(order, {
+      currency: restaurant.currency,
+      timezone: restaurant.timezone,
+      locale: formatOptions?.locale,
+      customerLabels: formatOptions?.customerLabels,
+    }),
   );
 
   return {
@@ -152,7 +174,42 @@ export async function listOrders(
     restaurantId,
     updatedAt: new Date().toISOString(),
     insights: [],
+    pagination: buildPaginationMeta(total, pagination),
   };
+}
+
+export async function listOrdersBoard(
+  restaurantId: string,
+  filters: OrdersQueryFilters | undefined,
+  formatOptions?: OrderFormatOptions,
+): Promise<Order[]> {
+  const restaurant = await getRestaurantContext(restaurantId);
+
+  if (!restaurant) {
+    return [];
+  }
+
+  const where = buildOrdersPrismaWhere(
+    restaurantId,
+    filters,
+    restaurant.timezone,
+  );
+
+  const dbOrders = await prisma.order.findMany({
+    where,
+    include: orderCustomerInclude,
+    orderBy: { createdAt: "desc" },
+    take: ORDERS_BOARD_LIMIT,
+  });
+
+  return dbOrders.map((order) =>
+    mapDbOrderToUi(order, {
+      currency: restaurant.currency,
+      timezone: restaurant.timezone,
+      locale: formatOptions?.locale,
+      customerLabels: formatOptions?.customerLabels,
+    }),
+  );
 }
 
 export async function getOrder(

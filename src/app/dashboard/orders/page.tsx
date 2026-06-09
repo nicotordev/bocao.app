@@ -3,19 +3,33 @@ import { getTranslations } from "next-intl/server";
 import { OrdersPageClient } from "@/components/dashboard/orders/orders-page-client";
 import type { OrdersLabels } from "@/components/dashboard/orders/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
+import { parseOrdersListSearchParams } from "@/lib/orders/filters";
 import { getQueryClient } from "@/lib/query/get-query-client";
-import { ordersListQueryOptions } from "@/lib/query/orders/orders.queries";
+import {
+  ordersBoardQueryOptions,
+  ordersListQueryOptions,
+} from "@/lib/query/orders/orders.queries";
+import { searchParamsToRecord } from "@/lib/list-url";
 
-export default async function OrdersPage() {
+type OrdersPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const t = await getTranslations("dashboard.orders");
   const tCommon = await getTranslations("common");
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
   const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
   const queryClient = getQueryClient();
+  const resolvedSearchParams = searchParamsToRecord(await searchParams);
+  const filters = parseOrdersListSearchParams(resolvedSearchParams, timezone);
 
   if (restaurantId) {
-    await queryClient.prefetchQuery(ordersListQueryOptions(restaurantId));
+    await Promise.all([
+      queryClient.prefetchQuery(ordersListQueryOptions(restaurantId, filters)),
+      queryClient.prefetchQuery(ordersBoardQueryOptions(restaurantId, filters)),
+    ]);
   }
 
   const labels: OrdersLabels = {
@@ -146,6 +160,12 @@ export default async function OrdersPage() {
       openActions: t("accessibility.openActions"),
       openDetails: t("accessibility.openDetails"),
       whatsappOrder: t("accessibility.whatsappOrder"),
+    },
+    pagination: {
+      previous: tCommon("pagination.previous"),
+      next: tCommon("pagination.next"),
+      page: tCommon("pagination.page"),
+      of: tCommon("pagination.of"),
     },
   };
 

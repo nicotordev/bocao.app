@@ -13,7 +13,13 @@
     "resending": "Reenviando...",
     "confirm": "Confirmar",
     "saving": "Guardando...",
-    "notAvailable": "—"
+    "notAvailable": "—",
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Página",
+      "of": "de"
+    }
   },
   "metadata": {
     "title": "Bocao",
@@ -294,11 +300,6 @@
           "notes": "Notas",
           "reservationNotes": "Notas de la reserva",
           "noContactInfo": "Sin información de contacto registrada."
-        },
-        "status": {
-          "confirmed": "Confirmada",
-          "pending": "Pendiente",
-          "seated": "En mesa"
         }
       },
       "teamActivity": {

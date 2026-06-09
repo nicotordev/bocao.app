@@ -15,7 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { ReservationStatusBadge } from "@/components/dashboard/reservations/reservation-status-badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,7 +143,7 @@ export function ReservationsTable({
                   <TableCell>
                     <ReservationStatusBadge
                       status={res.status}
-                      labels={labels.statuses}
+                      label={labels.statuses[res.status]}
                     />
                   </TableCell>
                   <TableCell className="max-w-[300px] truncate text-xs text-muted-foreground">
@@ -210,7 +210,7 @@ export function ReservationsTable({
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                   <ReservationStatusBadge
                     status={res.status}
-                    labels={labels.statuses}
+                    label={labels.statuses[res.status]}
                   />
                   <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-muted text-[10px] font-semibold text-muted-foreground">
                     <Users className="size-2.5" />
@@ -252,37 +252,6 @@ export function ReservationsTable({
         })}
       </div>
     </>
-  );
-}
-
-function ReservationStatusBadge({
-  status,
-  labels,
-}: {
-  status: ReservationStatus;
-  labels: any;
-}) {
-  const styles: Record<ReservationStatus, string> = {
-    PENDING:
-      "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-    CONFIRMED:
-      "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    SEATED:
-      "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
-    COMPLETED:
-      "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-    CANCELLED: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400",
-    NO_SHOW:
-      "border-zinc-500/30 bg-zinc-500/10 text-zinc-600 dark:text-zinc-400",
-  };
-
-  return (
-    <Badge
-      variant="outline"
-      className={`${styles[status]} font-medium capitalize rounded-full px-2.5 py-0.5 text-[11px] shadow-sm`}
-    >
-      {labels[status]}
-    </Badge>
   );
 }
 

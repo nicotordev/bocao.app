@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ListPagination } from "@/components/dashboard/list-pagination";
 import { useReservationsListQuery } from "@/lib/query/reservations/reservations.queries";
 import {
   useCreateReservationMutation,
@@ -9,13 +11,19 @@ import {
   useDeleteReservationMutation,
 } from "@/lib/query/reservations/reservations.mutations";
 import { QueryResultState } from "@/components/query/query-result-state";
+import { buildListUrl } from "@/lib/list-url";
+import { parseReservationsListSearchParams } from "@/lib/reservations/filters";
 import { ReservationsHeader } from "./reservations-header";
 import { ReservationsKpis } from "./reservations-kpis";
 import { ReservationsFilters } from "./reservations-filters";
 import { ReservationsTable } from "./reservations-table";
 import { ReservationDialog } from "./reservation-dialog";
 import type { ReservationFormSubmitData } from "./reservation-dialog.types";
-import type { Reservation, ReservationStatus } from "@/lib/reservations/types";
+import type {
+  Reservation,
+  ReservationsKpiValues,
+  ReservationStatus,
+} from "@/lib/reservations/types";
 import type { CustomerOption } from "@/lib/customers/types";
 import { format, startOfDay } from "date-fns";
 
@@ -23,33 +31,58 @@ type ReservationsPageClientProps = {
   labels: any;
   restaurantId: string;
   customers: CustomerOption[];
+  initialReservation?: Reservation | null;
+  initialKpis?: ReservationsKpiValues | null;
 };
 
 export function ReservationsPageClient({
   labels,
   restaurantId,
   customers,
+  initialReservation = null,
+  initialKpis = null,
 }: ReservationsPageClientProps) {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const openedViaDeepLink = useRef(Boolean(initialReservation));
+  const [searchDraft, setSearchDraft] = useState("");
+
+  const filters = useMemo(
+    () =>
+      parseReservationsListSearchParams(
+        Object.fromEntries(searchParams.entries()),
+      ),
+    [searchParams],
+  );
+
+  useEffect(() => {
+    setSearchDraft(filters.search ?? "");
+  }, [filters.search]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if ((filters.search ?? "") === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [filters.search, searchDraft]);
 
   const [activeReservation, setActiveReservation] =
-    useState<Reservation | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+    useState<Reservation | null>(initialReservation);
+  const [isDialogOpen, setIsDialogOpen] = useState(Boolean(initialReservation));
 
-  const filters = useMemo(() => {
-    return {
-      search,
-      status,
-      from: date ? startOfDay(date).toISOString() : undefined,
-      to: date
-        ? new Date(
-            startOfDay(date).getTime() + 24 * 60 * 60 * 1000 - 1,
-          ).toISOString()
-        : undefined,
-    };
-  }, [search, status, date]);
+  useEffect(() => {
+    if (!initialReservation) {
+      return;
+    }
+
+    setActiveReservation(initialReservation);
+    setIsDialogOpen(true);
+  }, [initialReservation]);
 
   const reservationsQuery = useReservationsListQuery(restaurantId, filters);
 
@@ -58,31 +91,82 @@ export function ReservationsPageClient({
   const deleteMutation = useDeleteReservationMutation(restaurantId);
 
   const list = reservationsQuery.data?.reservations ?? [];
+  const pagination = reservationsQuery.data?.pagination ?? {
+    page: filters.page,
+    pageSize: filters.pageSize,
+    total: 0,
+    totalPages: 1,
+  };
 
-  const kpis = useMemo(() => {
-    const today = new Date();
-    const todayStr = format(today, "yyyy-MM-dd");
+  const dateFilter = useMemo(() => {
+    if (!filters.from) {
+      return undefined;
+    }
 
-    const todayReservations = list.filter((r) =>
-      r.scheduledAt.startsWith(todayStr),
+    return new Date(filters.from);
+  }, [filters.from]);
+
+  const urlParams = useMemo(() => {
+    const params: Record<string, string | undefined> = {
+      search: filters.search,
+      status: filters.status === "all" ? undefined : filters.status,
+      from: filters.from,
+      to: filters.to,
+    };
+
+    const reservationId = searchParams.get("reservationId");
+    if (reservationId) {
+      params.reservationId = reservationId;
+    }
+
+    return params;
+  }, [filters, searchParams]);
+
+  const kpis = initialKpis ?? {
+    total: 0,
+    confirmed: 0,
+    pending: 0,
+    guests: 0,
+  };
+
+  function navigateFilters(
+    next: {
+      search?: string;
+      status?: string;
+      date?: Date | undefined;
+    },
+    options?: { page?: number },
+  ) {
+    const nextFrom = next.date
+      ? startOfDay(next.date).toISOString()
+      : filters.from;
+    const nextTo = next.date
+      ? new Date(
+          startOfDay(next.date).getTime() + 24 * 60 * 60 * 1000 - 1,
+        ).toISOString()
+      : filters.to;
+
+    router.push(
+      buildListUrl(
+        "/dashboard/reservations",
+        {
+          search: next.search ?? filters.search,
+          status:
+            (next.status ?? filters.status) === "all"
+              ? undefined
+              : (next.status ?? filters.status),
+          from:
+            next.date === undefined && "date" in next ? undefined : nextFrom,
+          to: next.date === undefined && "date" in next ? undefined : nextTo,
+          reservationId: searchParams.get("reservationId") ?? undefined,
+        },
+        {
+          page: options?.page ?? 1,
+          pageSize: filters.pageSize,
+        },
+      ),
     );
-
-    const total = todayReservations.length;
-    const confirmed = todayReservations.filter(
-      (r) =>
-        r.status === "CONFIRMED" ||
-        r.status === "SEATED" ||
-        r.status === "COMPLETED",
-    ).length;
-    const pending = todayReservations.filter(
-      (r) => r.status === "PENDING",
-    ).length;
-    const guests = todayReservations
-      .filter((r) => r.status !== "CANCELLED" && r.status !== "NO_SHOW")
-      .reduce((sum, r) => sum + r.guestCount, 0);
-
-    return { total, confirmed, pending, guests };
-  }, [list]);
+  }
 
   const handleCreate = () => {
     setActiveReservation(null);
@@ -97,6 +181,16 @@ export function ReservationsPageClient({
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setActiveReservation(null);
+
+    if (openedViaDeepLink.current) {
+      openedViaDeepLink.current = false;
+      router.replace(
+        buildListUrl("/dashboard/reservations", urlParams, {
+          page: filters.page,
+          pageSize: filters.pageSize,
+        }),
+      );
+    }
   };
 
   const handleStatusChange = (
@@ -177,29 +271,36 @@ export function ReservationsPageClient({
 
       <ReservationsFilters
         labels={labels}
-        search={search}
-        onSearchChange={setSearch}
-        status={status}
-        onStatusChange={setStatus}
-        date={date}
-        onDateChange={setDate}
+        search={searchDraft}
+        onSearchChange={setSearchDraft}
+        status={filters.status ?? "all"}
+        onStatusChange={(status) => navigateFilters({ status })}
+        date={dateFilter}
+        onDateChange={(date) => navigateFilters({ date })}
         onClear={() => {
-          setSearch("");
-          setStatus("all");
-          setDate(undefined);
+          setSearchDraft("");
+          navigateFilters({ search: "", status: "all", date: undefined });
         }}
       />
 
       <QueryResultState query={reservationsQuery}>
         {() => (
-          <ReservationsTable
-            labels={labels}
-            reservations={list}
-            onEdit={handleEdit}
-            onUpdateStatus={handleStatusChange}
-            onDelete={handleDelete}
-            isUpdating={updateMutation.isPending || deleteMutation.isPending}
-          />
+          <div className="space-y-4">
+            <ReservationsTable
+              labels={labels}
+              reservations={list}
+              onEdit={handleEdit}
+              onUpdateStatus={handleStatusChange}
+              onDelete={handleDelete}
+              isUpdating={updateMutation.isPending || deleteMutation.isPending}
+            />
+            <ListPagination
+              basePath="/dashboard/reservations"
+              params={urlParams}
+              meta={pagination}
+              labels={labels.pagination}
+            />
+          </div>
         )}
       </QueryResultState>
 
@@ -207,7 +308,13 @@ export function ReservationsPageClient({
         labels={labels}
         customers={customers}
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseDialog();
+            return;
+          }
+          setIsDialogOpen(true);
+        }}
         onClose={handleCloseDialog}
         reservation={activeReservation}
         onSubmit={handleSubmit}

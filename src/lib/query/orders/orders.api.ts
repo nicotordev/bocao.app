@@ -9,7 +9,10 @@ import type {
 } from "@/lib/orders/types";
 import { apiRequest } from "@/lib/query/api-client";
 
-function buildOrdersSearchParams(filters?: OrdersListFilters) {
+function buildOrdersSearchParams(
+  filters?: Partial<OrdersListFilters>,
+  options?: { mode?: "list" | "board" },
+) {
   const params = new URLSearchParams();
 
   if (filters?.search) {
@@ -24,6 +27,26 @@ function buildOrdersSearchParams(filters?: OrdersListFilters) {
     params.set("channel", filters.channel);
   }
 
+  if (filters?.from) {
+    params.set("from", filters.from);
+  }
+
+  if (filters?.to) {
+    params.set("to", filters.to);
+  }
+
+  if (filters?.page && filters.page > 1) {
+    params.set("page", String(filters.page));
+  }
+
+  if (filters?.pageSize) {
+    params.set("pageSize", String(filters.pageSize));
+  }
+
+  if (options?.mode === "board") {
+    params.set("mode", "board");
+  }
+
   const query = params.toString();
   return query.length > 0 ? `?${query}` : "";
 }
@@ -34,6 +57,21 @@ export async function fetchOrdersList(
 ): Promise<OrdersListResponse> {
   return apiRequest<OrdersListResponse>(
     `/api/restaurants/${restaurantId}/orders${buildOrdersSearchParams(filters)}`,
+  );
+}
+
+export async function fetchOrdersBoard(
+  restaurantId: string,
+  filters?: Omit<OrdersListFilters, "page" | "pageSize">,
+): Promise<{ orders: Order[]; restaurantId: string; updatedAt: string }> {
+  return apiRequest<{
+    orders: Order[];
+    restaurantId: string;
+    updatedAt: string;
+  }>(
+    `/api/restaurants/${restaurantId}/orders${buildOrdersSearchParams(filters, {
+      mode: "board",
+    })}`,
   );
 }
 

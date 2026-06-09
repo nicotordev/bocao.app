@@ -1,3 +1,4 @@
+import type { PaginationMeta } from "@/lib/pagination";
 import type { Locale } from "@/i18n/locales";
 import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
@@ -47,6 +48,12 @@ export type MenuPageLabels = {
     allCategories: string;
     showUnavailable: string;
     clear: string;
+  };
+  pagination: {
+    previous: string;
+    next: string;
+    page: string;
+    of: string;
   };
   empty: {
     title: string;
@@ -247,6 +254,7 @@ export type MenuPageClientProps = {
   canEdit: boolean;
   items: MenuItemRecord[];
   categories: MenuCategoryRecord[];
+  pagination: PaginationMeta;
   catalogTags: MenuCatalogTagOption[];
   tagCatalogLabels: Record<string, string>;
   customTagDefinitions: MenuCustomTagRecord[];

@@ -1,8 +1,14 @@
 import { resolveCustomers } from "@/lib/customers/resolve-customers";
+import {
+  buildReservationsPrismaWhere,
+  type ReservationsListFilters,
+} from "@/lib/reservations/filters";
+import { buildPaginationMeta, getSkipTake } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 import type {
   CreateReservationInput,
   Reservation,
+  ReservationsKpiValues,
   UpdateReservationInput,
 } from "./types";
 
@@ -46,47 +52,74 @@ function buildGuestFieldsFromCustomers(
 
 export async function listReservations(
   restaurantId: string,
-  filters?: {
-    search?: string;
-    status?: string;
-    from?: string;
-    to?: string;
-  },
-): Promise<Reservation[]> {
-  const where: any = {
-    restaurantId,
+  filters?: ReservationsListFilters,
+) {
+  const where = buildReservationsPrismaWhere(restaurantId, {
+    search: filters?.search,
+    status: filters?.status,
+    from: filters?.from,
+    to: filters?.to,
+  });
+  const pagination = {
+    page: filters?.page ?? 1,
+    pageSize: filters?.pageSize ?? 20,
   };
+  const { skip, take } = getSkipTake(pagination);
 
-  if (filters?.status && filters.status !== "all") {
-    where.status = filters.status;
-  }
+  const [total, dbReservations] = await Promise.all([
+    prisma.reservation.count({ where }),
+    prisma.reservation.findMany({
+      where,
+      orderBy: { scheduledAt: "asc" },
+      skip,
+      take,
+    }),
+  ]);
 
-  if (filters?.search) {
-    where.OR = [
-      { guestName: { contains: filters.search, mode: "insensitive" } },
-      { guestPhone: { contains: filters.search, mode: "insensitive" } },
-      { notes: { contains: filters.search, mode: "insensitive" } },
-    ];
-  }
+  return {
+    reservations: dbReservations.map((res) => mapReservation(res)),
+    pagination: buildPaginationMeta(total, pagination),
+  };
+}
 
-  if (filters?.from || filters?.to) {
-    where.scheduledAt = {};
-    if (filters.from) {
-      where.scheduledAt.gte = new Date(filters.from);
-    }
-    if (filters.to) {
-      where.scheduledAt.lte = new Date(filters.to);
-    }
-  }
+export async function getReservationsKpis(
+  restaurantId: string,
+): Promise<ReservationsKpiValues> {
+  const now = new Date();
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
 
-  const dbReservations = await prisma.reservation.findMany({
-    where,
-    orderBy: {
-      scheduledAt: "asc",
+  const todayReservations = await prisma.reservation.findMany({
+    where: {
+      restaurantId,
+      scheduledAt: {
+        gte: start,
+        lte: end,
+      },
+    },
+    select: {
+      status: true,
+      guestCount: true,
     },
   });
 
-  return dbReservations.map((res) => mapReservation(res));
+  const total = todayReservations.length;
+  const confirmed = todayReservations.filter((reservation) =>
+    ["CONFIRMED", "SEATED", "COMPLETED"].includes(reservation.status),
+  ).length;
+  const pending = todayReservations.filter(
+    (reservation) => reservation.status === "PENDING",
+  ).length;
+  const guests = todayReservations
+    .filter(
+      (reservation) =>
+        reservation.status !== "CANCELLED" && reservation.status !== "NO_SHOW",
+    )
+    .reduce((sum, reservation) => sum + reservation.guestCount, 0);
+
+  return { total, confirmed, pending, guests };
 }
 
 export async function getReservation(

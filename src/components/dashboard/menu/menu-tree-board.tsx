@@ -66,6 +66,7 @@ type MenuTreeBoardProps = {
   items: MenuItemRecord[];
   search: string;
   showUnavailable: boolean;
+  serverFiltered?: boolean;
   tagCatalogLabels: Record<string, string>;
   customTagLabels: Record<string, string>;
   onEditCategory: (category: MenuCategoryRecord) => void;
@@ -86,6 +87,7 @@ export function MenuTreeBoard({
   items,
   search,
   showUnavailable,
+  serverFiltered = false,
   tagCatalogLabels,
   customTagLabels,
   onEditCategory,
@@ -103,24 +105,34 @@ export function MenuTreeBoard({
 
   layoutRef.current = layout;
 
-  const isFiltered = search.trim().length > 0 || !showUnavailable;
+  const isFiltered =
+    serverFiltered || search.trim().length > 0 || !showUnavailable;
   const dragEnabled = canEdit && !isFiltered && !isSaving;
 
   useEffect(() => {
     setLayout(buildMenuTreeLayout(categories, items));
   }, [categories, items]);
 
-  const displayLayout = useMemo(
-    () =>
-      filterMenuTreeLayout(
-        layout,
-        search,
-        showUnavailable,
-        tagCatalogLabels,
-        customTagLabels,
-      ),
-    [layout, search, showUnavailable, tagCatalogLabels, customTagLabels],
-  );
+  const displayLayout = useMemo(() => {
+    if (serverFiltered) {
+      return layout;
+    }
+
+    return filterMenuTreeLayout(
+      layout,
+      search,
+      showUnavailable,
+      tagCatalogLabels,
+      customTagLabels,
+    );
+  }, [
+    layout,
+    search,
+    showUnavailable,
+    serverFiltered,
+    tagCatalogLabels,
+    customTagLabels,
+  ]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

@@ -121,4 +121,10 @@ export type OrdersLabels = {
     openDetails: string;
     whatsappOrder: string;
   };
+  pagination: {
+    previous: string;
+    next: string;
+    page: string;
+    of: string;
+  };
 };

@@ -20,10 +20,20 @@ export type Reservation = {
   updatedAt: string;
 };
 
+import type { PaginationMeta } from "@/lib/pagination";
+
 export type ReservationsListResponse = {
   reservations: Reservation[];
   restaurantId: string;
   updatedAt: string;
+  pagination: PaginationMeta;
+};
+
+export type ReservationsKpiValues = {
+  total: number;
+  confirmed: number;
+  pending: number;
+  guests: number;
 };
 
 export type ReservationCustomerInput = {

@@ -1,3 +1,5 @@
+import type { ReservationStatus } from "@/lib/reservations/types";
+
 export type DashboardMetric = {
   id: string;
   label: string;
@@ -21,7 +23,7 @@ export type DashboardReservationPreview = {
   guestPhoto: string;
   guestCount: number;
   scheduledAt: string;
-  status: "confirmed" | "pending" | "seated";
+  status: ReservationStatus;
   guestPhone?: string;
   guestEmail?: string;
   guestNotes?: string;

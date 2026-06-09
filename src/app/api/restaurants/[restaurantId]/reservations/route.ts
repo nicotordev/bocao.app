@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { reservationsListQuerySchema } from "@/lib/reservations/filters";
 import {
   requireRestaurantReservationsAccess,
   requireRestaurantReservationsWriteAccess,
@@ -9,13 +9,6 @@ import {
   listReservations,
 } from "@/lib/reservations/repository";
 import { createReservationSchema } from "@/lib/reservations/schemas";
-
-const listReservationsQuerySchema = z.object({
-  search: z.string().optional(),
-  status: z.string().optional(),
-  from: z.string().optional(),
-  to: z.string().optional(),
-});
 
 type RouteContext = {
   params: Promise<{ restaurantId: string }>;
@@ -33,11 +26,13 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   const { searchParams } = new URL(request.url);
-  const parsed = listReservationsQuerySchema.safeParse({
+  const parsed = reservationsListQuerySchema.safeParse({
     search: searchParams.get("search") ?? undefined,
     status: searchParams.get("status") ?? undefined,
     from: searchParams.get("from") ?? undefined,
     to: searchParams.get("to") ?? undefined,
+    page: searchParams.get("page") ?? undefined,
+    pageSize: searchParams.get("pageSize") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -50,7 +45,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   try {
     const data = await listReservations(restaurantId, parsed.data);
     return NextResponse.json({
-      reservations: data,
+      ...data,
       restaurantId,
       updatedAt: new Date().toISOString(),
     });

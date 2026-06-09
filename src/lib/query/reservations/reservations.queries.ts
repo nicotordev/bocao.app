@@ -1,4 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { ReservationsListFilters } from "@/lib/reservations/filters";
 import { queryKeys } from "@/lib/query/query-keys";
 import {
   fetchReservation,
@@ -7,12 +8,7 @@ import {
 
 export function reservationsListQueryOptions(
   restaurantId: string,
-  filters?: {
-    search?: string;
-    status?: string;
-    from?: string;
-    to?: string;
-  },
+  filters?: ReservationsListFilters,
 ) {
   return queryOptions({
     queryKey: queryKeys.reservations.list(restaurantId, filters),
@@ -43,12 +39,7 @@ export function useReservationDetailQuery(
 
 export function useReservationsListQuery(
   restaurantId: string,
-  filters?: {
-    search?: string;
-    status?: string;
-    from?: string;
-    to?: string;
-  },
+  filters?: ReservationsListFilters,
 ) {
   return useQuery(reservationsListQueryOptions(restaurantId, filters));
 }

@@ -1,3 +1,4 @@
+import type { ReservationsListFilters } from "@/lib/reservations/filters";
 import { apiRequest } from "@/lib/query/api-client";
 import type {
   CreateReservationInput,
@@ -6,12 +7,7 @@ import type {
   UpdateReservationInput,
 } from "@/lib/reservations/types";
 
-function buildReservationsSearchParams(filters?: {
-  search?: string;
-  status?: string;
-  from?: string;
-  to?: string;
-}) {
+function buildReservationsSearchParams(filters?: ReservationsListFilters) {
   const params = new URLSearchParams();
 
   if (filters?.search) {
@@ -28,6 +24,14 @@ function buildReservationsSearchParams(filters?: {
 
   if (filters?.to) {
     params.set("to", filters.to);
+  }
+
+  if (filters?.page && filters.page > 1) {
+    params.set("page", String(filters.page));
+  }
+
+  if (filters?.pageSize) {
+    params.set("pageSize", String(filters.pageSize));
   }
 
   const query = params.toString();
@@ -49,12 +53,7 @@ export async function fetchReservation(
 
 export async function fetchReservationsList(
   restaurantId: string,
-  filters?: {
-    search?: string;
-    status?: string;
-    from?: string;
-    to?: string;
-  },
+  filters?: ReservationsListFilters,
 ): Promise<ReservationsListResponse> {
   return apiRequest<ReservationsListResponse>(
     `/api/restaurants/${restaurantId}/reservations${buildReservationsSearchParams(

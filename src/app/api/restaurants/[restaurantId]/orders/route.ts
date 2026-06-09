@@ -8,17 +8,16 @@ import {
   getCreateOrderLabels,
   getOrderFormatOptions,
 } from "@/lib/orders/format-options";
-import { createOrder, listOrders } from "@/lib/orders/repository";
+import { ordersListQuerySchema } from "@/lib/orders/filters";
 import {
-  createOrderBodySchema,
-  orderChannelSchema,
-  orderStatusSchema,
-} from "@/lib/orders/schemas";
+  createOrder,
+  listOrders,
+  listOrdersBoard,
+} from "@/lib/orders/repository";
+import { createOrderBodySchema } from "@/lib/orders/schemas";
 
-const listOrdersQuerySchema = z.object({
-  search: z.string().optional(),
-  status: z.union([orderStatusSchema, z.literal("all")]).optional(),
-  channel: z.union([orderChannelSchema, z.literal("all")]).optional(),
+const listOrdersRequestSchema = ordersListQuerySchema.extend({
+  mode: z.enum(["list", "board"]).optional().default("list"),
 });
 
 type RouteContext = {
@@ -37,10 +36,15 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   const { searchParams } = new URL(request.url);
-  const parsed = listOrdersQuerySchema.safeParse({
+  const parsed = listOrdersRequestSchema.safeParse({
     search: searchParams.get("search") ?? undefined,
     status: searchParams.get("status") ?? undefined,
     channel: searchParams.get("channel") ?? undefined,
+    from: searchParams.get("from") ?? undefined,
+    to: searchParams.get("to") ?? undefined,
+    page: searchParams.get("page") ?? undefined,
+    pageSize: searchParams.get("pageSize") ?? undefined,
+    mode: searchParams.get("mode") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -51,7 +55,19 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   const formatOptions = await getOrderFormatOptions();
-  const data = await listOrders(restaurantId, parsed.data, formatOptions);
+  const { mode, ...filters } = parsed.data;
+
+  if (mode === "board") {
+    const orders = await listOrdersBoard(restaurantId, filters, formatOptions);
+
+    return NextResponse.json({
+      orders,
+      restaurantId,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  const data = await listOrders(restaurantId, filters, formatOptions);
   return NextResponse.json(data);
 }
 

@@ -1,5 +1,14 @@
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  buildMenuItemPrismaWhere,
+  type MenuListFilters,
+} from "@/lib/menu/filters";
 import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags.server";
+import {
+  buildPaginationMeta,
+  getSkipTake,
+  type PaginationMeta,
+} from "@/lib/pagination";
 import {
   buildMenuItemTranslations,
   type MenuItemFieldTranslations,
@@ -91,32 +100,66 @@ export async function listMenuItems(
 
 export async function listMenuItemRecords(
   restaurantId: string,
-  options: { availableOnly?: boolean } = {},
+  options: { availableOnly?: boolean; filters?: MenuListFilters } = {},
 ): Promise<MenuItemRecord[]> {
-  const items = await prisma.menuItem.findMany({
-    where: {
-      restaurantId,
-      ...(options.availableOnly ? { isAvailable: true } : {}),
-    },
-    include: {
-      category: {
-        select: { name: true },
-      },
-    },
-    orderBy: [
-      { category: { sortOrder: "asc" } },
-      { category: { name: "asc" } },
-      { sortOrder: "asc" },
-      { name: "asc" },
-    ],
+  const result = await listMenuItemRecordsPaginated(restaurantId, {
+    availableOnly: options.availableOnly,
+    filters: options.filters,
   });
+
+  return result.items;
+}
+
+export async function listMenuItemRecordsPaginated(
+  restaurantId: string,
+  options: {
+    availableOnly?: boolean;
+    filters?: MenuListFilters;
+  } = {},
+): Promise<{ items: MenuItemRecord[]; pagination: PaginationMeta }> {
+  const filters: MenuListFilters = {
+    page: options.filters?.page ?? 1,
+    pageSize: options.filters?.pageSize ?? 20,
+    search: options.filters?.search,
+    categoryId: options.filters?.categoryId,
+    showUnavailable:
+      options.availableOnly === true
+        ? false
+        : (options.filters?.showUnavailable ?? true),
+  };
+
+  const where = await buildMenuItemPrismaWhere(restaurantId, filters);
+  const { skip, take } = getSkipTake(filters);
+
+  const [total, items] = await Promise.all([
+    prisma.menuItem.count({ where }),
+    prisma.menuItem.findMany({
+      where,
+      include: {
+        category: {
+          select: { name: true },
+        },
+      },
+      orderBy: [
+        { category: { sortOrder: "asc" } },
+        { category: { name: "asc" } },
+        { sortOrder: "asc" },
+        { name: "asc" },
+      ],
+      skip,
+      take,
+    }),
+  ]);
 
   const translationMap = await loadMenuItemTranslationMap(
     restaurantId,
     items.map((item) => item.id),
   );
 
-  return items.map((item) => mapMenuItemRecord(item, translationMap));
+  return {
+    items: items.map((item) => mapMenuItemRecord(item, translationMap)),
+    pagination: buildPaginationMeta(total, filters),
+  };
 }
 
 export async function listMenuCategories(

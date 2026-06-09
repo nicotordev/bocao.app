@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { UpcomingReservationItem } from "@/components/dashboard/upcoming-reservation-item";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
+import type { ReservationStatus } from "@/lib/reservations/types";
 import {
   Card,
   CardContent,
@@ -17,15 +18,21 @@ export async function UpcomingReservationsList({
   reservations,
 }: UpcomingReservationsListProps) {
   const t = await getTranslations("dashboard.home.reservations");
+  const tStatuses = await getTranslations("dashboard.reservations.statuses");
+
+  const statusLabels = {
+    PENDING: tStatuses("PENDING"),
+    CONFIRMED: tStatuses("CONFIRMED"),
+    SEATED: tStatuses("SEATED"),
+    COMPLETED: tStatuses("COMPLETED"),
+    CANCELLED: tStatuses("CANCELLED"),
+    NO_SHOW: tStatuses("NO_SHOW"),
+  } satisfies Record<ReservationStatus, string>;
 
   const itemLabels = {
     guestCount: t.raw("guestCount"),
     viewReservation: t.raw("viewReservation"),
-    status: {
-      confirmed: t("status.confirmed"),
-      pending: t("status.pending"),
-      seated: t("status.seated"),
-    },
+    status: statusLabels,
     guestButton: {
       ariaLabel: t.raw("guestButton.ariaLabel"),
       phone: t("guestButton.phone"),

@@ -3,7 +3,12 @@ import { MenuPageClient } from "@/components/dashboard/menu/menu-page-client";
 import type { MenuPageLabels } from "@/components/dashboard/menu/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
 import { listMenuCustomTags } from "@/lib/menu/custom-tags.server";
-import { listMenuCategories, listMenuItemRecords } from "@/lib/menu/repository";
+import { parseMenuListSearchParams } from "@/lib/menu/filters";
+import {
+  listMenuCategories,
+  listMenuItemRecordsPaginated,
+} from "@/lib/menu/repository";
+import { searchParamsToRecord } from "@/lib/list-url";
 import {
   listProductFlowBlocks,
   listProductFlowTemplates,
@@ -17,9 +22,16 @@ import {
   getRestaurantContentLocales,
 } from "@/lib/restaurant/content-locales";
 
-export default async function MenuPage() {
+type MenuPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function MenuPage({ searchParams }: MenuPageProps) {
   const t = await getTranslations("dashboard.menu");
+  const tCommon = await getTranslations("common");
   const uiLocale = await getLocale();
+  const resolvedSearchParams = searchParamsToRecord(await searchParams);
+  const menuFilters = parseMenuListSearchParams(resolvedSearchParams);
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
   const currency = context?.activeRestaurant?.currency ?? "CLP";
@@ -29,7 +41,7 @@ export default async function MenuPage() {
     context?.membership.permissions.includes(PERMISSIONS.MENU_READ) ?? false;
 
   const [
-    items,
+    menuList,
     categories,
     customTagDefinitions,
     flowBlocks,
@@ -37,14 +49,27 @@ export default async function MenuPage() {
     flows,
   ] = restaurantId
     ? await Promise.all([
-        listMenuItemRecords(restaurantId, { availableOnly: false }),
+        listMenuItemRecordsPaginated(restaurantId, { filters: menuFilters }),
         listMenuCategories(restaurantId),
         listMenuCustomTags(restaurantId),
         listProductFlowBlocks(restaurantId),
         listProductFlowTemplates(restaurantId),
         listProductPurchaseFlows(restaurantId),
       ])
-    : [[], [], [], [], [], []];
+    : [
+        {
+          items: [],
+          pagination: { page: 1, pageSize: 20, total: 0, totalPages: 1 },
+        },
+        [],
+        [],
+        [],
+        [],
+        [],
+      ];
+
+  const items = menuList.items;
+  const pagination = menuList.pagination;
 
   const productFlowsByMenuItemId = Object.fromEntries(
     flows.map((flow) => [flow.menuItemId, flow]),
@@ -163,6 +188,12 @@ export default async function MenuPage() {
     },
     feedback: {
       error: t("feedback.error"),
+    },
+    pagination: {
+      previous: tCommon("pagination.previous"),
+      next: tCommon("pagination.next"),
+      page: tCommon("pagination.page"),
+      of: tCommon("pagination.of"),
     },
     tree: {
       dragHint: t("tree.dragHint"),
@@ -339,6 +370,7 @@ export default async function MenuPage() {
       canEdit={canEdit}
       items={items}
       categories={categories}
+      pagination={pagination}
       catalogTags={catalogTags}
       tagCatalogLabels={tagCatalogLabels}
       customTagDefinitions={customTagDefinitions}

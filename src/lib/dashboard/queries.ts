@@ -130,19 +130,6 @@ function mapOrderStatusToPreview(
   }
 }
 
-function mapReservationStatusToPreview(
-  status: string,
-): "confirmed" | "pending" | "seated" {
-  switch (status) {
-    case "CONFIRMED":
-      return "confirmed";
-    case "SEATED":
-      return "seated";
-    default:
-      return "pending";
-  }
-}
-
 export async function getDashboardHomeData(
   restaurant: DashboardRestaurant | null,
   options: GetDashboardHomeDataOptions,
@@ -393,7 +380,7 @@ export async function getDashboardHomeData(
       scheduledAt: format(reservation.scheduledAt, "HH:mm", {
         locale: dateFnsLocale,
       }),
-      status: mapReservationStatusToPreview(reservation.status),
+      status: reservation.status,
       guestPhone:
         reservation.guestPhone ?? reservation.customer?.phone ?? undefined,
       guestEmail: reservation.customer?.email ?? undefined,

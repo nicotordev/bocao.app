@@ -1,20 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { buildListUrl } from "@/lib/list-url";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
 import { computeOrdersKpiTrends } from "@/lib/orders/compute-kpi-trends";
+import { createDefaultOrdersDateRange } from "@/lib/orders/date";
+import {
+  parseOrdersListSearchParams,
+  type OrdersListFilters,
+} from "@/lib/orders/filters";
 import {
   buildOrdersCsv,
   buildOrdersCsvFilename,
   downloadCsvFile,
 } from "@/lib/orders/export-orders-csv";
-import { createDefaultOrdersDateRange } from "@/lib/orders/date";
-import { applyOrdersListFilters } from "@/lib/orders/filters";
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
-import { useOrdersListQuery } from "@/lib/query/orders/orders.queries";
+import {
+  useOrdersBoardQuery,
+  useOrdersListQuery,
+} from "@/lib/query/orders/orders.queries";
 import { AiOrderInsights } from "./ai-order-insights";
 import { OrderDetailsDrawer } from "./order-details-drawer";
 import { OrdersFilters, type OrdersFiltersState } from "./orders-filters";
@@ -38,76 +47,130 @@ export function OrdersPageClient({
   restaurants,
   timezone,
 }: OrdersPageClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState<DashboardOrder | null>(
     null,
   );
   const [activeTab, setActiveTab] = useState("orders");
-  const [filters, setFilters] = useState<OrdersFiltersState>(() => {
-    const { from, to } = createDefaultOrdersDateRange(timezone);
+  const [searchDraft, setSearchDraft] = useState("");
 
-    return {
-      search: "",
-      status: "all",
-      channel: "all",
-      restaurant: restaurants[0] ?? "",
-      from,
-      to,
-    };
-  });
+  const filters = useMemo(
+    () =>
+      parseOrdersListSearchParams(
+        Object.fromEntries(searchParams.entries()),
+        timezone,
+      ),
+    [searchParams, timezone],
+  );
 
-  const ordersQuery = useOrdersListQuery(restaurantId);
+  useEffect(() => {
+    setSearchDraft(filters.search ?? "");
+  }, [filters.search]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if ((filters.search ?? "") === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [filters.search, searchDraft]);
+
+  const ordersQuery = useOrdersListQuery(restaurantId, filters);
+  const boardQuery = useOrdersBoardQuery(restaurantId, filters);
   const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
 
-  const allOrders = ordersQuery.data?.orders ?? [];
+  const listOrders = ordersQuery.data?.orders ?? [];
+  const boardOrders = boardQuery.data?.orders ?? [];
+  const pagination = ordersQuery.data?.pagination ?? {
+    page: filters.page,
+    pageSize: filters.pageSize,
+    total: 0,
+    totalPages: 1,
+  };
 
-  const filteredOrders = useMemo(() => {
-    return applyOrdersListFilters(allOrders, {
+  const filterState: OrdersFiltersState = {
+    search: searchDraft,
+    status: filters.status ?? "all",
+    channel: filters.channel ?? "all",
+    restaurant: restaurants[0] ?? "",
+    from: filters.from ?? "",
+    to: filters.to ?? "",
+  };
+
+  const urlParams = useMemo(
+    () => ({
       search: filters.search,
-      status: filters.status,
-      channel: filters.channel,
+      status: filters.status === "all" ? undefined : filters.status,
+      channel: filters.channel === "all" ? undefined : filters.channel,
       from: filters.from,
       to: filters.to,
-    });
-  }, [
-    allOrders,
-    filters.channel,
-    filters.from,
-    filters.search,
-    filters.status,
-    filters.to,
-  ]);
+    }),
+    [filters],
+  );
 
   const kpiValues = useMemo(() => {
-    const values = computeOrdersKpis(allOrders);
-    const trends = computeOrdersKpiTrends(allOrders, {
+    const values = computeOrdersKpis(boardOrders);
+    const trends = computeOrdersKpiTrends(boardOrders, {
       notAvailable: labels.kpis.notAvailable,
       preparingCount: labels.kpis.preparingCount,
       readyCount: labels.kpis.readyCount,
     });
 
     return { ...values, trends };
-  }, [allOrders, labels.kpis]);
+  }, [boardOrders, labels.kpis]);
+
+  function navigateFilters(
+    next: Partial<OrdersListFilters & OrdersFiltersState>,
+    options?: { page?: number },
+  ) {
+    router.push(
+      buildListUrl(
+        "/dashboard/orders",
+        {
+          search: next.search ?? filters.search,
+          status:
+            (next.status ?? filters.status) === "all"
+              ? undefined
+              : (next.status ?? filters.status),
+          channel:
+            (next.channel ?? filters.channel) === "all"
+              ? undefined
+              : (next.channel ?? filters.channel),
+          from: next.from ?? filters.from,
+          to: next.to ?? filters.to,
+        },
+        {
+          page: options?.page ?? 1,
+          pageSize: filters.pageSize,
+        },
+      ),
+    );
+  }
 
   const clearFilters = () => {
     const { from, to } = createDefaultOrdersDateRange(timezone);
-
-    setFilters((current) => ({
-      ...current,
+    setSearchDraft("");
+    navigateFilters({
       search: "",
       status: "all",
       channel: "all",
       from,
       to,
-    }));
+    });
   };
 
   const handleExport = () => {
-    if (filteredOrders.length === 0) {
+    if (listOrders.length === 0) {
       toast.error(labels.actions.exportEmpty);
       return;
     }
 
-    const csv = buildOrdersCsv(filteredOrders, {
+    const csv = buildOrdersCsv(listOrders, {
       columns: {
         id: labels.table.id,
         customer: labels.table.customer,
@@ -137,9 +200,12 @@ export function OrdersPageClient({
         labels={labels}
         onExport={handleExport}
         onRefresh={() => {
-          void ordersQuery.refetch();
+          void Promise.all([ordersQuery.refetch(), boardQuery.refetch()]);
         }}
-        isRefreshing={ordersQuery.isFetching && !ordersQuery.isPending}
+        isRefreshing={
+          (ordersQuery.isFetching && !ordersQuery.isPending) ||
+          (boardQuery.isFetching && !boardQuery.isPending)
+        }
       />
       <OrdersKpis labels={labels.kpis} values={kpiValues} />
       <AiOrderInsights
@@ -154,8 +220,17 @@ export function OrdersPageClient({
               labels={labels}
               restaurants={restaurants}
               timezone={timezone}
-              value={filters}
-              onChange={setFilters}
+              value={filterState}
+              onChange={(value) => {
+                setSearchDraft(value.search);
+                navigateFilters({
+                  search: value.search,
+                  status: value.status,
+                  channel: value.channel,
+                  from: value.from,
+                  to: value.to,
+                });
+              }}
               onClear={clearFilters}
             />
 
@@ -174,17 +249,23 @@ export function OrdersPageClient({
                 </TabsList>
               </div>
 
-              <TabsContent value="orders" className="mt-4">
+              <TabsContent value="orders" className="mt-4 space-y-4">
                 <OrdersTable
                   labels={labels}
-                  orders={filteredOrders}
+                  orders={listOrders}
                   onSelectOrder={setSelectedOrder}
+                />
+                <ListPagination
+                  basePath="/dashboard/orders"
+                  params={urlParams}
+                  meta={pagination}
+                  labels={labels.pagination}
                 />
               </TabsContent>
               <TabsContent value="kanban" className="mt-4">
                 <OrdersKanban
                   labels={labels}
-                  orders={filteredOrders}
+                  orders={boardOrders}
                   onSelectOrder={setSelectedOrder}
                   isMoving={updateOrderStatusMutation.isPending}
                   showDragGuide={activeTab === "kanban"}
@@ -196,7 +277,7 @@ export function OrdersPageClient({
               <TabsContent value="timeline" className="mt-4">
                 <OrdersTimeline
                   labels={labels}
-                  orders={filteredOrders}
+                  orders={boardOrders}
                   onSelectOrder={setSelectedOrder}
                 />
               </TabsContent>

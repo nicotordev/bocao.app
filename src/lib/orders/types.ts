@@ -54,11 +54,14 @@ export type Order = {
 /** @deprecated Use `Order` — kept for existing dashboard components. */
 export type DashboardOrder = Order;
 
+import type { PaginationMeta } from "@/lib/pagination";
+
 export type OrdersListResponse = {
   orders: Order[];
   restaurantId: string;
   updatedAt: string;
   insights?: string[];
+  pagination: PaginationMeta;
 };
 
 export type UpdateOrderStatusInput = {

@@ -1,22 +1,23 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  deleteMenuItemAction,
-  refreshMenuPageAction,
-} from "@/app/actions/menu";
+import { deleteMenuItemAction } from "@/app/actions/menu";
+import { ListPagination } from "@/components/dashboard/list-pagination";
 import type { Locale } from "@/i18n/locales";
 import { defaultLocale } from "@/i18n/locales";
+import { buildListUrl } from "@/lib/list-url";
+import {
+  hasActiveMenuFilters,
+  parseMenuListSearchParams,
+} from "@/lib/menu/filters";
 import {
   buildMenuCustomTagLabelMap,
   type MenuCustomTagRecord,
 } from "@/lib/menu/custom-tags.shared";
-import {
-  collectMenuTagSuggestions,
-  mergeMenuItemTagsWithCustomDefinitions,
-} from "@/lib/menu/tag-utils";
+import { collectMenuTagSuggestions } from "@/lib/menu/tag-utils";
 import {
   Card,
   CardContent,
@@ -47,6 +48,7 @@ export function MenuPageClient({
   canEdit,
   items: initialItems,
   categories: initialCategories,
+  pagination: initialPagination,
   catalogTags,
   tagCatalogLabels,
   customTagDefinitions: initialCustomTagDefinitions,
@@ -57,6 +59,32 @@ export function MenuPageClient({
   contentLocales: initialContentLocales,
 }: MenuPageClientProps) {
   const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isRefreshing, startRefresh] = useTransition();
+  const [searchDraft, setSearchDraft] = useState("");
+
+  const filters = useMemo(
+    () => parseMenuListSearchParams(Object.fromEntries(searchParams.entries())),
+    [searchParams],
+  );
+
+  useEffect(() => {
+    setSearchDraft(filters.search ?? "");
+  }, [filters.search]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if ((filters.search ?? "") === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [filters.search, searchDraft]);
+
   const [contentLocales, setContentLocales] = useState(initialContentLocales);
   const [localeOptionsState, setLocaleOptionsState] = useState(localeOptions);
   const [items, setItems] = useState(initialItems);
@@ -64,8 +92,6 @@ export function MenuPageClient({
   const [customTagDefinitions, setCustomTagDefinitions] = useState(
     initialCustomTagDefinitions,
   );
-  const [search, setSearch] = useState("");
-  const [showUnavailable, setShowUnavailable] = useState(true);
   const [activeItem, setActiveItem] = useState<MenuItemRecord | null>(null);
   const [activeCategory, setActiveCategory] =
     useState<MenuCategoryRecord | null>(null);
@@ -80,7 +106,22 @@ export function MenuPageClient({
   const [productFlowsByMenuItemId, setProductFlowsByMenuItemId] = useState(
     initialProductFlowsByMenuItemId,
   );
-  const [isRefreshing, startRefresh] = useTransition();
+
+  useEffect(() => {
+    setItems(initialItems);
+    setCategories(initialCategories);
+    setCustomTagDefinitions(initialCustomTagDefinitions);
+    setFlowBlocks(initialFlowBlocks);
+    setFlowTemplates(initialFlowTemplates);
+    setProductFlowsByMenuItemId(initialProductFlowsByMenuItemId);
+  }, [
+    initialItems,
+    initialCategories,
+    initialCustomTagDefinitions,
+    initialFlowBlocks,
+    initialFlowTemplates,
+    initialProductFlowsByMenuItemId,
+  ]);
 
   const customTagLabels = useMemo(
     () =>
@@ -97,19 +138,52 @@ export function MenuPageClient({
     [items],
   );
 
+  const urlParams = useMemo(
+    () => ({
+      search: filters.search,
+      category: filters.categoryId,
+      showUnavailable: filters.showUnavailable === false ? "false" : undefined,
+    }),
+    [filters],
+  );
+
+  const serverFiltered = hasActiveMenuFilters(filters);
+
+  function navigateFilters(
+    next: {
+      search?: string;
+      categoryId?: string;
+      showUnavailable?: boolean;
+    },
+    options?: { page?: number },
+  ) {
+    const nextCategoryId = next.categoryId ?? filters.categoryId;
+
+    router.push(
+      buildListUrl(
+        "/dashboard/menu",
+        {
+          search: next.search ?? filters.search,
+          category:
+            nextCategoryId && nextCategoryId !== "all"
+              ? nextCategoryId
+              : undefined,
+          showUnavailable:
+            (next.showUnavailable ?? filters.showUnavailable) === false
+              ? "false"
+              : undefined,
+        },
+        {
+          page: options?.page ?? 1,
+          pageSize: filters.pageSize,
+        },
+      ),
+    );
+  }
+
   function handleRefresh() {
-    startRefresh(async () => {
-      try {
-        const result = await refreshMenuPageAction(restaurantId);
-        setItems(result.items);
-        setCategories(result.categories);
-        setCustomTagDefinitions(result.customTagDefinitions);
-        setFlowBlocks(result.flowBlocks);
-        setFlowTemplates(result.flowTemplates);
-        setProductFlowsByMenuItemId(result.productFlowsByMenuItemId);
-      } catch {
-        toast.error(labels.feedback.error);
-      }
+    startRefresh(() => {
+      router.refresh();
     });
   }
 
@@ -236,13 +310,22 @@ export function MenuPageClient({
 
       <MenuFilters
         labels={labels}
-        search={search}
-        showUnavailable={showUnavailable}
-        onSearchChange={setSearch}
-        onShowUnavailableChange={setShowUnavailable}
+        categories={categories}
+        search={searchDraft}
+        categoryId={filters.categoryId ?? "all"}
+        showUnavailable={filters.showUnavailable ?? true}
+        onSearchChange={setSearchDraft}
+        onCategoryChange={(categoryId) => navigateFilters({ categoryId })}
+        onShowUnavailableChange={(showUnavailable) =>
+          navigateFilters({ showUnavailable })
+        }
         onClear={() => {
-          setSearch("");
-          setShowUnavailable(true);
+          setSearchDraft("");
+          navigateFilters({
+            search: "",
+            categoryId: "all",
+            showUnavailable: true,
+          });
         }}
       />
 
@@ -261,22 +344,31 @@ export function MenuPageClient({
           ) : null}
         </Card>
       ) : (
-        <MenuTreeBoard
-          labels={labels}
-          currency={currency}
-          restaurantId={restaurantId}
-          canEdit={canEdit}
-          categories={categories}
-          items={items}
-          search={search}
-          showUnavailable={showUnavailable}
-          tagCatalogLabels={tagCatalogLabels}
-          customTagLabels={customTagLabels}
-          onEditCategory={handleEditCategory}
-          onEditItem={handleEditItem}
-          onDeleteItem={(item) => void handleDeleteItem(item)}
-          onLayoutChange={handleLayoutChange}
-        />
+        <div className="space-y-4">
+          <MenuTreeBoard
+            labels={labels}
+            currency={currency}
+            restaurantId={restaurantId}
+            canEdit={canEdit}
+            categories={categories}
+            items={items}
+            search={searchDraft}
+            showUnavailable={filters.showUnavailable ?? true}
+            serverFiltered={serverFiltered}
+            tagCatalogLabels={tagCatalogLabels}
+            customTagLabels={customTagLabels}
+            onEditCategory={handleEditCategory}
+            onEditItem={handleEditItem}
+            onDeleteItem={(item) => void handleDeleteItem(item)}
+            onLayoutChange={handleLayoutChange}
+          />
+          <ListPagination
+            basePath="/dashboard/menu"
+            params={urlParams}
+            meta={initialPagination}
+            labels={labels.pagination}
+          />
+        </div>
       )}
 
       {canEdit ? (
