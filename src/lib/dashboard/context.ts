@@ -124,6 +124,7 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
     timezone: restaurant.timezone,
     currency: restaurant.currency,
     organizationId: restaurant.organizationId,
+    contentLocales: restaurant.contentLocales,
   }));
 
   const cookieStore = await cookies();

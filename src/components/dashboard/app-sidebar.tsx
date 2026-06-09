@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { TbFlame } from "react-icons/tb";
 import type { DashboardContext } from "@/lib/dashboard/types";
 import { DashboardNavItem } from "@/components/dashboard/nav-item";
@@ -25,7 +26,12 @@ import { Badge } from "@/components/ui/badge";
 
 type AppSidebarProps = Pick<
   DashboardContext,
-  "user" | "navigation" | "organization" | "restaurants" | "activeRestaurant" | "membership"
+  | "user"
+  | "navigation"
+  | "organization"
+  | "restaurants"
+  | "activeRestaurant"
+  | "membership"
 >;
 
 export function AppSidebar({
@@ -38,6 +44,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { isMobile } = useSidebar();
+  const t = useTranslations("dashboard.shell");
 
   if (isMobile) {
     return (
@@ -52,25 +59,30 @@ export function AppSidebar({
     );
   }
 
-  const groupLabels: Record<string, string> = {
-    inicio: "Inicio",
-    operaciones: "Operaciones",
-    clientes: "Clientes & Canales",
-    administracion: "Administración",
-  };
+  const groupKeys = [
+    "inicio",
+    "operaciones",
+    "clientes",
+    "administracion",
+  ] as const;
 
-  const groupKeys: Array<keyof typeof groupLabels> = ["inicio", "operaciones", "clientes", "administracion"];
-
-  const groupedNavigation = navigation.reduce((acc, item) => {
-    if (!acc[item.group]) {
-      acc[item.group] = [];
-    }
-    acc[item.group].push(item);
-    return acc;
-  }, {} as Record<string, typeof navigation>);
+  const groupedNavigation = navigation.reduce(
+    (acc, item) => {
+      if (!acc[item.group]) {
+        acc[item.group] = [];
+      }
+      acc[item.group].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof navigation>,
+  );
 
   return (
-    <Sidebar collapsible="icon" variant="inset" className="border-r border-sidebar-border/50">
+    <Sidebar
+      collapsible="icon"
+      variant="inset"
+      className="border-r border-sidebar-border/50"
+    >
       <SidebarHeader className="gap-3.5 p-3.5">
         <Link
           href="/dashboard"
@@ -84,7 +96,7 @@ export function AppSidebar({
               Bocao
             </span>
             <span className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-              Restaurant OS
+              {t("brandSubtitle")}
             </span>
           </span>
         </Link>
@@ -107,7 +119,7 @@ export function AppSidebar({
           return (
             <SidebarGroup key={groupKey} className="px-2">
               <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-                {groupLabels[groupKey]}
+                {t(`navGroups.${groupKey}`)}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -129,13 +141,15 @@ export function AppSidebar({
         })}
       </SidebarContent>
 
-
       <SidebarFooter className="p-3">
-        <UserMenu user={user} roleName={membership.roleName} variant="sidebar" />
+        <UserMenu
+          user={user}
+          roleName={membership.roleName}
+          variant="sidebar"
+        />
       </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
   );
 }
-

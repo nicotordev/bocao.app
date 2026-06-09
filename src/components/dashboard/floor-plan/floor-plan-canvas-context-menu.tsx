@@ -19,6 +19,7 @@ export type FloorPlanCanvasContextMenuLabels = {
   tablesModeHint: string;
   activateTablesMode: string;
   removeVertex: string;
+  closeMenu: string;
 };
 
 type FloorPlanCanvasContextMenuProps = {
@@ -45,7 +46,11 @@ type MenuItemProps = {
   onSelect: () => void;
 };
 
-function ContextMenuButton({ children, disabled = false, onSelect }: MenuItemProps) {
+function ContextMenuButton({
+  children,
+  disabled = false,
+  onSelect,
+}: MenuItemProps) {
   return (
     <button
       type="button"
@@ -147,7 +152,7 @@ export function FloorPlanCanvasContextMenu({
             <>
               <button
                 type="button"
-                aria-label="Close menu"
+                aria-label={labels.closeMenu}
                 className="fixed inset-0 z-[99] cursor-default bg-transparent"
                 onClick={closeMenu}
                 onContextMenu={(event) => {

@@ -2,7 +2,8 @@
 
 import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import type { MenuItemOption } from "@/lib/menu/types";
+import { Badge } from "@/components/ui/badge";
+import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
 import { formatCurrency } from "@/lib/orders/currency";
 import {
   Dialog,
@@ -21,8 +22,8 @@ type MenuProductPickerDialogProps = {
   onOpenChange: (open: boolean) => void;
   labels: NewOrderLabels;
   currency: string;
-  menuItems: MenuItemOption[];
-  onSelectMenuItem: (menuItem: MenuItemOption) => void;
+  menuItems: MenuItemWithFlowOption[];
+  onSelectMenuItem: (menuItem: MenuItemWithFlowOption) => void;
 };
 
 export function MenuProductPickerDialog({
@@ -54,7 +55,7 @@ export function MenuProductPickerDialog({
     groupedMenuItems.get(categories[0] ?? "") ??
     [];
 
-  function handleSelectMenuItem(menuItem: MenuItemOption) {
+  function handleSelectMenuItem(menuItem: MenuItemWithFlowOption) {
     onSelectMenuItem(menuItem);
   }
 
@@ -98,6 +99,7 @@ export function MenuProductPickerDialog({
                     menuItem={menuItem}
                     currency={currency}
                     addLabel={labels.items.picker.addProduct}
+                    flowLabel={labels.items.picker.hasFlow}
                     onSelect={() => handleSelectMenuItem(menuItem)}
                   />
                 ))}
@@ -127,11 +129,13 @@ function MenuProductCard({
   menuItem,
   currency,
   addLabel,
+  flowLabel,
   onSelect,
 }: {
-  menuItem: MenuItemOption;
+  menuItem: MenuItemWithFlowOption;
   currency: string;
   addLabel: string;
+  flowLabel: string;
   onSelect: () => void;
 }) {
   return (
@@ -143,8 +147,14 @@ function MenuProductCard({
     >
       <ProductHeroImage name={menuItem.name} imageUrl={menuItem.images[0]} />
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-        <span className="font-heading text-base font-semibold leading-tight">
-          {menuItem.name}
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="font-heading text-base font-semibold leading-tight">
+            {menuItem.name}
+          </span>
+          {menuItem.purchaseFlow?.isActive &&
+          menuItem.purchaseFlow.steps.length > 0 ? (
+            <Badge variant="secondary">{flowLabel}</Badge>
+          ) : null}
         </span>
         {menuItem.description ? (
           <span className="line-clamp-2 text-sm text-muted-foreground">
@@ -188,9 +198,9 @@ function ProductHeroImage({
 }
 
 function groupMenuItemsByCategory(
-  menuItems: MenuItemOption[],
-): Map<string, MenuItemOption[]> {
-  const grouped = new Map<string, MenuItemOption[]>();
+  menuItems: MenuItemWithFlowOption[],
+): Map<string, MenuItemWithFlowOption[]> {
+  const grouped = new Map<string, MenuItemWithFlowOption[]>();
 
   for (const item of menuItems) {
     const current = grouped.get(item.categoryName) ?? [];

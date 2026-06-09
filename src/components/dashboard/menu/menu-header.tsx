@@ -1,4 +1,4 @@
-import { Plus, RefreshCcw } from "lucide-react";
+import { Languages, Plus, RefreshCcw, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { MenuPageLabels } from "./types";
 
@@ -7,6 +7,8 @@ type MenuHeaderProps = {
   canEdit: boolean;
   onNewItem: () => void;
   onNewCategory: () => void;
+  onOpenFlowLibrary?: () => void;
+  onOpenContentLocales?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 };
@@ -16,6 +18,8 @@ export function MenuHeader({
   canEdit,
   onNewItem,
   onNewCategory,
+  onOpenFlowLibrary,
+  onOpenContentLocales,
   onRefresh,
   isRefreshing = false,
 }: MenuHeaderProps) {
@@ -32,6 +36,26 @@ export function MenuHeader({
       <div className="flex flex-wrap gap-2">
         {canEdit ? (
           <>
+            {onOpenContentLocales ? (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={onOpenContentLocales}
+              >
+                <Languages className="size-4" aria-hidden />
+                {labels.flow.contentLocales.open}
+              </Button>
+            ) : null}
+            {onOpenFlowLibrary ? (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={onOpenFlowLibrary}
+              >
+                <Workflow className="size-4" aria-hidden />
+                {labels.flow.actions.openLibrary}
+              </Button>
+            ) : null}
             <Button variant="outline" className="gap-2" onClick={onNewCategory}>
               <Plus className="size-4" aria-hidden />
               {labels.actions.newCategory}

@@ -6,6 +6,10 @@ import {
 } from "@/lib/orders/filters";
 import { generateOrderNumber } from "@/lib/orders/generate-order-number";
 import { orderCustomerInclude } from "@/lib/orders/order-customers";
+import type {
+  CreateOrderLabels,
+  OrderFormatOptions,
+} from "@/lib/orders/format-options";
 import { mapDbOrderToUi, mapUiStatusToDb } from "@/lib/orders/order-mapper";
 import type {
   CreateOrderCustomerInput,
@@ -116,6 +120,7 @@ async function resolveOrderCustomers(
 export async function listOrders(
   restaurantId: string,
   filters?: OrdersListFilters,
+  formatOptions?: OrderFormatOptions,
 ): Promise<OrdersListResponse> {
   const restaurant = await getRestaurantContext(restaurantId);
 
@@ -138,6 +143,8 @@ export async function listOrders(
       mapDbOrderToUi(order, {
         currency: restaurant.currency,
         timezone: restaurant.timezone,
+        locale: formatOptions?.locale,
+        customerLabels: formatOptions?.customerLabels,
       }),
     ),
     filters,
@@ -156,6 +163,7 @@ export async function listOrders(
 export async function getOrder(
   restaurantId: string,
   orderId: string,
+  formatOptions?: OrderFormatOptions,
 ): Promise<Order | null> {
   const restaurant = await getRestaurantContext(restaurantId);
 
@@ -180,6 +188,8 @@ export async function getOrder(
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,
     timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
   });
 }
 
@@ -187,6 +197,7 @@ export async function updateOrderStatus(
   restaurantId: string,
   orderId: string,
   status: OrderStatus,
+  formatOptions?: OrderFormatOptions,
 ): Promise<Order> {
   const restaurant = await getRestaurantContext(restaurantId);
 
@@ -210,6 +221,8 @@ export async function updateOrderStatus(
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,
     timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
   });
 }
 
@@ -217,6 +230,8 @@ export async function createOrder(
   restaurantId: string,
   input: CreateOrderInput,
   assignedTo: string,
+  labels?: CreateOrderLabels,
+  formatOptions?: OrderFormatOptions,
 ): Promise<Order> {
   const restaurant = await getRestaurantContext(restaurantId);
 
@@ -237,6 +252,7 @@ export async function createOrder(
     quantity: item.quantity,
     price: formatCurrency(item.priceCents, currency),
     ...(item.imageUrls?.length ? { imageUrls: item.imageUrls } : {}),
+    ...(item.customization ? { customization: item.customization } : {}),
   }));
 
   const summary = {
@@ -256,10 +272,15 @@ export async function createOrder(
       totalCents: totals.totalCents,
       notes: input.notes?.trim() || null,
       details: {
-        history: "Pedido manual",
+        history: labels?.manualOrderHistory ?? "Manual order",
         items,
         summary,
-        timeline: [{ time: "Ahora", titleKey: "eventReceived" }],
+        timeline: [
+          {
+            time: labels?.timelineNow ?? "Now",
+            titleKey: "eventReceived",
+          },
+        ],
       },
       customers: {
         create: linkedCustomers.map((customer) => ({
@@ -273,5 +294,7 @@ export async function createOrder(
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,
     timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
   });
 }

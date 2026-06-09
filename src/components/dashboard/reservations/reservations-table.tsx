@@ -76,7 +76,9 @@ export function ReservationsTable({
     const d = new Date(isoString);
     return {
       time: format(d, "HH:mm"),
-      date: format(d, "EEE d 'de' MMM", { locale: dateLocale }),
+      date: format(d, locale === "es" ? "EEE d 'de' MMM" : "EEE, MMM d", {
+        locale: dateLocale,
+      }),
     };
   };
 

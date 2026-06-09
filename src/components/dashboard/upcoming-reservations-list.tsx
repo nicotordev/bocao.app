@@ -1,4 +1,5 @@
 import { TbUsers } from "react-icons/tb";
+import { getTranslations } from "next-intl/server";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,20 +14,16 @@ type UpcomingReservationsListProps = {
   reservations: DashboardReservationPreview[];
 };
 
-const statusLabels: Record<DashboardReservationPreview["status"], string> = {
-  confirmed: "Confirmada",
-  pending: "Pendiente",
-  seated: "En mesa",
-};
-
-export function UpcomingReservationsList({
+export async function UpcomingReservationsList({
   reservations,
 }: UpcomingReservationsListProps) {
+  const t = await getTranslations("dashboard.home.reservations");
+
   return (
     <Card className="border-border/60">
       <CardHeader>
-        <CardTitle>Próximas reservas</CardTitle>
-        <CardDescription>Agenda de las próximas horas</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-3">
@@ -41,7 +38,7 @@ export function UpcomingReservationsList({
                 </p>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <TbUsers className="size-3.5" aria-hidden />
-                  {reservation.guestCount} personas
+                  {t("guestCount", { count: reservation.guestCount })}
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
@@ -49,7 +46,7 @@ export function UpcomingReservationsList({
                   {reservation.scheduledAt}
                 </span>
                 <Badge variant="outline">
-                  {statusLabels[reservation.status]}
+                  {t(`status.${reservation.status}`)}
                 </Badge>
               </div>
             </li>
@@ -59,4 +56,3 @@ export function UpcomingReservationsList({
     </Card>
   );
 }
-

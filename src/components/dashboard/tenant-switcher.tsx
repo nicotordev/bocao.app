@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { TbBuildingStore, TbChevronDown } from "react-icons/tb";
 import { useSwitchRestaurantMutation } from "@/lib/query/restaurant/restaurant.mutations";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
@@ -27,6 +28,8 @@ export function TenantSwitcher({
   activeRestaurant,
   className,
 }: TenantSwitcherProps) {
+  const t = useTranslations("dashboard.shell");
+  const tTenant = useTranslations("dashboard.shell.tenantSwitcher");
   const switchRestaurantMutation = useSwitchRestaurantMutation();
 
   const handleSelect = (restaurantId: string) => {
@@ -50,7 +53,7 @@ export function TenantSwitcher({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold text-foreground/90">
-                {activeRestaurant?.name ?? "Sin local activo"}
+                {activeRestaurant?.name ?? t("noActiveRestaurant")}
               </span>
               <span className="block truncate text-[10px] text-muted-foreground/75 font-medium">
                 {organizationName}
@@ -63,14 +66,17 @@ export function TenantSwitcher({
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64 rounded-xl p-1 shadow-md border-border/40">
+      <DropdownMenuContent
+        align="start"
+        className="w-64 rounded-xl p-1 shadow-md border-border/40"
+      >
         <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 px-2.5 py-1.5">
-          Restaurantes
+          {tTenant("restaurants")}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="opacity-50" />
         {restaurants.length === 0 ? (
           <DropdownMenuItem disabled className="text-xs px-2.5 py-1.5">
-            No hay restaurantes configurados
+            {tTenant("noRestaurants")}
           </DropdownMenuItem>
         ) : (
           restaurants.map((restaurant) => (
@@ -93,4 +99,3 @@ export function TenantSwitcher({
     </DropdownMenu>
   );
 }
-

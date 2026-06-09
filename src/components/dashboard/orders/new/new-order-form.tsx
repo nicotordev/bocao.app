@@ -46,6 +46,7 @@ type NewOrderFormProps = Pick<
   | "floorPlanSurface"
   | "occupiedTableNumbers"
   | "initialTableNumber"
+  | "localeOptions"
 >;
 
 export function NewOrderForm({
@@ -57,6 +58,7 @@ export function NewOrderForm({
   floorPlanSurface,
   occupiedTableNumbers,
   initialTableNumber,
+  localeOptions,
 }: NewOrderFormProps) {
   const router = useRouter();
   const createOrderMutation = useCreateOrderMutation(restaurantId);
@@ -94,6 +96,7 @@ export function NewOrderForm({
         quantity: item.quantity,
         priceCents: item.priceCents,
         imageUrls: item.imageUrls.length ? item.imageUrls : undefined,
+        customization: item.customization,
       })),
     }),
     [values],
@@ -179,9 +182,18 @@ export function NewOrderForm({
   }
 
   function addMenuItem(menuItem: NewOrderPageClientProps["menuItems"][number]) {
+    const hasActiveFlow =
+      menuItem.purchaseFlow?.isActive &&
+      (menuItem.purchaseFlow.steps.length ?? 0) > 0;
+
+    if (hasActiveFlow) {
+      return;
+    }
+
     setValues((current) => {
       const existing = current.items.find(
-        (item) => item.menuItemId === menuItem.id,
+        (item) =>
+          item.menuItemId === menuItem.id && !item.customization,
       );
 
       if (existing) {
@@ -210,6 +222,32 @@ export function NewOrderForm({
         ],
       };
     });
+    setErrors((current) => ({ ...current, items: undefined }));
+  }
+
+  function addConfiguredMenuItem(
+    menuItem: NewOrderPageClientProps["menuItems"][number],
+    result: {
+      name: string;
+      priceCents: number;
+      customization: NewOrderLineItem["customization"];
+    },
+  ) {
+    setValues((current) => ({
+      ...current,
+      items: [
+        ...current.items,
+        {
+          id: createLineItemId(),
+          menuItemId: menuItem.id,
+          name: result.name,
+          quantity: 1,
+          priceCents: result.priceCents,
+          imageUrls: [...menuItem.images],
+          customization: result.customization,
+        },
+      ],
+    }));
     setErrors((current) => ({ ...current, items: undefined }));
   }
 
@@ -334,10 +372,12 @@ export function NewOrderForm({
           labels={labels}
           currency={currency}
           restaurantId={restaurantId}
+          localeOptions={localeOptions}
           menuItems={menuItems}
           items={values.items}
           error={errors.items}
           onAddFromMenu={addMenuItem}
+          onAddConfiguredMenuItem={addConfiguredMenuItem}
           onAddCustom={addCustomItem}
           onRemove={removeItem}
           onUpdateQuantity={(id, quantity) =>

@@ -9,6 +9,11 @@ import {
   uploadMenuItemImageAction,
 } from "@/app/actions/menu";
 import {
+  deleteProductFlowAction,
+  getProductPurchaseFlowAction,
+  upsertProductFlowAction,
+} from "@/app/actions/product-flow";
+import {
   ProductImagesField,
   type ProductImagesFieldLabels,
 } from "@/components/dashboard/product-images-field";
@@ -37,7 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
 import {
@@ -59,7 +64,18 @@ import type {
   MenuItemFormValues,
   MenuLocaleOption,
   MenuPageLabels,
+  ProductFlowLabels,
 } from "./types";
+import { ProductFlowBuilder } from "./product-flow-builder";
+import {
+  filterFlowBlocksForMenuItem,
+  filterFlowTemplatesForMenuItem,
+} from "@/lib/product-flow/engine";
+import type {
+  ProductFlowBlockRecord,
+  ProductFlowTemplateRecord,
+  ProductPurchaseFlowRecord,
+} from "@/lib/product-flow/types";
 
 type MenuItemDialogProps = {
   labels: MenuPageLabels;
@@ -71,6 +87,11 @@ type MenuItemDialogProps = {
   tagCatalogLabels: Record<string, string>;
   customTagDefinitions: MenuCustomTagRecord[];
   localeOptions: MenuLocaleOption[];
+  flowLabels: ProductFlowLabels;
+  flowBlocks: ProductFlowBlockRecord[];
+  flowTemplates: ProductFlowTemplateRecord[];
+  productFlowsByMenuItemId: Record<string, ProductPurchaseFlowRecord>;
+  allMenuItems: Array<{ id: string; name: string; priceCents: number }>;
   tagSuggestions: MenuItemTag[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -78,16 +99,24 @@ type MenuItemDialogProps = {
     item: MenuItemRecord,
     customTagDefinitions?: MenuCustomTagRecord[],
   ) => void;
+  onFlowTemplateCreated?: (template: ProductFlowTemplateRecord) => void;
+  onFlowSaved?: (
+    menuItemId: string,
+    flow: ProductPurchaseFlowRecord | null,
+  ) => void;
 };
 
-const emptyForm = (): MenuItemFormValues => ({
+const emptyForm = (locale: typeof defaultLocale): MenuItemFormValues => ({
   categoryId: "",
-  name: "",
-  description: "",
+  translations: createEmptyProductTranslations(locale),
   price: "",
   isAvailable: true,
   images: [],
   tags: [],
+  purchaseFlow: {
+    isActive: false,
+    steps: [],
+  },
 });
 
 export function MenuItemDialog({
@@ -100,13 +129,22 @@ export function MenuItemDialog({
   tagCatalogLabels,
   customTagDefinitions,
   localeOptions,
+  flowLabels,
+  flowBlocks,
+  flowTemplates,
+  productFlowsByMenuItemId,
+  allMenuItems,
   tagSuggestions,
   open,
   onOpenChange,
   onSuccess,
+  onFlowTemplateCreated,
+  onFlowSaved,
 }: MenuItemDialogProps) {
+  const locale = useLocale() as typeof defaultLocale;
   const customTagsByKey = menuCustomTagsToMap(customTagDefinitions);
-  const [form, setForm] = useState<MenuItemFormValues>(emptyForm);
+  const [form, setForm] = useState<MenuItemFormValues>(() => emptyForm(locale));
+  const [activeTab, setActiveTab] = useState("general");
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -114,27 +152,64 @@ export function MenuItemDialog({
   const isEditing = Boolean(item);
 
   useEffect(() => {
-    if (item) {
-      setForm({
-        categoryId: item.categoryId,
-        name: item.name,
-        description: item.description ?? "",
-        price: String(item.priceCents / 100),
-        isAvailable: item.isAvailable,
-        images: item.images,
-        tags: mergeMenuItemTagsWithCustomDefinitions(
-          item.tags,
-          customTagsByKey,
-        ),
-      });
-    } else {
-      setForm({
-        ...emptyForm(),
-        categoryId: categories[0]?.id ?? "",
-      });
+    if (!open) {
+      return;
     }
-    setValidationError("");
-  }, [item, open, categories, customTagDefinitions]);
+
+    let cancelled = false;
+
+    async function loadForm() {
+      if (item) {
+        const existingFlow =
+          productFlowsByMenuItemId[item.id] ??
+          (await getProductPurchaseFlowAction({
+            restaurantId,
+            menuItemId: item.id,
+          })
+            .then((result) => result.flow)
+            .catch(() => null));
+
+        if (cancelled) {
+          return;
+        }
+
+        setForm({
+          categoryId: item.categoryId,
+          translations: buildProductTranslationDraft(item.translations, locale),
+          price: String(item.priceCents / 100),
+          isAvailable: item.isAvailable,
+          images: item.images,
+          tags: mergeMenuItemTagsWithCustomDefinitions(
+            item.tags,
+            customTagsByKey,
+          ),
+          purchaseFlow: existingFlow
+            ? {
+                isActive: existingFlow.isActive,
+                steps: existingFlow.steps,
+              }
+            : {
+                isActive: false,
+                steps: [],
+              },
+        });
+      } else {
+        setForm({
+          ...emptyForm(locale),
+          categoryId: categories[0]?.id ?? "",
+        });
+      }
+
+      setValidationError("");
+      setActiveTab("general");
+    }
+
+    void loadForm();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, item?.id, restaurantId]);
 
   function updateField<K extends keyof MenuItemFormValues>(
     field: K,
@@ -154,9 +229,9 @@ export function MenuItemDialog({
   }
 
   async function handleSubmit() {
-    const name = form.name.trim();
+    const defaultName = form.translations.name[defaultLocale]?.trim();
 
-    if (!name) {
+    if (!defaultName) {
       setValidationError(labels.validation.name);
       return;
     }
@@ -176,33 +251,60 @@ export function MenuItemDialog({
     setIsSubmitting(true);
 
     try {
+      let savedItem = item;
+
       if (item) {
         const result = await updateMenuItemAction({
           restaurantId,
           menuItemId: item.id,
           categoryId: form.categoryId,
-          name,
-          description: form.description.trim() || null,
           priceCents,
           isAvailable: form.isAvailable,
           images: form.images,
           tags: form.tags,
+          translations: form.translations,
         });
+        savedItem = result.item;
         toast.success(labels.itemDialog.successUpdate);
         onSuccess(result.item, result.customTagDefinitions);
       } else {
         const result = await createMenuItemAction({
           restaurantId,
           categoryId: form.categoryId,
-          name,
-          description: form.description.trim() || undefined,
           priceCents,
           isAvailable: form.isAvailable,
           images: form.images,
           tags: form.tags,
+          translations: form.translations,
         });
+        savedItem = result.item;
         toast.success(labels.itemDialog.successCreate);
         onSuccess(result.item, result.customTagDefinitions);
+      }
+
+      if (savedItem) {
+        if (
+          form.purchaseFlow.isActive &&
+          form.purchaseFlow.steps.length > 0
+        ) {
+          const flowResult = await upsertProductFlowAction({
+            restaurantId,
+            menuItemId: savedItem.id,
+            isActive: true,
+            steps: form.purchaseFlow.steps,
+          });
+          onFlowSaved?.(savedItem.id, flowResult.flow);
+        } else if (
+          item?.id &&
+          (productFlowsByMenuItemId[item.id] ||
+            form.purchaseFlow.steps.length > 0)
+        ) {
+          await deleteProductFlowAction({
+            restaurantId,
+            menuItemId: savedItem.id,
+          });
+          onFlowSaved?.(savedItem.id, null);
+        }
       }
 
       onOpenChange(false);
@@ -215,7 +317,13 @@ export function MenuItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[min(90vh,720px)] max-w-lg flex-col gap-0 overflow-hidden p-0">
+      <DialogContent
+        className={
+          activeTab === "flow"
+            ? "flex h-[min(94vh,980px)] w-[min(98vw,88rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(98vw,88rem)]"
+            : "flex h-[min(90vh,820px)] w-[min(96vw,42rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(96vw,42rem)]"
+        }
+      >
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle>
             {isEditing
@@ -229,37 +337,40 @@ export function MenuItemDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 space-y-5 overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           {validationError ? (
-            <div className="rounded-2xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
+            <div className="mb-5 rounded-2xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
               {validationError}
             </div>
           ) : null}
 
-          <Field>
-            <FieldLabel className="required">
-              {labels.itemDialog.name}
-            </FieldLabel>
-            <Input
-              value={form.name}
-              onChange={(event) => updateField("name", event.target.value)}
-              placeholder={labels.itemDialog.namePlaceholder}
-              className="rounded-3xl"
-              autoFocus
-            />
-          </Field>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex min-h-0 flex-1 flex-col gap-5"
+          >
+            <TabsList className="grid w-full grid-cols-2 rounded-2xl">
+              <TabsTrigger value="general" className="rounded-xl">
+                {labels.itemDialog.name}
+              </TabsTrigger>
+              <TabsTrigger value="flow" className="rounded-xl">
+                {flowLabels.builder.tab}
+              </TabsTrigger>
+            </TabsList>
 
-          <Field>
-            <FieldLabel>{labels.itemDialog.description}</FieldLabel>
-            <Textarea
-              value={form.description}
-              onChange={(event) =>
-                updateField("description", event.target.value)
-              }
-              placeholder={labels.itemDialog.descriptionPlaceholder}
-              className="min-h-24 rounded-3xl"
-            />
-          </Field>
+            <TabsContent value="general" className="space-y-5">
+          <LocalizedProductFields
+            labels={{
+              languages: labels.itemDialog.tagsLanguages,
+              name: labels.itemDialog.name,
+              namePlaceholder: labels.itemDialog.namePlaceholder,
+              description: labels.itemDialog.description,
+              descriptionPlaceholder: labels.itemDialog.descriptionPlaceholder,
+            }}
+            localeOptions={localeOptions}
+            value={form.translations}
+            onChange={(translations) => updateField("translations", translations)}
+          />
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Field>
@@ -352,6 +463,43 @@ export function MenuItemDialog({
               onUpload={handleUpload}
             />
           </div>
+            </TabsContent>
+
+            <TabsContent value="flow" className="min-h-0 flex-1">
+              <ProductFlowBuilder
+                labels={flowLabels}
+                localeOptions={localeOptions}
+                currency={currency}
+                menuItemId={item?.id}
+                categoryId={form.categoryId}
+                menuItemName={
+                  form.translations.name[defaultLocale]?.trim() ||
+                  item?.name ||
+                  labels.itemDialog.name
+                }
+                basePriceCents={Math.round(
+                  (Number.parseFloat(form.price) || 0) * 100,
+                )}
+                blocks={filterFlowBlocksForMenuItem(
+                  flowBlocks,
+                  item?.id,
+                  form.categoryId,
+                )}
+                templates={filterFlowTemplatesForMenuItem(
+                  flowTemplates,
+                  item?.id,
+                  form.categoryId,
+                )}
+                menuItems={allMenuItems}
+                restaurantId={restaurantId}
+                value={form.purchaseFlow}
+                onChange={(purchaseFlow) =>
+                  updateField("purchaseFlow", purchaseFlow)
+                }
+                onTemplateCreated={onFlowTemplateCreated}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
 
         <DialogFooter className="border-t border-border px-6 py-4">

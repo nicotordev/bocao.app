@@ -1,4 +1,5 @@
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
+import { menuItemMatchesQuery } from "@/lib/menu/item-translations";
 import { menuTagMatchesQuery } from "@/lib/menu/tag-utils";
 
 export type MenuTreeNodeType = "category" | "item" | "category-drop";
@@ -248,8 +249,7 @@ export function filterMenuTreeLayout(
         }
 
         return (
-          item.name.toLowerCase().includes(normalizedQuery) ||
-          item.description?.toLowerCase().includes(normalizedQuery) ||
+          menuItemMatchesQuery(item, normalizedQuery) ||
           item.tags.some((tag) =>
             menuTagMatchesQuery(tag, normalizedQuery, catalogLabels, customLabels),
           ) ||

@@ -10,17 +10,19 @@ interface ProvidersProps {
   children: React.ReactNode;
   locale: Locale;
   messages: typeof enMessages;
+  timeZone: string;
 }
 
 export default function Providers({
   children,
   locale,
   messages,
+  timeZone,
 }: ProvidersProps) {
   return (
     <QueryProvider>
       <TooltipProvider>
-        <IntlProvider locale={locale} messages={messages}>
+        <IntlProvider locale={locale} messages={messages} timeZone={timeZone}>
           {children}
           <UiSoundProvider />
           <Toaster richColors closeButton position="top-center" />

@@ -20,6 +20,7 @@ export function NewOrderPageClient({
   floorPlanSurface,
   occupiedTableNumbers,
   initialTableNumber,
+  localeOptions,
 }: NewOrderPageClientProps) {
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
@@ -35,6 +36,7 @@ export function NewOrderPageClient({
           floorPlanSurface={floorPlanSurface}
           occupiedTableNumbers={occupiedTableNumbers}
           initialTableNumber={initialTableNumber}
+          localeOptions={localeOptions}
         />
       ) : (
         <Card>

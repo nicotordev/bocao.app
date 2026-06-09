@@ -1,7 +1,12 @@
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Nunito_Sans, Outfit } from "next/font/google";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import {
+  getLocale,
+  getMessages,
+  getTimeZone,
+  getTranslations,
+} from "next-intl/server";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -43,6 +48,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const timeZone = await getTimeZone();
 
   return (
     <html
@@ -58,7 +64,7 @@ export default async function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <Providers locale={locale} messages={messages}>
+        <Providers locale={locale} messages={messages} timeZone={timeZone}>
           {children}
         </Providers>
       </body>

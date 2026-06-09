@@ -2,7 +2,6 @@
 
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { MenuItemOption } from "@/lib/menu/types";
 import { formatCurrency } from "@/lib/orders/currency";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,18 +11,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
 import { CustomProductDialog } from "./custom-product-dialog";
 import { MenuProductPickerDialog } from "./menu-product-picker-dialog";
+import {
+  ProductPurchaseWizard,
+  type ProductPurchaseWizardResult,
+} from "./product-purchase-wizard";
+import type { MenuLocaleOption } from "@/components/dashboard/menu/types";
 import type { NewOrderLabels, NewOrderLineItem } from "./types";
 
 type NewOrderItemsSectionProps = {
   labels: NewOrderLabels;
   currency: string;
   restaurantId: string;
-  menuItems: MenuItemOption[];
+  localeOptions: MenuLocaleOption[];
+  menuItems: MenuItemWithFlowOption[];
   items: NewOrderLineItem[];
   error?: string;
-  onAddFromMenu: (menuItem: MenuItemOption) => void;
+  onAddFromMenu: (menuItem: MenuItemWithFlowOption) => void;
+  onAddConfiguredMenuItem: (
+    menuItem: MenuItemWithFlowOption,
+    result: ProductPurchaseWizardResult,
+  ) => void;
   onAddCustom: (
     name: string,
     priceCents: number,
@@ -38,16 +48,43 @@ export function NewOrderItemsSection({
   labels,
   currency,
   restaurantId,
+  localeOptions,
   menuItems,
   items,
   error,
   onAddFromMenu,
+  onAddConfiguredMenuItem,
   onAddCustom,
   onRemove,
   onUpdateQuantity,
 }: NewOrderItemsSectionProps) {
   const [menuDialogOpen, setMenuDialogOpen] = useState(false);
   const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [wizardItem, setWizardItem] = useState<MenuItemWithFlowOption | null>(
+    null,
+  );
+
+  function handleSelectMenuItem(menuItem: MenuItemWithFlowOption) {
+    const hasActiveFlow =
+      menuItem.purchaseFlow?.isActive &&
+      (menuItem.purchaseFlow.steps.length ?? 0) > 0;
+
+    if (hasActiveFlow) {
+      setWizardItem(menuItem);
+      return;
+    }
+
+    onAddFromMenu(menuItem);
+  }
+
+  function handleWizardConfirm(result: ProductPurchaseWizardResult) {
+    if (!wizardItem) {
+      return;
+    }
+
+    onAddConfiguredMenuItem(wizardItem, result);
+    setWizardItem(null);
+  }
 
   return (
     <Card>
@@ -71,7 +108,7 @@ export function NewOrderItemsSection({
             className="gap-2"
             onClick={() => setCustomDialogOpen(true)}
           >
-            <Plus className="size-4" aria-hidden /> 
+            <Plus className="size-4" aria-hidden />
             {labels.items.picker.customProduct}
           </Button>
         </div>
@@ -110,7 +147,7 @@ export function NewOrderItemsSection({
         labels={labels}
         currency={currency}
         menuItems={menuItems}
-        onSelectMenuItem={onAddFromMenu}
+        onSelectMenuItem={handleSelectMenuItem}
       />
 
       <CustomProductDialog
@@ -121,6 +158,27 @@ export function NewOrderItemsSection({
         restaurantId={restaurantId}
         onAddCustom={onAddCustom}
       />
+
+      {wizardItem ? (
+        <ProductPurchaseWizard
+          open={Boolean(wizardItem)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setWizardItem(null);
+            }
+          }}
+          labels={labels.flowWizard}
+          localeOptions={localeOptions}
+          currency={currency}
+          menuItem={wizardItem}
+          allMenuItems={menuItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            priceCents: item.priceCents,
+          }))}
+          onConfirm={handleWizardConfirm}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -149,6 +207,11 @@ function OrderListItem({
         />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{item.name}</p>
+          {item.customization?.displaySummary ? (
+            <p className="text-sm text-muted-foreground">
+              {labels.items.customization}: {item.customization.displaySummary}
+            </p>
+          ) : null}
           <p className="text-sm text-muted-foreground">
             {formatCurrency(item.priceCents, currency)} · {labels.items.quantity}{" "}
             {item.quantity}

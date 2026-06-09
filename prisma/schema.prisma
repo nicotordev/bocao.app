@@ -190,6 +190,20 @@ enum DiningTableShape {
   RECT
 }
 
+enum ProductFlowBlockType {
+  CHOICE
+  MULTI_CHOICE
+  QUANTITY
+  TEXT
+  INFO
+  UPSELL
+}
+
+enum FlowLibraryScope {
+  CATEGORY
+  MENU_ITEM
+}
+
 /// Restaurant (location) operating under an organization.
 model Restaurant {
   id           String        @id @default(cuid())
@@ -203,6 +217,8 @@ model Restaurant {
   timezone     String        @default("America/Santiago")
   /// ISO 4217, e.g. CLP, MXN, COP
   currency     String        @default("CLP")
+  /// BCP 47 / ISO 639-1 codes enabled for menu and flow translations
+  contentLocales String[]    @default(["es", "en"])
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -218,6 +234,9 @@ model Restaurant {
   diningSurfaces DiningSurface[]
   menuCustomTags MenuCustomTag[]
   dbTranslations DbTranslation[]
+  productFlowBlocks     ProductFlowBlock[]
+  productFlowTemplates  ProductFlowTemplate[]
+  productPurchaseFlows  ProductPurchaseFlow[]
 
   @@index([organizationId])
 }
@@ -300,8 +319,10 @@ model MenuCategory {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  items      MenuItem[]
+  restaurant         Restaurant          @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items              MenuItem[]
+  productFlowBlocks  ProductFlowBlock[]
+  productFlowTemplates ProductFlowTemplate[]
 
   @@index([restaurantId])
 }
@@ -322,11 +343,84 @@ model MenuItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  restaurant         Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category           MenuCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  purchaseFlow       ProductPurchaseFlow?
+  productFlowBlocks  ProductFlowBlock[]
+  productFlowTemplates ProductFlowTemplate[]
 
   @@index([restaurantId])
   @@index([categoryId])
+}
+
+/// Reusable purchase-flow block scoped to a category or menu item.
+model ProductFlowBlock {
+  id           String               @id @default(cuid())
+  restaurantId String
+  scopeType    FlowLibraryScope
+  categoryId   String?
+  menuItemId   String?
+  /// Stable key within the scope, e.g. size, extras
+  key          String
+  type         ProductFlowBlockType
+  /// Block config: labels, options, rules, pricing
+  config       Json
+  sortOrder    Int                  @default(0)
+  isActive     Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  restaurant Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem?     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, scopeType, categoryId, menuItemId, key])
+  @@index([restaurantId])
+  @@index([categoryId])
+  @@index([menuItemId])
+}
+
+/// Reusable purchase-flow template scoped to a category or menu item.
+model ProductFlowTemplate {
+  id           String           @id @default(cuid())
+  restaurantId String
+  scopeType    FlowLibraryScope
+  categoryId   String?
+  menuItemId   String?
+  name         String
+  description  String?
+  /// Ordered flow steps as JSON
+  steps        Json
+  sortOrder    Int              @default(0)
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  restaurant Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem?     @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@index([categoryId])
+  @@index([menuItemId])
+}
+
+/// Optional purchase-flow attached to a menu item.
+model ProductPurchaseFlow {
+  id           String   @id @default(cuid())
+  restaurantId String
+  menuItemId   String   @unique
+  version      Int      @default(1)
+  isActive     Boolean  @default(true)
+  /// Ordered flow steps as JSON
+  steps        Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
 }
 
 /// Restaurant-defined menu tag metadata (icon, stable key).

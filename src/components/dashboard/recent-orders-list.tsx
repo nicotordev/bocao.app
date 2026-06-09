@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { DashboardOrderPreview } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +14,6 @@ type RecentOrdersListProps = {
   orders: DashboardOrderPreview[];
 };
 
-const statusLabels: Record<DashboardOrderPreview["status"], string> = {
-  pending: "Pendiente",
-  preparing: "En cocina",
-  ready: "Listo",
-  completed: "Completado",
-};
-
 const statusVariants: Record<
   DashboardOrderPreview["status"],
   "default" | "secondary" | "outline" | "destructive"
@@ -30,12 +24,14 @@ const statusVariants: Record<
   completed: "outline",
 };
 
-export function RecentOrdersList({ orders }: RecentOrdersListProps) {
+export async function RecentOrdersList({ orders }: RecentOrdersListProps) {
+  const t = await getTranslations("dashboard.home.recentOrders");
+
   return (
     <Card className="border-border/60">
       <CardHeader>
-        <CardTitle>Pedidos recientes</CardTitle>
-        <CardDescription>Últimos movimientos del salón y delivery</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-3">
@@ -48,7 +44,9 @@ export function RecentOrdersList({ orders }: RecentOrdersListProps) {
                 <p className="truncate text-sm font-medium">
                   {order.orderNumber} · {order.customerName}
                 </p>
-                <p className="text-xs text-muted-foreground">{order.createdAt}</p>
+                <p className="text-xs text-muted-foreground">
+                  {order.createdAt}
+                </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="text-sm font-medium">{order.total}</span>
@@ -59,7 +57,7 @@ export function RecentOrdersList({ orders }: RecentOrdersListProps) {
                       "bg-primary/15 text-primary hover:bg-primary/20",
                   )}
                 >
-                  {statusLabels[order.status]}
+                  {t(`status.${order.status}`)}
                 </Badge>
               </div>
             </li>

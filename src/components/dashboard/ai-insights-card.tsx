@@ -1,4 +1,5 @@
 import { TbSparkles } from "react-icons/tb";
+import { getTranslations } from "next-intl/server";
 import type { DashboardInsight } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -15,19 +16,15 @@ type AiInsightsCardProps = {
   insights: DashboardInsight[];
 };
 
-const priorityLabels: Record<DashboardInsight["priority"], string> = {
-  high: "Alta",
-  medium: "Media",
-  low: "Baja",
-};
-
 const priorityStyles: Record<DashboardInsight["priority"], string> = {
   high: "border-primary/30 bg-primary/10 text-primary",
   medium: "border-accent/30 bg-accent/10 text-accent-foreground",
   low: "text-muted-foreground",
 };
 
-export function AiInsightsCard({ insights }: AiInsightsCardProps) {
+export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
+  const t = await getTranslations("dashboard.home.insights");
+
   return (
     <Card className="border-border/60 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
@@ -36,10 +33,8 @@ export function AiInsightsCard({ insights }: AiInsightsCardProps) {
             <TbSparkles className="size-4" aria-hidden />
           </span>
           <div>
-            <CardTitle>Insights IA</CardTitle>
-            <CardDescription>
-              Recomendaciones en tiempo real para tu operación
-            </CardDescription>
+            <CardTitle>{t("title")}</CardTitle>
+            <CardDescription>{t("description")}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -57,7 +52,7 @@ export function AiInsightsCard({ insights }: AiInsightsCardProps) {
                     variant="outline"
                     className={cn("shrink-0", priorityStyles[insight.priority])}
                   >
-                    {priorityLabels[insight.priority]}
+                    {t(`priority.${insight.priority}`)}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -71,4 +66,3 @@ export function AiInsightsCard({ insights }: AiInsightsCardProps) {
     </Card>
   );
 }
-

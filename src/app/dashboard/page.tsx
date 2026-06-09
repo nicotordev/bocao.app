@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentOrdersList } from "@/components/dashboard/recent-orders-list";
@@ -8,24 +8,21 @@ import { TeamActivityCard } from "@/components/dashboard/team-activity-card";
 import { UpcomingReservationsList } from "@/components/dashboard/upcoming-reservations-list";
 import { WhatsappStatusCard } from "@/components/dashboard/whatsapp-status-card";
 import { getDashboardContext } from "@/lib/dashboard/context";
+import { getDashboardHomeFormatOptions } from "@/lib/dashboard/format-options";
 import { getDashboardHomeData } from "@/lib/dashboard/queries";
 import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
-  const tMetrics = await getTranslations("dashboard.metrics");
-  const locale = await getLocale();
-  const dateFnsLocale = locale === "es" ? es : enUS;
+  const homeFormat = await getDashboardHomeFormatOptions();
+  const dateFnsLocale = homeFormat.locale === "es" ? es : enUS;
 
   const context = await getDashboardContext();
   const data = await getDashboardHomeData(context?.activeRestaurant ?? null, {
-    locale,
-    metricLabels: {
-      revenueToday: tMetrics("revenueToday"),
-      openOrders: tMetrics("openOrders"),
-      upcomingReservations: tMetrics("upcomingReservations"),
-      avgPrepTime: tMetrics("avgPrepTime"),
-    },
+    locale: homeFormat.locale,
+    notAvailable: homeFormat.notAvailable,
+    metricLabels: homeFormat.metricLabels,
+    customerLabels: homeFormat.customerLabels,
   });
 
   const todayLabel = format(new Date(), t("dateFormat"), {

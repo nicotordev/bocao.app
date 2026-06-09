@@ -34,9 +34,8 @@ export function ReservationsPageClient({
   const [status, setStatus] = useState("all");
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const [activeReservation, setActiveReservation] = useState<Reservation | null>(
-    null,
-  );
+  const [activeReservation, setActiveReservation] =
+    useState<Reservation | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const filters = useMemo(() => {
@@ -45,7 +44,9 @@ export function ReservationsPageClient({
       status,
       from: date ? startOfDay(date).toISOString() : undefined,
       to: date
-        ? new Date(startOfDay(date).getTime() + 24 * 60 * 60 * 1000 - 1).toISOString()
+        ? new Date(
+            startOfDay(date).getTime() + 24 * 60 * 60 * 1000 - 1,
+          ).toISOString()
         : undefined,
     };
   }, [search, status, date]);
@@ -73,7 +74,9 @@ export function ReservationsPageClient({
         r.status === "SEATED" ||
         r.status === "COMPLETED",
     ).length;
-    const pending = todayReservations.filter((r) => r.status === "PENDING").length;
+    const pending = todayReservations.filter(
+      (r) => r.status === "PENDING",
+    ).length;
     const guests = todayReservations
       .filter((r) => r.status !== "CANCELLED" && r.status !== "NO_SHOW")
       .reduce((sum, r) => sum + r.guestCount, 0);
@@ -107,7 +110,7 @@ export function ReservationsPageClient({
           toast.success(labels.form.successUpdate);
         },
         onError: () => {
-          toast.error("Error al actualizar el estado de la reserva");
+          toast.error(labels.form.errorUpdateStatus);
         },
       },
     );
@@ -119,7 +122,7 @@ export function ReservationsPageClient({
         toast.success(labels.form.successDelete);
       },
       onError: () => {
-        toast.error("Error al eliminar la reserva");
+        toast.error(labels.form.errorDelete);
       },
     });
   };
@@ -134,7 +137,7 @@ export function ReservationsPageClient({
             handleCloseDialog();
           },
           onError: () => {
-            toast.error("Error al actualizar la reserva");
+            toast.error(labels.form.errorUpdate);
           },
         },
       );
@@ -153,7 +156,7 @@ export function ReservationsPageClient({
           handleCloseDialog();
         },
         onError: () => {
-          toast.error("Error al crear la reserva");
+          toast.error(labels.form.errorCreate);
         },
       });
     }
@@ -165,7 +168,9 @@ export function ReservationsPageClient({
         labels={labels}
         onNew={handleCreate}
         onRefresh={() => void reservationsQuery.refetch()}
-        isRefreshing={reservationsQuery.isFetching && !reservationsQuery.isPending}
+        isRefreshing={
+          reservationsQuery.isFetching && !reservationsQuery.isPending
+        }
       />
 
       <ReservationsKpis labels={labels.kpis} values={kpis} />

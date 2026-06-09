@@ -4,6 +4,10 @@ import {
   requireRestaurantAccess,
   requireRestaurantWriteAccess,
 } from "@/lib/orders/api-auth";
+import {
+  getCreateOrderLabels,
+  getOrderFormatOptions,
+} from "@/lib/orders/format-options";
 import { createOrder, listOrders } from "@/lib/orders/repository";
 import {
   createOrderBodySchema,
@@ -46,7 +50,8 @@ export async function GET(request: Request, { params }: RouteContext) {
     );
   }
 
-  const data = await listOrders(restaurantId, parsed.data);
+  const formatOptions = await getOrderFormatOptions();
+  const data = await listOrders(restaurantId, parsed.data, formatOptions);
   return NextResponse.json(data);
 }
 
@@ -73,10 +78,16 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   try {
+    const [createLabels, formatOptions] = await Promise.all([
+      getCreateOrderLabels(),
+      getOrderFormatOptions(),
+    ]);
     const order = await createOrder(
       restaurantId,
       parsed.data,
       access.context.user.name,
+      createLabels,
+      formatOptions,
     );
 
     return NextResponse.json({ order }, { status: 201 });

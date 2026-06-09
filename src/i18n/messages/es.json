@@ -12,7 +12,8 @@
     "confirming": "Confirmando...",
     "resending": "Reenviando...",
     "confirm": "Confirmar",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "notAvailable": "—"
   },
   "metadata": {
     "title": "Bocao",
@@ -211,7 +212,132 @@
       "revenueToday": "Ingresos de hoy",
       "openOrders": "Pedidos abiertos",
       "upcomingReservations": "Reservas próximas",
-      "avgPrepTime": "Tiempo promedio de preparación"
+      "avgPrepTime": "Tiempo promedio de preparación",
+      "relativeMinutes": "Hace {minutes} min",
+      "inKitchen": "{count} en cocina",
+      "minutesShort": "{minutes} min"
+    },
+    "shell": {
+      "brandSubtitle": "Restaurant OS",
+      "noActiveRestaurant": "Sin local activo",
+      "controlPanel": "Panel de control",
+      "searchPlaceholder": "Buscar pedidos, clientes, reservas...",
+      "searchAriaLabel": "Buscar en el dashboard",
+      "notificationsAriaLabel": "Notificaciones",
+      "mobileFooter": "Bocao · Sistema operativo para restaurantes",
+      "navGroups": {
+        "inicio": "Inicio",
+        "operaciones": "Operaciones",
+        "clientes": "Clientes & Canales",
+        "administracion": "Administración"
+      },
+      "navItems": {
+        "dashboard": "Dashboard",
+        "orders": "Pedidos",
+        "reservations": "Reservas",
+        "floorPlan": "Plano de mesas",
+        "whatsapp": "WhatsApp Inbox",
+        "menu": "Menú",
+        "kitchen": "Cocina",
+        "customers": "Clientes / CRM",
+        "marketing": "Marketing IA",
+        "analytics": "Analítica",
+        "team": "Equipo",
+        "settings": "Configuración"
+      },
+      "tenantSwitcher": {
+        "restaurants": "Restaurantes",
+        "noRestaurants": "No hay restaurantes configurados"
+      }
+    },
+    "home": {
+      "insights": {
+        "title": "Insights IA",
+        "description": "Recomendaciones en tiempo real para tu operación",
+        "priority": {
+          "high": "Alta",
+          "medium": "Media",
+          "low": "Baja"
+        }
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Canal de atención y pedidos",
+        "connected": "Conectado",
+        "disconnected": "Desconectado",
+        "unread": "Sin leer",
+        "responseRate": "Tasa de respuesta",
+        "lastMessage": "Último mensaje {time}"
+      },
+      "recentOrders": {
+        "title": "Pedidos recientes",
+        "description": "Últimos movimientos del salón y delivery",
+        "status": {
+          "pending": "Pendiente",
+          "preparing": "En cocina",
+          "ready": "Listo",
+          "completed": "Completado"
+        }
+      },
+      "reservations": {
+        "title": "Próximas reservas",
+        "description": "Agenda de las próximas horas",
+        "guestCount": "{count} personas",
+        "status": {
+          "confirmed": "Confirmada",
+          "pending": "Pendiente",
+          "seated": "En mesa"
+        }
+      },
+      "teamActivity": {
+        "title": "Actividad del equipo",
+        "description": "Estado actual del staff en turno",
+        "status": {
+          "online": "En línea",
+          "busy": "Ocupado",
+          "offline": "Desconectado"
+        }
+      }
+    },
+    "userMenu": {
+      "ariaLabel": "Menú de usuario",
+      "profile": "Perfil",
+      "preferences": "Preferencias",
+      "signOut": "Cerrar sesión",
+      "profileDialog": {
+        "title": "Editar perfil",
+        "description": "Actualiza tu información personal y foto de perfil en el sistema.",
+        "changePhoto": "Cambiar",
+        "photoHint": "Haz click para subir una foto (Máx 5MB)",
+        "fullName": "Nombre completo",
+        "fullNamePlaceholder": "Tu nombre completo",
+        "email": "Correo electrónico",
+        "emailHint": "El correo no se puede modificar por seguridad de la cuenta.",
+        "photoUrl": "O introduce la URL de la foto",
+        "photoUrlPlaceholder": "https://ejemplo.com/avatar.jpg",
+        "save": "Guardar cambios"
+      },
+      "preferencesDialog": {
+        "title": "Preferencias del sistema",
+        "description": "Personaliza el idioma y tema visual de tu panel de control.",
+        "theme": "Tema visual",
+        "themePlaceholder": "Seleccionar tema",
+        "themeLight": "Claridad (Light)",
+        "themeDark": "Oscuridad (Dark)",
+        "themeSystem": "Predeterminado del sistema",
+        "language": "Idioma del panel",
+        "languagePlaceholder": "Seleccionar idioma",
+        "accept": "Aceptar"
+      },
+      "toasts": {
+        "invalidImage": "El archivo debe ser una imagen válida",
+        "imageTooLarge": "La imagen excede el tamaño máximo de 5MB",
+        "nameRequired": "El nombre no puede estar vacío",
+        "profileUpdated": "Perfil actualizado correctamente",
+        "profileUpdateError": "Error al actualizar el perfil",
+        "languageUpdated": "Idioma actualizado",
+        "languageUpdateError": "Error al actualizar el idioma"
+      }
     },
     "orders": {
       "header": {
@@ -309,7 +435,8 @@
         "eventConfirmedAi": "Confirmado por IA",
         "eventPreparing": "En preparación",
         "eventReady": "Listo",
-        "eventDelivered": "Entregado"
+        "eventDelivered": "Entregado",
+        "now": "Ahora"
       },
       "drawer": {
         "title": "Pedido",
@@ -326,7 +453,11 @@
         "history": "Historial",
         "subtotal": "Subtotal",
         "taxes": "Impuestos",
-        "total": "Total"
+        "total": "Total",
+        "manualOrderHistory": "Pedido manual",
+        "fallbackCustomer": "Cliente",
+        "tableOnly": "Mesa {number}",
+        "tableWithCustomers": "Mesa {number} · {names}"
       },
       "insights": {
         "title": "Insights IA",
@@ -429,8 +560,26 @@
             "customNamePlaceholder": "ej. Menú especial, plato personalizado...",
             "customPriceLabel": "Precio unitario",
             "customQuantityLabel": "Cantidad",
-            "addCustomSuccess": "Producto personalizado agregado correctamente"
-          }
+            "addCustomSuccess": "Producto personalizado agregado correctamente",
+            "hasFlow": "Personalizable"
+          },
+          "customization": "Personalización"
+        },
+        "flowWizard": {
+          "title": "Personaliza tu producto",
+          "description": "Configura {product} antes de agregarlo al pedido.",
+          "stepOf": "Paso {current} de {total}",
+          "back": "Atrás",
+          "next": "Siguiente",
+          "confirm": "Agregar al pedido",
+          "cancel": "Cancelar",
+          "required": "Obligatorio",
+          "optional": "Opcional",
+          "quantity": "Cantidad",
+          "upsellAccept": "Sí, agregar",
+          "upsellDecline": "No, gracias",
+          "total": "Total",
+          "validationError": "Completa los pasos obligatorios antes de continuar."
         },
         "photos": {
           "addPhoto": "Agregar foto",
@@ -558,7 +707,8 @@
         "floorDown": "Bajar un piso",
         "tablesModeHint": "Activa el modo Mesas para colocar mesas o arrastra una desde el panel.",
         "activateTablesMode": "Activar modo Mesas",
-        "removeVertex": "Eliminar vértice"
+        "removeVertex": "Eliminar vértice",
+        "closeMenu": "Cerrar menú"
       }
     },
     "reservations": {
@@ -615,6 +765,10 @@
         "successCreateMultiple": "{count} reservas creadas con éxito",
         "successUpdate": "Reserva actualizada con éxito",
         "successDelete": "Reserva eliminada con éxito",
+        "errorUpdateStatus": "Error al actualizar el estado de la reserva",
+        "errorDelete": "Error al eliminar la reserva",
+        "errorUpdate": "Error al actualizar la reserva",
+        "errorCreate": "Error al crear la reserva",
         "confirmDelete": "¿Estás seguro de que deseas eliminar esta reserva?",
         "createDescription": "Selecciona clientes y programa la reserva.",
         "editDescription": "Modifica los datos de la reserva seleccionada.",
@@ -778,6 +932,141 @@
       "locales": {
         "es": "Español",
         "en": "Inglés"
+      },
+      "flow": {
+        "actions": {
+          "openLibrary": "Flujos de compra",
+          "close": "Cerrar",
+          "save": "Guardar",
+          "saving": "Guardando..."
+        },
+        "feedback": {
+          "error": "No pudimos guardar el flujo. Intenta nuevamente."
+        },
+        "validation": {
+          "blockLabel": "Ingresa al menos una etiqueta para el bloque."
+        },
+        "blockTypes": {
+          "choice": "Elección única",
+          "multi_choice": "Selección múltiple",
+          "quantity": "Cantidad",
+          "text": "Texto libre",
+          "info": "Información",
+          "upsell": "Producto sugerido"
+        },
+        "blockEditor": {
+          "type": "Tipo de paso",
+          "key": "Clave interna",
+          "keyPlaceholder": "ej. tamano, extras",
+          "stepLabel": "Pregunta o título",
+          "description": "Descripción",
+          "infoContent": "Contenido informativo",
+          "placeholder": "Placeholder",
+          "required": "Obligatorio",
+          "options": "Opciones",
+          "option": "Opción",
+          "optionLabel": "Etiqueta de la opción",
+          "addOption": "Agregar opción",
+          "removeOption": "Quitar opción",
+          "priceDelta": "Precio adicional",
+          "priceMode": "Modo de precio",
+          "priceModeDelta": "Suma al precio",
+          "priceModeOverride": "Reemplaza precio base",
+          "defaultOption": "Opción por defecto",
+          "minSelections": "Mínimo de selecciones",
+          "maxSelections": "Máximo de selecciones",
+          "minQuantity": "Cantidad mínima",
+          "maxQuantity": "Cantidad máxima",
+          "upsellProduct": "Producto sugerido",
+          "upsellProductPlaceholder": "Selecciona un producto",
+          "languages": "Idiomas"
+        },
+        "contentLocales": {
+          "title": "Idiomas del menú",
+          "description": "Elige los idiomas ISO en los que quieres editar nombres, descripciones y flujos de compra.",
+          "search": "Buscar idioma...",
+          "save": "Guardar idiomas",
+          "saving": "Guardando...",
+          "cancel": "Cancelar",
+          "success": "Idiomas actualizados correctamente.",
+          "error": "No pudimos guardar los idiomas. Intenta nuevamente.",
+          "minOne": "Debes mantener al menos un idioma activo.",
+          "open": "Idiomas"
+        },
+        "library": {
+          "title": "Biblioteca de flujos",
+          "description": "Crea bloques reutilizables vinculados a una categoría o a un producto específico.",
+          "blocks": "Bloques",
+          "templates": "Plantillas",
+          "scopeType": "Vincular a",
+          "scopeCategory": "Categoría",
+          "scopeProduct": "Producto",
+          "scopeCategoryPlaceholder": "Selecciona una categoría",
+          "scopeProductPlaceholder": "Selecciona un producto",
+          "scopeRequired": "Selecciona una categoría o un producto para gestionar la biblioteca.",
+          "newBlock": "Nuevo bloque",
+          "newTemplate": "Nueva plantilla",
+          "empty": "Aún no hay bloques. Crea el primero para reutilizarlo en varios productos.",
+          "emptyTemplates": "Aún no hay plantillas guardadas.",
+          "selectOrCreate": "Selecciona o crea un bloque",
+          "selectOrCreateDescription": "Los bloques te permiten armar flujos de compra sin repetir configuración.",
+          "createTitle": "Nuevo bloque",
+          "editTitle": "Editar bloque",
+          "createTemplateTitle": "Nueva plantilla",
+          "editTemplateTitle": "Editar plantilla",
+          "templateName": "Nombre de la plantilla",
+          "templateDescription": "Descripción",
+          "deleteBlock": "Eliminar bloque",
+          "deleteTemplate": "Eliminar plantilla",
+          "confirmDelete": "¿Eliminar este bloque? Los productos que lo usen dejarán de mostrar ese paso.",
+          "confirmDeleteTemplate": "¿Eliminar esta plantilla?",
+          "successCreate": "Bloque creado correctamente.",
+          "successUpdate": "Bloque actualizado correctamente.",
+          "successDelete": "Bloque eliminado correctamente.",
+          "successCreateTemplate": "Plantilla creada correctamente.",
+          "successUpdateTemplate": "Plantilla actualizada correctamente.",
+          "successDeleteTemplate": "Plantilla eliminada correctamente."
+        },
+        "builder": {
+          "title": "Flujo de compra",
+          "description": "Define qué preguntar y qué agregados ofrecer antes de agregar este producto al pedido.",
+          "enabled": "Activar flujo",
+          "library": "Bloques disponibles",
+          "emptyLibrary": "Crea bloques en la biblioteca para armar este flujo.",
+          "steps": "Pasos del flujo",
+          "stepCount": "{count} pasos visibles",
+          "emptySteps": "Agrega bloques para construir el flujo de compra de este producto.",
+          "preview": "Vista previa",
+          "applyTemplate": "Aplicar plantilla",
+          "templatePlaceholder": "Elegir plantilla",
+          "conditional": "Condicional",
+          "step": "Paso",
+          "ariaReorder": "Reordenar",
+          "ariaRemoveStep": "Eliminar paso",
+          "tab": "Flujo de compra",
+          "saved": "Flujo guardado correctamente.",
+          "saveError": "No pudimos guardar el flujo.",
+          "inactiveHint": "Activa el flujo para agregar pasos, bloques y vista previa. Luego guarda el producto para aplicar los cambios."
+        },
+        "wizard": {
+          "title": "Personaliza tu producto",
+          "description": "Configura {product} antes de agregarlo al pedido.",
+          "stepOf": "Paso {current} de {total}",
+          "back": "Atrás",
+          "next": "Siguiente",
+          "confirm": "Agregar al pedido",
+          "cancel": "Cancelar",
+          "required": "Obligatorio",
+          "optional": "Opcional",
+          "quantity": "Cantidad",
+          "upsellAccept": "Sí, agregar",
+          "upsellDecline": "No, gracias",
+          "total": "Total",
+          "validationError": "Completa los pasos obligatorios antes de continuar."
+        },
+        "item": {
+          "hasFlow": "Con flujo"
+        }
       }
     }
   },

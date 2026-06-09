@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRestaurantAccess } from "@/lib/orders/api-auth";
+import { getOrderFormatOptions } from "@/lib/orders/format-options";
 import { getOrder, updateOrderStatus } from "@/lib/orders/repository";
 import { updateOrderStatusBodySchema } from "@/lib/orders/schemas";
 
@@ -18,7 +19,12 @@ export async function GET(_request: Request, { params }: RouteContext) {
     );
   }
 
-  const order = await getOrder(restaurantId, decodeURIComponent(orderId));
+  const formatOptions = await getOrderFormatOptions();
+  const order = await getOrder(
+    restaurantId,
+    decodeURIComponent(orderId),
+    formatOptions,
+  );
 
   if (!order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -49,10 +55,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   try {
+    const formatOptions = await getOrderFormatOptions();
     const order = await updateOrderStatus(
       restaurantId,
       decodeURIComponent(orderId),
       parsed.data.status,
+      formatOptions,
     );
 
     return NextResponse.json({ order });

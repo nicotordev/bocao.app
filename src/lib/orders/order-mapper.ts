@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/orders/currency";
 import {
   formatOrderCustomerLabel,
   getOrderCustomers,
+  type OrderCustomerLabels,
 } from "@/lib/orders/order-customers";
 import type {
   Order,
@@ -54,8 +55,16 @@ export function mapUiStatusToDb(status: OrderStatus): PrismaOrderStatus {
   return STATUS_TO_DB[status];
 }
 
-function formatCreatedAt(date: Date, timezone: string): string {
-  return new Intl.DateTimeFormat("es-CL", {
+function resolveIntlLocale(locale?: string): string {
+  return locale === "es" ? "es-CL" : "en-US";
+}
+
+function formatCreatedAt(
+  date: Date,
+  timezone: string,
+  locale?: string,
+): string {
+  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -78,6 +87,8 @@ function parseDetails(details: unknown): OrderDetailsJson {
 type MapOrderOptions = {
   currency?: string;
   timezone?: string;
+  locale?: string;
+  customerLabels?: OrderCustomerLabels;
 };
 
 export function mapDbOrderToUi(
@@ -98,6 +109,7 @@ export function mapDbOrderToUi(
   const customerLabel = formatOrderCustomerLabel({
     customers: linkedCustomers,
     tableNumber: order.tableNumber,
+    labels: options.customerLabels,
   });
 
   return {
@@ -110,7 +122,7 @@ export function mapDbOrderToUi(
     status: mapDbStatusToUi(order.status),
     total: formatCurrency(order.totalCents, currency),
     totalCents: order.totalCents,
-    createdAt: formatCreatedAt(order.createdAt, timezone),
+    createdAt: formatCreatedAt(order.createdAt, timezone, options.locale),
     createdAtDate: formatDateInputValue(order.createdAt, timezone),
     waitMinutes: order.preparationMins ?? getWaitMinutes(order.createdAt),
     owner: order.assignedTo ?? "",

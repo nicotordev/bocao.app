@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { orderLineCustomizationSchema } from "@/lib/product-flow/schemas";
 
 export const orderStatusSchema = z.enum([
   "received",
@@ -27,6 +28,7 @@ export const createOrderLineItemSchema = z.object({
   quantity: z.number().int().min(1).max(99),
   priceCents: z.number().int().min(0),
   imageUrls: z.array(z.string().url()).max(8).optional(),
+  customization: orderLineCustomizationSchema.optional(),
 });
 
 export const createOrderCustomerSchema = z.object({

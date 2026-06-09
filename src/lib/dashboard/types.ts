@@ -14,6 +14,7 @@ export type DashboardRestaurant = {
   timezone: string;
   currency: string;
   organizationId: string;
+  contentLocales: string[];
 };
 
 export type DashboardOrganization = {

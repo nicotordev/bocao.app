@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { NavItem } from "@/lib/navigation";
 import {
   TbBrandWhatsapp,
@@ -18,10 +19,7 @@ import {
 } from "react-icons/tb";
 import type { IconType } from "react-icons";
 import { cn } from "@/lib/utils";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 type DashboardNavItemProps = {
   item: NavItem;
@@ -44,14 +42,16 @@ const navIcons = {
 } satisfies Record<NavItem["icon"], IconType>;
 
 export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
+  const t = useTranslations("dashboard.shell.navItems");
   const Icon = navIcons[item.icon];
+  const label = t(item.id);
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         asChild
         isActive={isActive}
-        tooltip={item.label}
+        tooltip={label}
         className={cn(
           "transition-all duration-200 rounded-xl relative group/nav-item py-2.5",
           isActive
@@ -60,11 +60,16 @@ export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
         )}
       >
         <Link href={item.href} aria-current={isActive ? "page" : undefined}>
-          <Icon className={cn(
-            "size-4 shrink-0 transition-transform duration-200 group-hover/nav-item:scale-110",
-            isActive ? "text-primary" : "text-muted-foreground group-hover/nav-item:text-foreground"
-          )} aria-hidden />
-          <span>{item.label}</span>
+          <Icon
+            className={cn(
+              "size-4 shrink-0 transition-transform duration-200 group-hover/nav-item:scale-110",
+              isActive
+                ? "text-primary"
+                : "text-muted-foreground group-hover/nav-item:text-foreground",
+            )}
+            aria-hidden
+          />
+          <span>{label}</span>
           {isActive && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 size-1.5 rounded-full bg-primary animate-pulse group-data-[collapsible=icon]:hidden" />
           )}
@@ -73,4 +78,3 @@ export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
     </SidebarMenuItem>
   );
 }
-

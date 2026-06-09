@@ -12,7 +12,8 @@
     "confirming": "Confirming...",
     "resending": "Resending...",
     "confirm": "Confirm",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "notAvailable": "—"
   },
   "metadata": {
     "title": "Bocao",
@@ -211,7 +212,132 @@
       "revenueToday": "Today's revenue",
       "openOrders": "Open orders",
       "upcomingReservations": "Upcoming reservations",
-      "avgPrepTime": "Average prep time"
+      "avgPrepTime": "Average prep time",
+      "relativeMinutes": "{minutes} min ago",
+      "inKitchen": "{count} in kitchen",
+      "minutesShort": "{minutes} min"
+    },
+    "shell": {
+      "brandSubtitle": "Restaurant OS",
+      "noActiveRestaurant": "No active location",
+      "controlPanel": "Control panel",
+      "searchPlaceholder": "Search orders, customers, reservations...",
+      "searchAriaLabel": "Search dashboard",
+      "notificationsAriaLabel": "Notifications",
+      "mobileFooter": "Bocao · Restaurant operating system",
+      "navGroups": {
+        "inicio": "Home",
+        "operaciones": "Operations",
+        "clientes": "Customers & Channels",
+        "administracion": "Administration"
+      },
+      "navItems": {
+        "dashboard": "Dashboard",
+        "orders": "Orders",
+        "reservations": "Reservations",
+        "floorPlan": "Floor plan",
+        "whatsapp": "WhatsApp Inbox",
+        "menu": "Menu",
+        "kitchen": "Kitchen",
+        "customers": "Customers / CRM",
+        "marketing": "AI Marketing",
+        "analytics": "Analytics",
+        "team": "Team",
+        "settings": "Settings"
+      },
+      "tenantSwitcher": {
+        "restaurants": "Restaurants",
+        "noRestaurants": "No restaurants configured"
+      }
+    },
+    "home": {
+      "insights": {
+        "title": "AI insights",
+        "description": "Real-time recommendations for your operation",
+        "priority": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        }
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "description": "Service and orders channel",
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "unread": "Unread",
+        "responseRate": "Response rate",
+        "lastMessage": "Last message {time}"
+      },
+      "recentOrders": {
+        "title": "Recent orders",
+        "description": "Latest floor and delivery activity",
+        "status": {
+          "pending": "Pending",
+          "preparing": "In kitchen",
+          "ready": "Ready",
+          "completed": "Completed"
+        }
+      },
+      "reservations": {
+        "title": "Upcoming reservations",
+        "description": "Schedule for the next few hours",
+        "guestCount": "{count} guests",
+        "status": {
+          "confirmed": "Confirmed",
+          "pending": "Pending",
+          "seated": "Seated"
+        }
+      },
+      "teamActivity": {
+        "title": "Team activity",
+        "description": "Current on-shift staff status",
+        "status": {
+          "online": "Online",
+          "busy": "Busy",
+          "offline": "Offline"
+        }
+      }
+    },
+    "userMenu": {
+      "ariaLabel": "User menu",
+      "profile": "Profile",
+      "preferences": "Preferences",
+      "signOut": "Sign out",
+      "profileDialog": {
+        "title": "Edit profile",
+        "description": "Update your personal information and profile photo.",
+        "changePhoto": "Change",
+        "photoHint": "Click to upload a photo (max 5MB)",
+        "fullName": "Full name",
+        "fullNamePlaceholder": "Your full name",
+        "email": "Email",
+        "emailHint": "Email cannot be changed for account security.",
+        "photoUrl": "Or enter the photo URL",
+        "photoUrlPlaceholder": "https://example.com/avatar.jpg",
+        "save": "Save changes"
+      },
+      "preferencesDialog": {
+        "title": "System preferences",
+        "description": "Customize the language and visual theme of your dashboard.",
+        "theme": "Visual theme",
+        "themePlaceholder": "Select theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "themeSystem": "System default",
+        "language": "Dashboard language",
+        "languagePlaceholder": "Select language",
+        "accept": "Done"
+      },
+      "toasts": {
+        "invalidImage": "File must be a valid image",
+        "imageTooLarge": "Image exceeds the 5MB size limit",
+        "nameRequired": "Name cannot be empty",
+        "profileUpdated": "Profile updated successfully",
+        "profileUpdateError": "Could not update profile",
+        "languageUpdated": "Language updated",
+        "languageUpdateError": "Could not update language"
+      }
     },
     "orders": {
       "header": {
@@ -309,7 +435,8 @@
         "eventConfirmedAi": "Confirmed by AI",
         "eventPreparing": "Preparing",
         "eventReady": "Ready",
-        "eventDelivered": "Delivered"
+        "eventDelivered": "Delivered",
+        "now": "Now"
       },
       "drawer": {
         "title": "Order",
@@ -326,7 +453,11 @@
         "history": "History",
         "subtotal": "Subtotal",
         "taxes": "Taxes",
-        "total": "Total"
+        "total": "Total",
+        "manualOrderHistory": "Manual order",
+        "fallbackCustomer": "Customer",
+        "tableOnly": "Table {number}",
+        "tableWithCustomers": "Table {number} · {names}"
       },
       "insights": {
         "title": "AI insights",
@@ -429,8 +560,26 @@
             "customNamePlaceholder": "e.g. Special menu, custom dish...",
             "customPriceLabel": "Unit price",
             "customQuantityLabel": "Quantity",
-            "addCustomSuccess": "Custom product added successfully"
-          }
+            "addCustomSuccess": "Custom product added successfully",
+            "hasFlow": "Customizable"
+          },
+          "customization": "Customization"
+        },
+        "flowWizard": {
+          "title": "Customize your product",
+          "description": "Configure {product} before adding it to the order.",
+          "stepOf": "Step {current} of {total}",
+          "back": "Back",
+          "next": "Next",
+          "confirm": "Add to order",
+          "cancel": "Cancel",
+          "required": "Required",
+          "optional": "Optional",
+          "quantity": "Quantity",
+          "upsellAccept": "Yes, add it",
+          "upsellDecline": "No thanks",
+          "total": "Total",
+          "validationError": "Complete the required steps before continuing."
         },
         "photos": {
           "addPhoto": "Add photo",
@@ -558,7 +707,8 @@
         "floorDown": "Go down one floor",
         "tablesModeHint": "Switch to Tables mode to place tables or drag one from the panel.",
         "activateTablesMode": "Activate Tables mode",
-        "removeVertex": "Delete vertex"
+        "removeVertex": "Delete vertex",
+        "closeMenu": "Close menu"
       }
     },
     "reservations": {
@@ -615,6 +765,10 @@
         "successCreateMultiple": "{count} reservations created successfully",
         "successUpdate": "Reservation updated successfully",
         "successDelete": "Reservation deleted successfully",
+        "errorUpdateStatus": "Could not update reservation status",
+        "errorDelete": "Could not delete reservation",
+        "errorUpdate": "Could not update reservation",
+        "errorCreate": "Could not create reservation",
         "confirmDelete": "Are you sure you want to delete this reservation?",
         "createDescription": "Select customers and schedule the reservation.",
         "editDescription": "Update the selected reservation details.",
@@ -778,6 +932,141 @@
       "locales": {
         "es": "Spanish",
         "en": "English"
+      },
+      "flow": {
+        "actions": {
+          "openLibrary": "Purchase flows",
+          "close": "Close",
+          "save": "Save",
+          "saving": "Saving..."
+        },
+        "feedback": {
+          "error": "We couldn't save the flow. Please try again."
+        },
+        "validation": {
+          "blockLabel": "Enter at least one label for the block."
+        },
+        "blockTypes": {
+          "choice": "Single choice",
+          "multi_choice": "Multiple choice",
+          "quantity": "Quantity",
+          "text": "Free text",
+          "info": "Information",
+          "upsell": "Suggested product"
+        },
+        "blockEditor": {
+          "type": "Step type",
+          "key": "Internal key",
+          "keyPlaceholder": "e.g. size, extras",
+          "stepLabel": "Question or title",
+          "description": "Description",
+          "infoContent": "Information content",
+          "placeholder": "Placeholder",
+          "required": "Required",
+          "options": "Options",
+          "option": "Option",
+          "optionLabel": "Option label",
+          "addOption": "Add option",
+          "removeOption": "Remove option",
+          "priceDelta": "Additional price",
+          "priceMode": "Pricing mode",
+          "priceModeDelta": "Add to price",
+          "priceModeOverride": "Override base price",
+          "defaultOption": "Default option",
+          "minSelections": "Minimum selections",
+          "maxSelections": "Maximum selections",
+          "minQuantity": "Minimum quantity",
+          "maxQuantity": "Maximum quantity",
+          "upsellProduct": "Suggested product",
+          "upsellProductPlaceholder": "Select a product",
+          "languages": "Languages"
+        },
+        "contentLocales": {
+          "title": "Menu languages",
+          "description": "Choose the ISO languages you want to use for names, descriptions, and purchase flows.",
+          "search": "Search language...",
+          "save": "Save languages",
+          "saving": "Saving...",
+          "cancel": "Cancel",
+          "success": "Languages updated successfully.",
+          "error": "We couldn't save the languages. Please try again.",
+          "minOne": "You must keep at least one active language.",
+          "open": "Languages"
+        },
+        "library": {
+          "title": "Flow library",
+          "description": "Create reusable blocks linked to a category or a specific product.",
+          "blocks": "Blocks",
+          "templates": "Templates",
+          "scopeType": "Link to",
+          "scopeCategory": "Category",
+          "scopeProduct": "Product",
+          "scopeCategoryPlaceholder": "Select a category",
+          "scopeProductPlaceholder": "Select a product",
+          "scopeRequired": "Select a category or product to manage the library.",
+          "newBlock": "New block",
+          "newTemplate": "New template",
+          "empty": "No blocks yet. Create the first one to reuse it across products.",
+          "emptyTemplates": "No saved templates yet.",
+          "selectOrCreate": "Select or create a block",
+          "selectOrCreateDescription": "Blocks let you build purchase flows without repeating setup.",
+          "createTitle": "New block",
+          "editTitle": "Edit block",
+          "createTemplateTitle": "New template",
+          "editTemplateTitle": "Edit template",
+          "templateName": "Template name",
+          "templateDescription": "Description",
+          "deleteBlock": "Delete block",
+          "deleteTemplate": "Delete template",
+          "confirmDelete": "Delete this block? Products using it will stop showing that step.",
+          "confirmDeleteTemplate": "Delete this template?",
+          "successCreate": "Block created successfully.",
+          "successUpdate": "Block updated successfully.",
+          "successDelete": "Block deleted successfully.",
+          "successCreateTemplate": "Template created successfully.",
+          "successUpdateTemplate": "Template updated successfully.",
+          "successDeleteTemplate": "Template deleted successfully."
+        },
+        "builder": {
+          "title": "Purchase flow",
+          "description": "Define what to ask and which add-ons to offer before adding this product to an order.",
+          "enabled": "Enable flow",
+          "library": "Available blocks",
+          "emptyLibrary": "Create blocks in the library to build this flow.",
+          "steps": "Flow steps",
+          "stepCount": "{count} visible steps",
+          "emptySteps": "Add blocks to build this product's purchase flow.",
+          "preview": "Preview",
+          "applyTemplate": "Apply template",
+          "templatePlaceholder": "Choose template",
+          "conditional": "Conditional",
+          "step": "Step",
+          "ariaReorder": "Reorder",
+          "ariaRemoveStep": "Remove step",
+          "tab": "Purchase flow",
+          "saved": "Flow saved successfully.",
+          "saveError": "We couldn't save the flow.",
+          "inactiveHint": "Enable the flow to add steps, blocks, and preview. Then save the product to apply changes."
+        },
+        "wizard": {
+          "title": "Customize your product",
+          "description": "Configure {product} before adding it to the order.",
+          "stepOf": "Step {current} of {total}",
+          "back": "Back",
+          "next": "Next",
+          "confirm": "Add to order",
+          "cancel": "Cancel",
+          "required": "Required",
+          "optional": "Optional",
+          "quantity": "Quantity",
+          "upsellAccept": "Yes, add it",
+          "upsellDecline": "No thanks",
+          "total": "Total",
+          "validationError": "Complete the required steps before continuing."
+        },
+        "item": {
+          "hasFlow": "Has flow"
+        }
       }
     }
   },

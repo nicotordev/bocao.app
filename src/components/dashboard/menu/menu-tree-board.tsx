@@ -29,8 +29,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import { toast } from "sonner";
 import { reorderMenuLayoutAction } from "@/app/actions/menu";
+import { defaultLocale } from "@/i18n/locales";
+import {
+  resolveMenuItemDescription,
+  resolveMenuItemName,
+} from "@/lib/menu/item-translations";
 import { formatCurrency } from "@/lib/orders/currency";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import {
@@ -471,6 +477,14 @@ function MenuTreeItemRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const locale = useLocale();
+  const displayName = resolveMenuItemName(item, locale, defaultLocale);
+  const displayDescription = resolveMenuItemDescription(
+    item,
+    locale,
+    defaultLocale,
+  );
+
   const sortable = useSortable({
     id: itemNodeId(item.id),
     disabled: !dragEnabled,
@@ -503,18 +517,18 @@ function MenuTreeItemRow({
         </button>
       ) : null}
 
-      <MenuItemThumbnail name={item.name} imageUrl={item.images[0]} />
+      <MenuItemThumbnail name={displayName} imageUrl={item.images[0]} />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate font-medium">{item.name}</p>
+          <p className="truncate font-medium">{displayName}</p>
           {!item.isAvailable ? (
             <Badge variant="secondary">{labels.item.unavailable}</Badge>
           ) : null}
         </div>
-        {item.description ? (
+        {displayDescription ? (
           <p className="truncate text-xs text-muted-foreground">
-            {item.description}
+            {displayDescription}
           </p>
         ) : null}
         <MenuItemTagsPreview
@@ -586,11 +600,14 @@ function MenuTreeItemPreview({
   currency: string;
   labels: MenuPageLabels;
 }) {
+  const locale = useLocale();
+  const displayName = resolveMenuItemName(item, locale, defaultLocale);
+
   return (
     <div className="flex min-w-[280px] items-center gap-3 rounded-2xl border border-border bg-card px-3 py-2.5 shadow-lg">
-      <MenuItemThumbnail name={item.name} imageUrl={item.images[0]} />
+      <MenuItemThumbnail name={displayName} imageUrl={item.images[0]} />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{item.name}</p>
+        <p className="truncate font-medium">{displayName}</p>
         {!item.isAvailable ? (
           <p className="text-xs text-muted-foreground">
             {labels.item.unavailable}

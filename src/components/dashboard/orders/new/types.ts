@@ -1,7 +1,10 @@
 import type { CustomerOption } from "@/lib/customers/types";
 import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
-import type { MenuItemOption } from "@/lib/menu/types";
+import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
+import type { OrderLineCustomization } from "@/lib/product-flow/types";
+import type { ProductFlowWizardLabels } from "./product-purchase-wizard";
 import type { OrderChannel } from "@/lib/orders/types";
+import type { MenuLocaleOption } from "@/components/dashboard/menu/types";
 
 export type NewOrderLineItem = {
   id: string;
@@ -10,6 +13,7 @@ export type NewOrderLineItem = {
   quantity: number;
   priceCents: number;
   imageUrls: string[];
+  customization?: OrderLineCustomization;
 };
 
 export type NewOrderSelectedCustomer = {
@@ -116,6 +120,7 @@ export type NewOrderLabels = {
       emptyMenuTitle: string;
       emptyMenuDescription: string;
       footerHint: string;
+      hasFlow: string;
       customProductTitle: string;
       customProductDescription: string;
       customNameLabel: string;
@@ -124,7 +129,9 @@ export type NewOrderLabels = {
       customQuantityLabel: string;
       addCustomSuccess: string;
     };
+    customization: string;
   };
+  flowWizard: ProductFlowWizardLabels;
   photos: {
     addPhoto: string;
     removePhoto: string;
@@ -174,9 +181,10 @@ export type NewOrderPageClientProps = {
   restaurantId: string;
   currency: string;
   canCreate: boolean;
-  menuItems: MenuItemOption[];
+  menuItems: MenuItemWithFlowOption[];
   customers: CustomerOption[];
   floorPlanSurface: DiningSurfaceRecord | null;
   occupiedTableNumbers: TableOccupancy;
   initialTableNumber?: string;
+  localeOptions: MenuLocaleOption[];
 };

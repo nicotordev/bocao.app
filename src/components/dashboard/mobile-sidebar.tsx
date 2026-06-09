@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { DashboardContext } from "@/lib/dashboard/types";
 import { DashboardNavItem } from "@/components/dashboard/nav-item";
 import { TenantSwitcher } from "@/components/dashboard/tenant-switcher";
@@ -25,23 +26,25 @@ export function MobileSidebar({
   activeRestaurant,
 }: MobileSidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations("dashboard.shell");
 
-  const groupLabels: Record<string, string> = {
-    inicio: "Inicio",
-    operaciones: "Operaciones",
-    clientes: "Clientes & Canales",
-    administracion: "Administración",
-  };
+  const groupKeys = [
+    "inicio",
+    "operaciones",
+    "clientes",
+    "administracion",
+  ] as const;
 
-  const groupKeys: Array<keyof typeof groupLabels> = ["inicio", "operaciones", "clientes", "administracion"];
-
-  const groupedNavigation = navigation.reduce((acc, item) => {
-    if (!acc[item.group]) {
-      acc[item.group] = [];
-    }
-    acc[item.group].push(item);
-    return acc;
-  }, {} as Record<string, typeof navigation>);
+  const groupedNavigation = navigation.reduce(
+    (acc, item) => {
+      if (!acc[item.group]) {
+        acc[item.group] = [];
+      }
+      acc[item.group].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof navigation>,
+  );
 
   return (
     <div className="flex h-full flex-col">
@@ -61,7 +64,7 @@ export function MobileSidebar({
             return (
               <SidebarGroup key={groupKey} className="p-0">
                 <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-                  {groupLabels[groupKey]}
+                  {t(`navGroups.${groupKey}`)}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
@@ -84,10 +87,7 @@ export function MobileSidebar({
         </div>
       </ScrollArea>
       <Separator />
-      <p className="p-4 text-xs text-muted-foreground">
-        Bocao · Sistema operativo para restaurantes
-      </p>
+      <p className="p-4 text-xs text-muted-foreground">{t("mobileFooter")}</p>
     </div>
   );
 }
-

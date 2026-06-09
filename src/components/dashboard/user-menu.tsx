@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { TbLogout, TbSettings, TbUser, TbSelector } from "react-icons/tb";
 import { useTheme } from "next-themes";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { authRoutes } from "@/lib/auth-routes";
@@ -57,10 +57,16 @@ function getInitials(name: string): string {
     .join("");
 }
 
-export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) {
+export function UserMenu({
+  user,
+  roleName,
+  variant = "topbar",
+}: UserMenuProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const currentLocale = useLocale();
+  const t = useTranslations("dashboard.userMenu");
+  const tCommon = useTranslations("common");
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
@@ -87,11 +93,11 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        toast.error("El archivo debe ser una imagen válida");
+        toast.error(t("toasts.invalidImage"));
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("La imagen excede el tamaño máximo de 5MB");
+        toast.error(t("toasts.imageTooLarge"));
         return;
       }
       setProfileFile(file);
@@ -102,7 +108,7 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileName.trim()) {
-      toast.error("El nombre no puede estar vacío");
+      toast.error(t("toasts.nameRequired"));
       return;
     }
 
@@ -122,13 +128,13 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
         name: profileName,
         image: finalImageUrl || null,
       });
-      toast.success("Perfil actualizado correctamente");
+      toast.success(t("toasts.profileUpdated"));
       setIsProfileOpen(false);
       setProfileFile(null);
       router.refresh();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Error al actualizar el perfil");
+      toast.error(error.message || t("toasts.profileUpdateError"));
     } finally {
       setIsSavingProfile(false);
     }
@@ -138,11 +144,11 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
     startTransitionLang(async () => {
       try {
         await setLocale(value);
-        toast.success("Idioma actualizado");
+        toast.success(t("toasts.languageUpdated"));
         router.refresh();
       } catch (error) {
         console.error(error);
-        toast.error("Error al actualizar el idioma");
+        toast.error(t("toasts.languageUpdateError"));
       }
     });
   };
@@ -159,9 +165,9 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
               "gap-2.5 rounded-xl transition-all",
               isSidebar
                 ? "h-auto w-full justify-start p-2 hover:bg-sidebar-accent text-sidebar-foreground data-[state=open]:bg-sidebar-accent"
-                : "h-10.5 px-2.5 hover:bg-muted/60"
+                : "h-10.5 px-2.5 hover:bg-muted/60",
             )}
-            aria-label="Menú de usuario"
+            aria-label={t("ariaLabel")}
           >
             <Avatar size="sm" className="ring-1 ring-border/50 shrink-0">
               {user.image ? (
@@ -176,7 +182,7 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                 "min-w-0 text-left",
                 isSidebar
                   ? "flex flex-col flex-1 group-data-[collapsible=icon]:hidden"
-                  : "hidden md:block"
+                  : "hidden md:block",
               )}
             >
               <span className="block truncate text-xs font-semibold text-foreground/90">
@@ -202,8 +208,12 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
         >
           <DropdownMenuLabel className="font-normal px-2.5 py-2">
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-semibold text-foreground">{user.name}</p>
-              <p className="text-[10px] text-muted-foreground font-medium truncate">{user.email}</p>
+              <p className="text-xs font-semibold text-foreground">
+                {user.name}
+              </p>
+              <p className="text-[10px] text-muted-foreground font-medium truncate">
+                {user.email}
+              </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="opacity-50" />
@@ -212,14 +222,14 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
             className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground/80 cursor-pointer"
           >
             <TbUser className="size-4 text-muted-foreground" aria-hidden />
-            Perfil
+            {t("profile")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => setIsPreferencesOpen(true)}
             className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground/80 cursor-pointer"
           >
             <TbSettings className="size-4 text-muted-foreground" aria-hidden />
-            Preferencias
+            {t("preferences")}
           </DropdownMenuItem>
           <DropdownMenuSeparator className="opacity-50" />
           <DropdownMenuItem
@@ -230,7 +240,7 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
             className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs cursor-pointer focus:bg-destructive/10 focus:text-destructive"
           >
             <TbLogout className="size-4" aria-hidden />
-            Cerrar sesión
+            {t("signOut")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -240,9 +250,11 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
         <DialogContent className="sm:max-w-[480px] rounded-2xl border-border/40 gap-0 p-0 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xl">
           <form onSubmit={handleSaveProfile}>
             <DialogHeader className="p-6 pb-4 border-b border-border/45">
-              <DialogTitle className="font-heading text-base font-semibold">Editar Perfil</DialogTitle>
+              <DialogTitle className="font-heading text-base font-semibold">
+                {t("profileDialog.title")}
+              </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-1">
-                Actualiza tu información personal y foto de perfil en el sistema.
+                {t("profileDialog.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -257,8 +269,13 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                       {getInitials(profileName)}
                     </AvatarFallback>
                   </Avatar>
-                  <label htmlFor="avatar-upload-input" className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer">
-                    <span className="text-[10px] font-semibold tracking-wide uppercase">Cambiar</span>
+                  <label
+                    htmlFor="avatar-upload-input"
+                    className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 cursor-pointer"
+                  >
+                    <span className="text-[10px] font-semibold tracking-wide uppercase">
+                      {t("profileDialog.changePhoto")}
+                    </span>
                   </label>
                   <input
                     id="avatar-upload-input"
@@ -268,23 +285,35 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                     className="hidden"
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground/80 font-medium">Haz click para subir una foto (Máx 5MB)</p>
+                <p className="text-[10px] text-muted-foreground/80 font-medium">
+                  {t("profileDialog.photoHint")}
+                </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="profile-name" className="text-xs font-semibold text-foreground/90">Nombre completo</Label>
+                <Label
+                  htmlFor="profile-name"
+                  className="text-xs font-semibold text-foreground/90"
+                >
+                  {t("profileDialog.fullName")}
+                </Label>
                 <Input
                   id="profile-name"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Tu nombre completo"
+                  placeholder={t("profileDialog.fullNamePlaceholder")}
                   className="h-10 rounded-xl border-border/50 bg-background/50 focus-visible:bg-background"
                   required
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="profile-email" className="text-xs font-semibold text-foreground/90">Correo electrónico</Label>
+                <Label
+                  htmlFor="profile-email"
+                  className="text-xs font-semibold text-foreground/90"
+                >
+                  {t("profileDialog.email")}
+                </Label>
                 <Input
                   id="profile-email"
                   value={user.email}
@@ -292,12 +321,17 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                   className="h-10 rounded-xl bg-muted/40 cursor-not-allowed opacity-80 border-border/30"
                 />
                 <span className="text-[10px] text-muted-foreground/75 leading-normal">
-                  El correo no se puede modificar por seguridad de la cuenta.
+                  {t("profileDialog.emailHint")}
                 </span>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="profile-image" className="text-xs font-semibold text-foreground/90">O introduce la URL de la foto</Label>
+                <Label
+                  htmlFor="profile-image"
+                  className="text-xs font-semibold text-foreground/90"
+                >
+                  {t("profileDialog.photoUrl")}
+                </Label>
                 <Input
                   id="profile-image"
                   value={profileImage}
@@ -306,7 +340,7 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                     setProfilePreview(e.target.value);
                     setProfileFile(null);
                   }}
-                  placeholder="https://ejemplo.com/avatar.jpg"
+                  placeholder={t("profileDialog.photoUrlPlaceholder")}
                   className="h-10 rounded-xl border-border/50 bg-background/50 focus-visible:bg-background"
                 />
               </div>
@@ -320,14 +354,14 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
                 className="rounded-xl h-9.5 text-xs font-medium"
                 disabled={isSavingProfile}
               >
-                Cancelar
+                {tCommon("cancel")}
               </Button>
               <Button
                 type="submit"
                 className="rounded-xl h-9.5 bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-semibold shadow-sm"
                 disabled={isSavingProfile}
               >
-                {isSavingProfile ? "Guardando..." : "Guardar cambios"}
+                {isSavingProfile ? tCommon("saving") : t("profileDialog.save")}
               </Button>
             </DialogFooter>
           </form>
@@ -338,32 +372,64 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
       <Dialog open={isPreferencesOpen} onOpenChange={setIsPreferencesOpen}>
         <DialogContent className="sm:max-w-[420px] rounded-2xl border-border/40 gap-0 p-0 overflow-hidden bg-card/95 backdrop-blur-sm shadow-xl">
           <DialogHeader className="p-6 pb-4 border-b border-border/45">
-            <DialogTitle className="font-heading text-base font-semibold">Preferencias del sistema</DialogTitle>
+            <DialogTitle className="font-heading text-base font-semibold">
+              {t("preferencesDialog.title")}
+            </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-1">
-              Personaliza el idioma y tema visual de tu panel de control.
+              {t("preferencesDialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-5 p-6">
             <div className="grid gap-2">
-              <Label htmlFor="pref-theme" className="text-xs font-semibold text-foreground/90">Tema visual</Label>
+              <Label
+                htmlFor="pref-theme"
+                className="text-xs font-semibold text-foreground/90"
+              >
+                {t("preferencesDialog.theme")}
+              </Label>
               <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger id="pref-theme" className="h-10 rounded-xl border-border/50 bg-background/50 focus:bg-background">
-                  <SelectValue placeholder="Seleccionar tema" />
+                <SelectTrigger
+                  id="pref-theme"
+                  className="h-10 rounded-xl border-border/50 bg-background/50 focus:bg-background"
+                >
+                  <SelectValue
+                    placeholder={t("preferencesDialog.themePlaceholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="light" className="rounded-lg">Claridad (Light)</SelectItem>
-                  <SelectItem value="dark" className="rounded-lg">Oscuridad (Dark)</SelectItem>
-                  <SelectItem value="system" className="rounded-lg">Predeterminado del sistema</SelectItem>
+                  <SelectItem value="light" className="rounded-lg">
+                    {t("preferencesDialog.themeLight")}
+                  </SelectItem>
+                  <SelectItem value="dark" className="rounded-lg">
+                    {t("preferencesDialog.themeDark")}
+                  </SelectItem>
+                  <SelectItem value="system" className="rounded-lg">
+                    {t("preferencesDialog.themeSystem")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="pref-lang" className="text-xs font-semibold text-foreground/90">Idioma del panel</Label>
-              <Select value={currentLocale} onValueChange={handleLanguageChange} disabled={isPendingLang}>
-                <SelectTrigger id="pref-lang" className="h-10 rounded-xl border-border/50 bg-background/50 focus:bg-background">
-                  <SelectValue placeholder="Seleccionar idioma" />
+              <Label
+                htmlFor="pref-lang"
+                className="text-xs font-semibold text-foreground/90"
+              >
+                {t("preferencesDialog.language")}
+              </Label>
+              <Select
+                value={currentLocale}
+                onValueChange={handleLanguageChange}
+                disabled={isPendingLang}
+              >
+                <SelectTrigger
+                  id="pref-lang"
+                  className="h-10 rounded-xl border-border/50 bg-background/50 focus:bg-background"
+                >
+                  <SelectValue
+                    placeholder={t("preferencesDialog.languagePlaceholder")}
+                  />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
                   {locales.map((code) => (
@@ -382,7 +448,7 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
               onClick={() => setIsPreferencesOpen(false)}
               className="rounded-xl h-9.5 w-full sm:w-auto text-xs font-semibold"
             >
-              Aceptar
+              {t("preferencesDialog.accept")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -390,5 +456,3 @@ export function UserMenu({ user, roleName, variant = "topbar" }: UserMenuProps) 
     </>
   );
 }
-
-

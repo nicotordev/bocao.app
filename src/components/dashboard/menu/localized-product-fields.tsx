@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ type LocalizedProductFieldsProps = {
   onChange: (value: MenuItemFieldTranslations) => void;
 };
 
-function emptyDraft(locale: Locale): MenuItemFieldTranslations {
+function emptyDraft(locale: string): MenuItemFieldTranslations {
   return {
     name: { [locale]: "" },
     description: { [locale]: "" },
@@ -34,19 +34,19 @@ function emptyDraft(locale: Locale): MenuItemFieldTranslations {
 
 export function buildProductTranslationDraft(
   translations: MenuItemFieldTranslations,
-  locale: Locale,
+  locale: string,
 ): MenuItemFieldTranslations {
-  const enabledLocales = new Set<Locale>();
+  const enabledLocales = new Set<string>();
 
   for (const [entryLocale, label] of Object.entries(translations.name)) {
     if (label?.trim()) {
-      enabledLocales.add(entryLocale as Locale);
+      enabledLocales.add(entryLocale);
     }
   }
 
   for (const [entryLocale, label] of Object.entries(translations.description)) {
     if (label?.trim()) {
-      enabledLocales.add(entryLocale as Locale);
+      enabledLocales.add(entryLocale);
     }
   }
 
@@ -71,17 +71,17 @@ export function buildProductTranslationDraft(
 }
 
 export function getEnabledProductLocales(value: MenuItemFieldTranslations) {
-  const locales = new Set<Locale>();
+  const locales = new Set<string>();
 
   for (const [locale, label] of Object.entries(value.name)) {
     if (label !== undefined) {
-      locales.add(locale as Locale);
+      locales.add(locale);
     }
   }
 
   for (const [locale, label] of Object.entries(value.description)) {
     if (label !== undefined) {
-      locales.add(locale as Locale);
+      locales.add(locale);
     }
   }
 
@@ -97,7 +97,7 @@ export function LocalizedProductFields({
   const locale = useLocale() as Locale;
   const enabledLocales = useMemo(() => getEnabledProductLocales(value), [value]);
 
-  function toggleLocale(nextLocale: Locale, enabled: boolean) {
+  function toggleLocale(nextLocale: string, enabled: boolean) {
     const nextEnabled = enabled
       ? [...new Set([...enabledLocales, nextLocale])]
       : enabledLocales.filter((entry) => entry !== nextLocale);
@@ -123,7 +123,7 @@ export function LocalizedProductFields({
     });
   }
 
-  function updateName(entryLocale: Locale, nextValue: string) {
+  function updateName(entryLocale: string, nextValue: string) {
     onChange({
       ...value,
       name: {
@@ -133,7 +133,7 @@ export function LocalizedProductFields({
     });
   }
 
-  function updateDescription(entryLocale: Locale, nextValue: string) {
+  function updateDescription(entryLocale: string, nextValue: string) {
     onChange({
       ...value,
       description: {
@@ -218,7 +218,7 @@ export function LocalizedProductFields({
 }
 
 export function createEmptyProductTranslations(
-  locale: Locale = defaultLocale,
+  locale: string = defaultLocale,
 ): MenuItemFieldTranslations {
   return emptyDraft(locale);
 }

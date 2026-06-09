@@ -106,6 +106,7 @@ export default async function FloorPlanPage() {
       tablesModeHint: t("contextMenu.tablesModeHint"),
       activateTablesMode: t("contextMenu.activateTablesMode"),
       removeVertex: t("contextMenu.removeVertex"),
+      closeMenu: t("contextMenu.closeMenu"),
     },
   };
 

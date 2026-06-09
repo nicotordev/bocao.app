@@ -8,11 +8,16 @@ export type OrderStatus =
 
 export type OrderChannel = "whatsapp" | "web" | "dineIn" | "uberEats" | "rappi";
 
+import type { OrderLineCustomization } from "@/lib/product-flow/types";
+
+export type { OrderLineCustomization };
+
 export type OrderItem = {
   name: string;
   quantity: number;
   price: string;
   imageUrls?: string[];
+  customization?: OrderLineCustomization;
 };
 
 export type OrderTimelineEvent = {
@@ -70,6 +75,7 @@ export type CreateOrderLineItemInput = {
   quantity: number;
   priceCents: number;
   imageUrls?: string[];
+  customization?: OrderLineCustomization;
 };
 
 export type CreateOrderCustomerInput = {

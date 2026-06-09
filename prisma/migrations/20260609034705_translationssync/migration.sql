@@ -1,0 +1,5 @@
+-- RenameIndex
+ALTER INDEX "DbTranslation_restaurantId_entityType_entityKey_locale_field_ke" RENAME TO "DbTranslation_restaurantId_entityType_entityKey_locale_fiel_key";
+
+-- RenameIndex
+ALTER INDEX "ProductFlowBlock_restaurantId_scopeType_categoryId_menuItemId_k" RENAME TO "ProductFlowBlock_restaurantId_scopeType_categoryId_menuItem_key";

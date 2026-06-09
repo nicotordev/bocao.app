@@ -86,6 +86,7 @@ export type FloorPlanPageLabels = {
     tablesModeHint: string;
     activateTablesMode: string;
     removeVertex: string;
+    closeMenu: string;
   };
 };
 

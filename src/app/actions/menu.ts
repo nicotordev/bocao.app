@@ -360,11 +360,32 @@ export async function refreshMenuPageAction(restaurantId: string) {
   const { listMenuCategories, listMenuItemRecords } =
     await import("@/lib/menu/repository");
 
-  const [categories, items, customTagDefinitions] = await Promise.all([
-    listMenuCategories(restaurantId),
-    listMenuItemRecords(restaurantId, { availableOnly: false }),
-    listMenuCustomTags(restaurantId),
-  ]);
+  const {
+    listProductFlowBlocks,
+    listProductFlowTemplates,
+    listProductPurchaseFlows,
+  } = await import("@/lib/product-flow/repository");
 
-  return { categories, items, customTagDefinitions };
+  const [categories, items, customTagDefinitions, flowBlocks, flowTemplates, flows] =
+    await Promise.all([
+      listMenuCategories(restaurantId),
+      listMenuItemRecords(restaurantId, { availableOnly: false }),
+      listMenuCustomTags(restaurantId),
+      listProductFlowBlocks(restaurantId),
+      listProductFlowTemplates(restaurantId),
+      listProductPurchaseFlows(restaurantId),
+    ]);
+
+  const productFlowsByMenuItemId = Object.fromEntries(
+    flows.map((flow) => [flow.menuItemId, flow]),
+  );
+
+  return {
+    categories,
+    items,
+    customTagDefinitions,
+    flowBlocks,
+    flowTemplates,
+    productFlowsByMenuItemId,
+  };
 }

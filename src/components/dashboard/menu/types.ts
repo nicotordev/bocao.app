@@ -1,9 +1,17 @@
 import type { Locale } from "@/i18n/locales";
+import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import type { MenuItemTag } from "@/lib/menu/tag-types";
 import type { ProductImagesFieldLabels } from "@/components/dashboard/product-images-field";
+import type { FlowBlockType } from "@/lib/product-flow/types";
+import type {
+  ProductFlowBlockRecord,
+  ProductFlowTemplateRecord,
+  ProductPurchaseFlowRecord,
+} from "@/lib/product-flow/types";
+import type { ProductFlowWizardLabels } from "@/components/dashboard/orders/new/product-purchase-wizard";
 
 export type MenuCatalogTagOption = {
   key: string;
@@ -12,7 +20,7 @@ export type MenuCatalogTagOption = {
 };
 
 export type MenuLocaleOption = {
-  value: Locale;
+  value: string;
   label: string;
 };
 
@@ -115,6 +123,121 @@ export type MenuPageLabels = {
     dragCategory: string;
     dragItem: string;
   };
+  flow: ProductFlowLabels;
+};
+
+export type ProductFlowLabels = {
+  actions: {
+    openLibrary: string;
+    close: string;
+    save: string;
+    saving: string;
+  };
+  feedback: {
+    error: string;
+  };
+  validation: {
+    blockLabel: string;
+  };
+  blockTypes: Record<FlowBlockType, string>;
+  blockEditor: {
+    type: string;
+    key: string;
+    keyPlaceholder: string;
+    stepLabel: string;
+    description: string;
+    infoContent: string;
+    placeholder: string;
+    required: string;
+    options: string;
+    option: string;
+    optionLabel: string;
+    addOption: string;
+    removeOption: string;
+    priceDelta: string;
+    priceMode: string;
+    priceModeDelta: string;
+    priceModeOverride: string;
+    defaultOption: string;
+    minSelections: string;
+    maxSelections: string;
+    minQuantity: string;
+    maxQuantity: string;
+    upsellProduct: string;
+    upsellProductPlaceholder: string;
+    languages: string;
+  };
+  contentLocales: {
+    title: string;
+    description: string;
+    search: string;
+    save: string;
+    saving: string;
+    cancel: string;
+    success: string;
+    error: string;
+    minOne: string;
+    open: string;
+  };
+  library: {
+    title: string;
+    description: string;
+    blocks: string;
+    templates: string;
+    scopeType: string;
+    scopeCategory: string;
+    scopeProduct: string;
+    scopeCategoryPlaceholder: string;
+    scopeProductPlaceholder: string;
+    scopeRequired: string;
+    newBlock: string;
+    newTemplate: string;
+    empty: string;
+    emptyTemplates: string;
+    selectOrCreate: string;
+    selectOrCreateDescription: string;
+    createTitle: string;
+    editTitle: string;
+    createTemplateTitle: string;
+    editTemplateTitle: string;
+    templateName: string;
+    templateDescription: string;
+    deleteBlock: string;
+    deleteTemplate: string;
+    confirmDelete: string;
+    confirmDeleteTemplate: string;
+    successCreate: string;
+    successUpdate: string;
+    successDelete: string;
+    successCreateTemplate: string;
+    successUpdateTemplate: string;
+    successDeleteTemplate: string;
+  };
+  builder: {
+    title: string;
+    description: string;
+    enabled: string;
+    library: string;
+    emptyLibrary: string;
+    steps: string;
+    stepCount: string;
+    emptySteps: string;
+    preview: string;
+    applyTemplate: string;
+    templatePlaceholder: string;
+    conditional: string;
+    step: string;
+    ariaReorder: string;
+    ariaRemoveStep: string;
+    tab: string;
+    saved: string;
+    saveError: string;
+    inactiveHint: string;
+  };
+  wizard: ProductFlowWizardLabels;
+  item: {
+    hasFlow: string;
+  };
 };
 
 export type MenuPageClientProps = {
@@ -128,9 +251,11 @@ export type MenuPageClientProps = {
   tagCatalogLabels: Record<string, string>;
   customTagDefinitions: MenuCustomTagRecord[];
   localeOptions: MenuLocaleOption[];
+  flowBlocks: ProductFlowBlockRecord[];
+  flowTemplates: ProductFlowTemplateRecord[];
+  productFlowsByMenuItemId: Record<string, ProductPurchaseFlowRecord>;
+  contentLocales: string[];
 };
-
-import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 
 export type MenuItemFormValues = {
   categoryId: string;
@@ -139,4 +264,8 @@ export type MenuItemFormValues = {
   isAvailable: boolean;
   images: string[];
   tags: MenuItemTag[];
+  purchaseFlow: {
+    isActive: boolean;
+    steps: import("@/lib/product-flow/types").FlowStep[];
+  };
 };

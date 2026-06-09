@@ -15,24 +15,41 @@ type DashboardMetricLabels = {
   openOrders: string;
   upcomingReservations: string;
   avgPrepTime: string;
+  relativeMinutes: string;
+  inKitchen: string;
+  minutesShort: string;
 };
 
 type GetDashboardHomeDataOptions = {
   metricLabels: DashboardMetricLabels;
   locale?: string;
+  notAvailable?: string;
+  customerLabels?: {
+    fallbackCustomer: string;
+    tableOnly: string;
+    tableWithCustomers: string;
+  };
 };
 
-function formatCurrency(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("es-CL", {
+function resolveIntlLocale(locale: string): string {
+  return locale === "es" ? "es-CL" : "en-US";
+}
+
+function formatCurrency(
+  amountCents: number,
+  currency: string,
+  locale: string,
+): string {
+  return new Intl.NumberFormat(resolveIntlLocale(locale), {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
   }).format(amountCents / 100);
 }
 
-function formatRelativeMinutes(date: Date, locale: string): string {
+function formatRelativeMinutes(date: Date, template: string): string {
   const minutes = Math.max(1, differenceInMinutes(new Date(), date));
-  return locale === "es" ? `Hace ${minutes} min` : `${minutes} min ago`;
+  return template.replace("{minutes}", String(minutes));
 }
 
 function mapOrderStatusToPreview(
@@ -67,7 +84,7 @@ export async function getDashboardHomeData(
   restaurant: DashboardRestaurant | null,
   options: GetDashboardHomeDataOptions,
 ): Promise<DashboardHomeData> {
-  const { metricLabels, locale = "es" } = options;
+  const { metricLabels, locale = "es", notAvailable = "—" } = options;
   const dateFnsLocale = locale === "es" ? es : enUS;
 
   if (!restaurant) {
@@ -79,8 +96,8 @@ export async function getDashboardHomeData(
       whatsapp: {
         connected: false,
         unreadCount: 0,
-        lastMessageAt: "—",
-        responseRate: "—",
+        lastMessageAt: notAvailable,
+        responseRate: notAvailable,
       },
       teamActivity: [],
     };
@@ -143,8 +160,8 @@ export async function getDashboardHomeData(
     {
       id: "revenue-today",
       label: metricLabels.revenueToday,
-      value: formatCurrency(revenueTodayCents, restaurant.currency),
-      change: metricTrends["revenue-today"]?.change ?? "—",
+      value: formatCurrency(revenueTodayCents, restaurant.currency, locale),
+      change: metricTrends["revenue-today"]?.change ?? notAvailable,
       trend: metricTrends["revenue-today"]?.trend ?? "neutral",
     },
     {
@@ -153,21 +170,26 @@ export async function getDashboardHomeData(
       value: String(openOrders.length),
       change:
         metricTrends["open-orders"]?.change ??
-        (preparingCount > 0 ? `${preparingCount} en cocina` : "—"),
+        (preparingCount > 0
+          ? metricLabels.inKitchen.replace("{count}", String(preparingCount))
+          : notAvailable),
       trend: metricTrends["open-orders"]?.trend ?? "neutral",
     },
     {
       id: "upcoming-reservations",
       label: metricLabels.upcomingReservations,
       value: String(reservations.length),
-      change: metricTrends["upcoming-reservations"]?.change ?? "—",
+      change: metricTrends["upcoming-reservations"]?.change ?? notAvailable,
       trend: metricTrends["upcoming-reservations"]?.trend ?? "neutral",
     },
     {
       id: "avg-prep-time",
       label: metricLabels.avgPrepTime,
-      value: avgPrep > 0 ? `${avgPrep} min` : "—",
-      change: metricTrends["avg-prep-time"]?.change ?? "—",
+      value:
+        avgPrep > 0
+          ? metricLabels.minutesShort.replace("{minutes}", String(avgPrep))
+          : notAvailable,
+      change: metricTrends["avg-prep-time"]?.change ?? notAvailable,
       trend: metricTrends["avg-prep-time"]?.trend ?? "neutral",
     },
   ];
@@ -178,6 +200,7 @@ export async function getDashboardHomeData(
       const customerLabel = formatOrderCustomerLabel({
         customers: getOrderCustomers(order),
         tableNumber: order.tableNumber,
+        labels: options.customerLabels,
       });
 
       return {
@@ -185,8 +208,11 @@ export async function getDashboardHomeData(
         orderNumber: order.orderNumber,
         customerName: customerLabel.customerName,
         status: mapOrderStatusToPreview(mapDbStatusToUi(order.status)),
-        total: formatCurrency(order.totalCents, restaurant.currency),
-        createdAt: formatRelativeMinutes(order.createdAt, locale),
+        total: formatCurrency(order.totalCents, restaurant.currency, locale),
+        createdAt: formatRelativeMinutes(
+          order.createdAt,
+          metricLabels.relativeMinutes,
+        ),
       };
     }),
     upcomingReservations: reservations.slice(0, 3).map((reservation) => ({
@@ -209,8 +235,8 @@ export async function getDashboardHomeData(
         : {
             connected: false,
             unreadCount: 0,
-            lastMessageAt: "—",
-            responseRate: "—",
+            lastMessageAt: notAvailable,
+            responseRate: notAvailable,
           },
     teamActivity: Array.isArray(demoProfile?.teamActivity)
       ? (demoProfile.teamActivity as DashboardHomeData["teamActivity"])

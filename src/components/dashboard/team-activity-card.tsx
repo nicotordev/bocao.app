@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,12 +13,6 @@ import { cn } from "@/lib/utils";
 
 type TeamActivityCardProps = {
   members: DashboardTeamMember[];
-};
-
-const statusLabels: Record<DashboardTeamMember["status"], string> = {
-  online: "En línea",
-  busy: "Ocupado",
-  offline: "Desconectado",
 };
 
 const statusDotStyles: Record<DashboardTeamMember["status"], string> = {
@@ -35,12 +30,14 @@ function getInitials(name: string): string {
     .join("");
 }
 
-export function TeamActivityCard({ members }: TeamActivityCardProps) {
+export async function TeamActivityCard({ members }: TeamActivityCardProps) {
+  const t = await getTranslations("dashboard.home.teamActivity");
+
   return (
     <Card className="border-border/60">
       <CardHeader>
-        <CardTitle>Actividad del equipo</CardTitle>
-        <CardDescription>Estado actual del staff en turno</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="space-y-3">
@@ -66,7 +63,7 @@ export function TeamActivityCard({ members }: TeamActivityCardProps) {
                   )}
                   aria-hidden
                 />
-                {statusLabels[member.status]}
+                {t(`status.${member.status}`)}
               </Badge>
             </li>
           ))}

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { defaultLocale, locales, type Locale } from "@/i18n/locales";
+import { defaultLocale, type Locale } from "@/i18n/locales";
+import type { MenuLocaleOption } from "./types";
 import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
 import {
@@ -45,7 +46,7 @@ export type MenuItemTagsFieldLabels = {
 
 type MenuItemTagsFieldProps = {
   labels: MenuItemTagsFieldLabels;
-  localeOptions: Array<{ value: Locale; label: string }>;
+  localeOptions: MenuLocaleOption[];
   catalogTags: MenuCatalogTagOption[];
   catalogLabels: Record<string, string>;
   customTagDefinitions: MenuCustomTagRecord[];
@@ -55,9 +56,9 @@ type MenuItemTagsFieldProps = {
   disabled?: boolean;
 };
 
-function emptyCustomDraft(locale: Locale): {
-  enabledLocales: Locale[];
-  translations: Partial<Record<Locale, string>>;
+function emptyCustomDraft(locale: string): {
+  enabledLocales: string[];
+  translations: Partial<Record<string, string>>;
   icon: MenuTagIconId;
 } {
   return {
@@ -142,7 +143,7 @@ export function MenuItemTagsField({
     setTags(value.filter((tag) => tag.key !== key));
   }
 
-  function toggleDraftLocale(nextLocale: Locale, enabled: boolean) {
+  function toggleDraftLocale(nextLocale: string, enabled: boolean) {
     setCustomDraft((current) => {
       const enabledLocales = enabled
         ? [...new Set([...current.enabledLocales, nextLocale])]
@@ -163,7 +164,7 @@ export function MenuItemTagsField({
     });
   }
 
-  function updateDraftTranslation(nextLocale: Locale, nextValue: string) {
+  function updateDraftTranslation(nextLocale: string, nextValue: string) {
     setCustomDraft((current) => ({
       ...current,
       translations: {
@@ -178,7 +179,7 @@ export function MenuItemTagsField({
       customDraft.enabledLocales
         .map((entry) => [entry, customDraft.translations[entry]?.trim() ?? ""])
         .filter(([, label]) => label.length > 0),
-    ) as Partial<Record<Locale, string>>;
+    ) as Partial<Record<string, string>>;
 
     if (Object.keys(translations).length === 0) {
       return;

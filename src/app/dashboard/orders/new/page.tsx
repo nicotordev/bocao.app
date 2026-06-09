@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { NewOrderPageClient } from "@/components/dashboard/orders/new/new-order-page-client";
 import type { NewOrderLabels } from "@/components/dashboard/orders/new/types";
 import { listCustomers } from "@/lib/customers/repository";
@@ -7,8 +7,13 @@ import {
   getFloorPlan,
   getOccupiedTableNumbers,
 } from "@/lib/floor-plan/repository";
-import { listMenuItems } from "@/lib/menu/repository";
+import { listMenuItemsWithPurchaseFlows } from "@/lib/product-flow/repository";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import {
+  buildRestaurantLocaleOptions,
+  DEFAULT_CONTENT_LOCALES,
+  getRestaurantContentLocales,
+} from "@/lib/restaurant/content-locales";
 
 type NewOrderPageProps = {
   searchParams: Promise<{
@@ -20,13 +25,20 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
   const params = await searchParams;
   const t = await getTranslations("dashboard.orders.new");
   const tChannels = await getTranslations("dashboard.orders.channels");
+  const uiLocale = await getLocale();
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
   const currency = context?.activeRestaurant?.currency ?? "CLP";
   const canCreate =
     context?.membership.permissions.includes(PERMISSIONS.ORDERS_WRITE) ?? false;
 
-  const menuItems = restaurantId ? await listMenuItems(restaurantId) : [];
+  const [menuItems, contentLocales] = restaurantId
+    ? await Promise.all([
+        listMenuItemsWithPurchaseFlows(restaurantId),
+        getRestaurantContentLocales(restaurantId),
+      ])
+    : [[], DEFAULT_CONTENT_LOCALES];
+  const localeOptions = buildRestaurantLocaleOptions(contentLocales, uiLocale);
   const customers = restaurantId ? await listCustomers(restaurantId) : [];
   const floorPlan = restaurantId ? await getFloorPlan(restaurantId) : null;
   const occupiedTableNumbers = restaurantId
@@ -115,7 +127,25 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
         customPriceLabel: t("items.picker.customPriceLabel"),
         customQuantityLabel: t("items.picker.customQuantityLabel"),
         addCustomSuccess: t("items.picker.addCustomSuccess"),
+        hasFlow: t("items.picker.hasFlow"),
       },
+      customization: t("items.customization"),
+    },
+    flowWizard: {
+      title: t("flowWizard.title"),
+      description: t("flowWizard.description"),
+      stepOf: t.raw("flowWizard.stepOf"),
+      back: t("flowWizard.back"),
+      next: t("flowWizard.next"),
+      confirm: t("flowWizard.confirm"),
+      cancel: t("flowWizard.cancel"),
+      required: t("flowWizard.required"),
+      optional: t("flowWizard.optional"),
+      quantity: t("flowWizard.quantity"),
+      upsellAccept: t("flowWizard.upsellAccept"),
+      upsellDecline: t("flowWizard.upsellDecline"),
+      total: t("flowWizard.total"),
+      validationError: t("flowWizard.validationError"),
     },
     photos: {
       addPhoto: t("photos.addPhoto"),
@@ -178,6 +208,7 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
       floorPlanSurface={floorPlan?.surfaces[0] ?? null}
       occupiedTableNumbers={occupiedTableNumbers}
       initialTableNumber={params.table?.trim()}
+      localeOptions={localeOptions}
     />
   );
 }

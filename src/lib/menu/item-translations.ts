@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/locales";
-import { defaultLocale, locales } from "@/i18n/locales";
+import { defaultLocale } from "@/i18n/locales";
 import {
   DB_TRANSLATION_ENTITY,
   DB_TRANSLATION_FIELD,
@@ -9,8 +9,8 @@ import {
 import type { MenuItemRecord } from "@/lib/menu/types";
 
 export type MenuItemFieldTranslations = {
-  name: Partial<Record<Locale, string>>;
-  description: Partial<Record<Locale, string>>;
+  name: Partial<Record<string, string>>;
+  description: Partial<Record<string, string>>;
 };
 
 export function buildMenuItemTranslations(
@@ -19,27 +19,27 @@ export function buildMenuItemTranslations(
 ): MenuItemFieldTranslations {
   const entry = map[item.id] ?? {};
 
-  const name: Partial<Record<Locale, string>> = {
+  const name: Partial<Record<string, string>> = {
     [defaultLocale]: item.name,
   };
-  const description: Partial<Record<Locale, string>> = {};
+  const description: Partial<Record<string, string>> = {};
 
   if (item.description?.trim()) {
     description[defaultLocale] = item.description.trim();
   }
 
-  for (const locale of locales) {
+  for (const [locale, fields] of Object.entries(entry)) {
     if (locale === defaultLocale) {
       continue;
     }
 
-    const translatedName = entry[locale]?.[DB_TRANSLATION_FIELD.NAME]?.trim();
+    const translatedName = fields?.[DB_TRANSLATION_FIELD.NAME]?.trim();
     if (translatedName) {
       name[locale] = translatedName;
     }
 
     const translatedDescription =
-      entry[locale]?.[DB_TRANSLATION_FIELD.DESCRIPTION]?.trim();
+      fields?.[DB_TRANSLATION_FIELD.DESCRIPTION]?.trim();
     if (translatedDescription) {
       description[locale] = translatedDescription;
     }
@@ -111,8 +111,12 @@ export function menuItemMatchesQuery(
 export function normalizeMenuItemTranslationInput(
   input: MenuItemFieldTranslations,
 ): MenuItemFieldTranslations {
-  const name: Partial<Record<Locale, string>> = {};
-  const description: Partial<Record<Locale, string>> = {};
+  const name: Partial<Record<string, string>> = {};
+  const description: Partial<Record<string, string>> = {};
+  const locales = new Set([
+    ...Object.keys(input.name),
+    ...Object.keys(input.description),
+  ]);
 
   for (const locale of locales) {
     const nextName = input.name[locale]?.trim();
@@ -161,6 +165,11 @@ export function buildMenuItemTranslationInputs(
     value: string;
   }> = [];
 
+  const locales = new Set([
+    ...Object.keys(normalized.name),
+    ...Object.keys(normalized.description),
+  ]);
+
   for (const locale of locales) {
     if (locale === fallbackLocale) {
       continue;
@@ -171,7 +180,7 @@ export function buildMenuItemTranslationInputs(
       inputs.push({
         entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
         entityKey: menuItemId,
-        locale,
+        locale: locale as Locale,
         field: DB_TRANSLATION_FIELD.NAME,
         value: name,
       });
@@ -182,7 +191,7 @@ export function buildMenuItemTranslationInputs(
       inputs.push({
         entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
         entityKey: menuItemId,
-        locale,
+        locale: locale as Locale,
         field: DB_TRANSLATION_FIELD.DESCRIPTION,
         value: description,
       });
