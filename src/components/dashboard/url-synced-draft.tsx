@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type DebouncedSearchDraftProps = {
   urlSearch: string;
   onDebouncedChange: (search: string) => void;
-  children: (
-    draft: string,
-    setDraft: (value: string) => void,
-  ) => ReactNode;
+  children: (draft: string, setDraft: (value: string) => void) => ReactNode;
 };
 
 export function DebouncedSearchDraft({
@@ -17,6 +14,11 @@ export function DebouncedSearchDraft({
   children,
 }: DebouncedSearchDraftProps) {
   const [draft, setDraft] = useState(urlSearch);
+  const onDebouncedChangeRef = useRef(onDebouncedChange);
+
+  useEffect(() => {
+    onDebouncedChangeRef.current = onDebouncedChange;
+  }, [onDebouncedChange]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -24,11 +26,11 @@ export function DebouncedSearchDraft({
         return;
       }
 
-      onDebouncedChange(draft);
+      onDebouncedChangeRef.current(draft);
     }, 350);
 
     return () => window.clearTimeout(timer);
-  }, [draft, onDebouncedChange, urlSearch]);
+  }, [draft, urlSearch]);
 
   return children(draft, setDraft);
 }

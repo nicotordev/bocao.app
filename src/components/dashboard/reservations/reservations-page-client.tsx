@@ -56,10 +56,22 @@ export function ReservationsPageClient({
   );
 
   const urlSearch = filters.search ?? "";
+  const urlReservationId = searchParams.get("reservationId");
+  const deepLinkReservation =
+    urlReservationId &&
+    initialReservation &&
+    initialReservation.id === urlReservationId
+      ? initialReservation
+      : null;
 
-  const [activeReservation, setActiveReservation] =
-    useState<Reservation | null>(initialReservation);
-  const [isDialogOpen, setIsDialogOpen] = useState(Boolean(initialReservation));
+  const [manualReservation, setManualReservation] =
+    useState<Reservation | null>(null);
+  const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
+
+  const dialogReservation = isManualDialogOpen
+    ? manualReservation
+    : deepLinkReservation;
+  const isDialogOpen = isManualDialogOpen || Boolean(deepLinkReservation);
 
   const reservationsQuery = useReservationsListQuery(restaurantId, filters);
 
@@ -149,26 +161,35 @@ export function ReservationsPageClient({
   );
 
   const handleCreate = () => {
-    setActiveReservation(null);
-    setIsDialogOpen(true);
+    setManualReservation(null);
+    setIsManualDialogOpen(true);
   };
 
   const handleEdit = (reservation: Reservation) => {
-    setActiveReservation(reservation);
-    setIsDialogOpen(true);
+    setManualReservation(reservation);
+    setIsManualDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setActiveReservation(null);
+    setIsManualDialogOpen(false);
+    setManualReservation(null);
 
-    if (openedViaDeepLink.current) {
+    if (deepLinkReservation || openedViaDeepLink.current) {
       openedViaDeepLink.current = false;
       router.replace(
-        buildListUrl("/dashboard/reservations", urlParams, {
-          page: filters.page,
-          pageSize: filters.pageSize,
-        }),
+        buildListUrl(
+          "/dashboard/reservations",
+          {
+            search: filters.search,
+            status: filters.status === "all" ? undefined : filters.status,
+            from: filters.from,
+            to: filters.to,
+          },
+          {
+            page: filters.page,
+            pageSize: filters.pageSize,
+          },
+        ),
       );
     }
   };
@@ -201,10 +222,15 @@ export function ReservationsPageClient({
     });
   };
 
+  const handleDebouncedSearch = useCallback(
+    (search: string) => navigateFilters({ search }),
+    [navigateFilters],
+  );
+
   const handleSubmit = (data: ReservationFormSubmitData) => {
-    if (activeReservation) {
+    if (dialogReservation) {
       updateMutation.mutate(
-        { reservationId: activeReservation.id, input: data },
+        { reservationId: dialogReservation.id, input: data },
         {
           onSuccess: () => {
             toast.success(labels.form.successUpdate);
@@ -240,7 +266,7 @@ export function ReservationsPageClient({
     <DebouncedSearchDraft
       key={urlSearch}
       urlSearch={urlSearch}
-      onDebouncedChange={(search) => navigateFilters({ search })}
+      onDebouncedChange={handleDebouncedSearch}
     >
       {(searchDraft, setSearchDraft) => (
         <main className="flex flex-col gap-6 p-4 md:p-6">
@@ -269,43 +295,45 @@ export function ReservationsPageClient({
             }}
           />
 
-      <QueryResultState query={reservationsQuery}>
-        {() => (
-          <div className="space-y-4">
-            <ReservationsTable
-              labels={labels}
-              reservations={list}
-              onEdit={handleEdit}
-              onUpdateStatus={handleStatusChange}
-              onDelete={handleDelete}
-              isUpdating={updateMutation.isPending || deleteMutation.isPending}
-            />
-            <ListPagination
-              basePath="/dashboard/reservations"
-              params={urlParams}
-              meta={pagination}
-              labels={labels.pagination}
-            />
-          </div>
-        )}
-      </QueryResultState>
+          <QueryResultState query={reservationsQuery}>
+            {() => (
+              <div className="space-y-4">
+                <ReservationsTable
+                  labels={labels}
+                  reservations={list}
+                  onEdit={handleEdit}
+                  onUpdateStatus={handleStatusChange}
+                  onDelete={handleDelete}
+                  isUpdating={
+                    updateMutation.isPending || deleteMutation.isPending
+                  }
+                />
+                <ListPagination
+                  basePath="/dashboard/reservations"
+                  params={urlParams}
+                  meta={pagination}
+                  labels={labels.pagination}
+                />
+              </div>
+            )}
+          </QueryResultState>
 
-      <ReservationDialog
-        labels={labels}
-        customers={customers}
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            handleCloseDialog();
-            return;
-          }
-          setIsDialogOpen(true);
-        }}
-        onClose={handleCloseDialog}
-        reservation={activeReservation}
-        onSubmit={handleSubmit}
-        isSubmitting={createMutation.isPending || updateMutation.isPending}
-      />
+          <ReservationDialog
+            labels={labels}
+            customers={customers}
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                handleCloseDialog();
+                return;
+              }
+              setIsManualDialogOpen(true);
+            }}
+            onClose={handleCloseDialog}
+            reservation={dialogReservation}
+            onSubmit={handleSubmit}
+            isSubmitting={createMutation.isPending || updateMutation.isPending}
+          />
         </main>
       )}
     </DebouncedSearchDraft>

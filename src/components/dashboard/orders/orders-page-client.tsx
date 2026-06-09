@@ -136,9 +136,12 @@ export function OrdersPageClient({
     [filters, router],
   );
 
-  const clearFilters = (
-    setSearchDraft: (value: string) => void,
-  ) => {
+  const handleDebouncedSearch = useCallback(
+    (search: string) => navigateFilters({ search }),
+    [navigateFilters],
+  );
+
+  const clearFilters = (setSearchDraft: (value: string) => void) => {
     const { from, to } = createDefaultOrdersDateRange(timezone);
     setSearchDraft("");
     navigateFilters({
@@ -184,7 +187,7 @@ export function OrdersPageClient({
     <DebouncedSearchDraft
       key={urlSearch}
       urlSearch={urlSearch}
-      onDebouncedChange={(search) => navigateFilters({ search })}
+      onDebouncedChange={handleDebouncedSearch}
     >
       {(searchDraft, setSearchDraft) => {
         const filterState: OrdersFiltersState = {
@@ -198,109 +201,113 @@ export function OrdersPageClient({
 
         return (
           <main className="flex flex-col gap-6 p-4 md:p-6">
-      <OrdersHeader
-        labels={labels}
-        onExport={handleExport}
-        onRefresh={() => {
-          void Promise.all([
-            ordersQuery.refetch(),
-            boardQuery.refetch(),
-            kpiQuery.refetch(),
-          ]);
-        }}
-        isRefreshing={
-          (ordersQuery.isFetching && !ordersQuery.isPending) ||
-          (boardQuery.isFetching && !boardQuery.isPending) ||
-          (kpiQuery.isFetching && !kpiQuery.isPending)
-        }
-      />
-      <OrdersKpis labels={labels.kpis} values={kpiValues} />
-      <AiOrderInsights
-        labels={labels.insights}
-        items={ordersQuery.data?.insights}
-      />
-
-      <QueryResultState query={ordersQuery}>
-        {() => (
-          <>
-            <OrdersFilters
+            <OrdersHeader
               labels={labels}
-              restaurants={restaurants}
-              timezone={timezone}
-              value={filterState}
-              onChange={(value) => {
-                setSearchDraft(value.search);
-                navigateFilters({
-                  search: value.search,
-                  status: value.status,
-                  channel: value.channel,
-                  from: value.from,
-                  to: value.to,
-                });
+              onExport={handleExport}
+              onRefresh={() => {
+                void Promise.all([
+                  ordersQuery.refetch(),
+                  boardQuery.refetch(),
+                  kpiQuery.refetch(),
+                ]);
               }}
-              onClear={() => clearFilters(setSearchDraft)}
+              isRefreshing={
+                (ordersQuery.isFetching && !ordersQuery.isPending) ||
+                (boardQuery.isFetching && !boardQuery.isPending) ||
+                (kpiQuery.isFetching && !kpiQuery.isPending)
+              }
+            />
+            <OrdersKpis labels={labels.kpis} values={kpiValues} />
+            <AiOrderInsights
+              labels={labels.insights}
+              items={ordersQuery.data?.insights}
             />
 
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="min-w-0"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <TabsList>
-                  <TabsTrigger value="orders">{labels.tabs.orders}</TabsTrigger>
-                  <TabsTrigger value="kanban">{labels.tabs.kanban}</TabsTrigger>
-                  <TabsTrigger value="timeline">
-                    {labels.tabs.timeline}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+            <QueryResultState query={ordersQuery}>
+              {() => (
+                <>
+                  <OrdersFilters
+                    labels={labels}
+                    restaurants={restaurants}
+                    timezone={timezone}
+                    value={filterState}
+                    onChange={(value) => {
+                      setSearchDraft(value.search);
+                      navigateFilters({
+                        search: value.search,
+                        status: value.status,
+                        channel: value.channel,
+                        from: value.from,
+                        to: value.to,
+                      });
+                    }}
+                    onClear={() => clearFilters(setSearchDraft)}
+                  />
 
-              <TabsContent value="orders" className="mt-4 space-y-4">
-                <OrdersTable
-                  labels={labels}
-                  orders={listOrders}
-                  onSelectOrder={setSelectedOrder}
-                />
-                <ListPagination
-                  basePath="/dashboard/orders"
-                  params={urlParams}
-                  meta={pagination}
-                  labels={labels.pagination}
-                />
-              </TabsContent>
-              <TabsContent value="kanban" className="mt-4">
-                <OrdersKanban
-                  labels={labels}
-                  orders={boardOrders}
-                  onSelectOrder={setSelectedOrder}
-                  isMoving={updateOrderStatusMutation.isPending}
-                  showDragGuide={activeTab === "kanban"}
-                  onMoveOrder={(orderId, status) =>
-                    updateOrderStatusMutation.mutate({ orderId, status })
-                  }
-                />
-              </TabsContent>
-              <TabsContent value="timeline" className="mt-4">
-                <OrdersTimeline
-                  labels={labels}
-                  orders={boardOrders}
-                  onSelectOrder={setSelectedOrder}
-                />
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
-      </QueryResultState>
+                  <Tabs
+                    value={activeTab}
+                    onValueChange={setActiveTab}
+                    className="min-w-0"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <TabsList>
+                        <TabsTrigger value="orders">
+                          {labels.tabs.orders}
+                        </TabsTrigger>
+                        <TabsTrigger value="kanban">
+                          {labels.tabs.kanban}
+                        </TabsTrigger>
+                        <TabsTrigger value="timeline">
+                          {labels.tabs.timeline}
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-      <OrderDetailsDrawer
-        labels={labels}
-        order={selectedOrder}
-        open={selectedOrder !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedOrder(null);
-        }}
-      />
+                    <TabsContent value="orders" className="mt-4 space-y-4">
+                      <OrdersTable
+                        labels={labels}
+                        orders={listOrders}
+                        onSelectOrder={setSelectedOrder}
+                      />
+                      <ListPagination
+                        basePath="/dashboard/orders"
+                        params={urlParams}
+                        meta={pagination}
+                        labels={labels.pagination}
+                      />
+                    </TabsContent>
+                    <TabsContent value="kanban" className="mt-4">
+                      <OrdersKanban
+                        labels={labels}
+                        orders={boardOrders}
+                        onSelectOrder={setSelectedOrder}
+                        isMoving={updateOrderStatusMutation.isPending}
+                        showDragGuide={activeTab === "kanban"}
+                        onMoveOrder={(orderId, status) =>
+                          updateOrderStatusMutation.mutate({ orderId, status })
+                        }
+                      />
+                    </TabsContent>
+                    <TabsContent value="timeline" className="mt-4">
+                      <OrdersTimeline
+                        labels={labels}
+                        orders={boardOrders}
+                        onSelectOrder={setSelectedOrder}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </>
+              )}
+            </QueryResultState>
+
+            <OrderDetailsDrawer
+              labels={labels}
+              order={selectedOrder}
+              open={selectedOrder !== null}
+              onOpenChange={(open) => {
+                if (!open) setSelectedOrder(null);
+              }}
+            />
           </main>
         );
       }}

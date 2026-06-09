@@ -67,8 +67,7 @@ function buildMenuServerSnapshotKey({
       .join("|"),
     categories
       .map(
-        (category) =>
-          `${category.id}:${category.name}:${category.itemCount}`,
+        (category) => `${category.id}:${category.name}:${category.itemCount}`,
       )
       .join("|"),
     customTagDefinitions.map((tag) => tag.key).join("|"),
@@ -149,11 +148,16 @@ export function MenuPageClient(props: MenuPageClientProps) {
     [filters, router],
   );
 
+  const handleDebouncedSearch = useCallback(
+    (search: string) => navigateFilters({ search }),
+    [navigateFilters],
+  );
+
   return (
     <DebouncedSearchDraft
       key={urlSearch}
       urlSearch={urlSearch}
-      onDebouncedChange={(search) => navigateFilters({ search })}
+      onDebouncedChange={handleDebouncedSearch}
     >
       {(searchDraft, setSearchDraft) => (
         <MenuPageClientBody
