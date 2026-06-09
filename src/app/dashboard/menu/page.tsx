@@ -3,7 +3,7 @@ import { MenuPageClient } from "@/components/dashboard/menu/menu-page-client";
 import type { MenuPageLabels } from "@/components/dashboard/menu/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
 import { listMenuCustomTags } from "@/lib/menu/custom-tags.server";
-import { parseMenuListSearchParams } from "@/lib/menu/filters";
+import { parseMenuListSearchParams } from "@/lib/menu/filter-utils";
 import {
   listMenuCategories,
   listMenuItemRecordsPaginated,

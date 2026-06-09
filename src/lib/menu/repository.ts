@@ -1,9 +1,9 @@
 import type { Prisma } from "@/generated/prisma/client";
 import {
-  buildMenuItemPrismaWhere,
   hasMenuContentFilters,
   type MenuListFilters,
-} from "@/lib/menu/filters";
+} from "@/lib/menu/filter-utils";
+import { buildMenuItemPrismaWhere } from "@/lib/menu/filters.server";
 import { syncMenuCustomTagsFromItemTags } from "@/lib/menu/custom-tags.server";
 import {
   buildPaginationMeta,

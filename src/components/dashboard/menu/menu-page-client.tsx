@@ -12,7 +12,7 @@ import { buildListUrl } from "@/lib/list-url";
 import {
   hasMenuContentFilters,
   parseMenuListSearchParams,
-} from "@/lib/menu/filters";
+} from "@/lib/menu/filter-utils";
 import {
   buildMenuCustomTagLabelMap,
   type MenuCustomTagRecord,
@@ -36,7 +36,7 @@ import { ContentLocalesDialog } from "./content-locales-dialog";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { MenuTreeBoard } from "./menu-tree-board";
 import type { MenuPageClientProps } from "./types";
-import type { MenuListFilters } from "@/lib/menu/filters";
+import type { MenuListFilters } from "@/lib/menu/filter-utils";
 import type {
   ProductFlowBlockRecord,
   ProductFlowTemplateRecord,
