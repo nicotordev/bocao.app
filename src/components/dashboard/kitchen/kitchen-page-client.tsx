@@ -58,17 +58,19 @@ export function KitchenPageClient({
   const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(null);
   const [isMoving, startMoving] = useTransition();
 
-  const orders = kitchenQuery.data?.orders ?? [];
   const insights = useMemo(
-    () => computeKitchenInsights(orders, insightLabels),
-    [insightLabels, orders],
+    () =>
+      computeKitchenInsights(kitchenQuery.data?.orders ?? [], insightLabels),
+    [insightLabels, kitchenQuery.data?.orders],
   );
 
   const filteredOrders = useMemo(() => {
+    const orders = kitchenQuery.data?.orders ?? [];
     return sortKitchenOrders(applyKitchenFilters(orders, filters));
-  }, [filters, orders]);
+  }, [filters, kitchenQuery.data?.orders]);
 
   const kpiValues = useMemo(() => {
+    const orders = kitchenQuery.data?.orders ?? [];
     const values = computeKitchenKpis(orders);
     const trends = computeKitchenKpiTrends(orders, {
       notAvailable: labels.kpis.notAvailable,
@@ -77,7 +79,7 @@ export function KitchenPageClient({
     });
 
     return { ...values, trends };
-  }, [labels.kpis, orders]);
+  }, [kitchenQuery.data?.orders, labels.kpis]);
 
   const persistOrderUpdate = useCallback(
     (

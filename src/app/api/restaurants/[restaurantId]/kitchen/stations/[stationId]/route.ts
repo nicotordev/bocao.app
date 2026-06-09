@@ -4,16 +4,14 @@ import {
   reorderKitchenStation,
   toggleKitchenStationActive,
   updateKitchenStation,
+  validateKitchenStationCategoryUpdate,
 } from "@/lib/kitchen/stations/repository";
 import {
   createUpdateKitchenStationBodySchema,
   reorderKitchenStationBodySchema,
 } from "@/lib/kitchen/stations/schemas";
 import { getKitchenStationValidationMessages } from "@/lib/kitchen/stations/validation-messages";
-import {
-  requireRestaurantAccess,
-  requireRestaurantWriteAccess,
-} from "@/lib/orders/api-auth";
+import { requireRestaurantWriteAccess } from "@/lib/orders/api-auth";
 
 type RouteContext = {
   params: Promise<{ restaurantId: string; stationId: string }>;
@@ -83,6 +81,20 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         error:
           parsed.error.issues[0]?.message ?? validationMessages.invalidBody,
       },
+      { status: 400 },
+    );
+  }
+
+  const categoryValidationError = await validateKitchenStationCategoryUpdate(
+    restaurantId,
+    stationId,
+    parsed.data,
+    validationMessages,
+  );
+
+  if (categoryValidationError) {
+    return NextResponse.json(
+      { error: categoryValidationError },
       { status: 400 },
     );
   }

@@ -9,9 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
+import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 
 type ReservationsFiltersProps = {
-  labels: any;
+  labels: ReservationsPageLabels;
   search: string;
   onSearchChange: (value: string) => void;
   status: string;
@@ -74,7 +75,14 @@ export function ReservationsFilters({
             <SelectContent>
               {statusOptions.map((opt) => (
                 <SelectItem key={opt} value={opt}>
-                  {opt === "all" ? labels.statuses.all : labels.statuses[opt]}
+                  {opt === "all"
+                    ? labels.statuses.all
+                    : labels.statuses[
+                        opt as Exclude<
+                          keyof ReservationsPageLabels["statuses"],
+                          "all"
+                        >
+                      ]}
                 </SelectItem>
               ))}
             </SelectContent>

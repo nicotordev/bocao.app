@@ -132,9 +132,11 @@ export function UserMenu({
       setIsProfileOpen(false);
       setProfileFile(null);
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || t("toasts.profileUpdateError"));
+      toast.error(
+        error instanceof Error ? error.message : t("toasts.profileUpdateError"),
+      );
     } finally {
       setIsSavingProfile(false);
     }

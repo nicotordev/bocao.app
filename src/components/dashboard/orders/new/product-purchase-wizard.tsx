@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -98,26 +98,27 @@ export function ProductPurchaseWizard({
     return resolveVisibleSteps(flow.steps, menuItem.flowBlocks, selections);
   }, [flow, menuItem.flowBlocks, selections]);
 
-  useEffect(() => {
-    if (!open || !flow) {
-      return;
-    }
+  const wizardKey = `${open}-${menuItem.id}-${flow?.id ?? "none"}`;
+  const [syncedWizardKey, setSyncedWizardKey] = useState(wizardKey);
 
-    setSelections(
-      createInitialSelections(flow.steps, menuItem.flowBlocks),
-    );
+  if (syncedWizardKey !== wizardKey && open && flow) {
+    setSyncedWizardKey(wizardKey);
+    setSelections(createInitialSelections(flow.steps, menuItem.flowBlocks));
     setStepIndex(0);
     setValidationError("");
-  }, [open, flow, menuItem.flowBlocks]);
+  }
 
-  useEffect(() => {
-    if (stepIndex >= visibleSteps.length && visibleSteps.length > 0) {
-      setStepIndex(visibleSteps.length - 1);
-    }
-  }, [stepIndex, visibleSteps.length]);
+  const safeStepIndex =
+    visibleSteps.length === 0
+      ? 0
+      : Math.min(stepIndex, visibleSteps.length - 1);
 
-  const currentStep = visibleSteps[stepIndex];
-  const isLastStep = stepIndex >= visibleSteps.length - 1;
+  if (safeStepIndex !== stepIndex && visibleSteps.length > 0) {
+    setStepIndex(safeStepIndex);
+  }
+
+  const currentStep = visibleSteps[safeStepIndex];
+  const isLastStep = safeStepIndex >= visibleSteps.length - 1;
 
   const livePrice = useMemo(() => {
     if (!flow) {
@@ -152,12 +153,14 @@ export function ProductPurchaseWizard({
     }
 
     const errors = validateFlowSelections({
-      steps: [findRawStep(flow.steps, currentStep.id) ?? {
-        kind: "inline",
-        id: currentStep.id,
-        type: currentStep.type,
-        config: currentStep.config,
-      }],
+      steps: [
+        findRawStep(flow.steps, currentStep.id) ?? {
+          kind: "inline",
+          id: currentStep.id,
+          type: currentStep.type,
+          config: currentStep.config,
+        },
+      ],
       blocks: menuItem.flowBlocks,
       selections,
       locale,
@@ -239,7 +242,7 @@ export function ProductPurchaseWizard({
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
               {labels.stepOf
-                .replace("{current}", String(stepIndex + 1))
+                .replace("{current}", String(safeStepIndex + 1))
                 .replace("{total}", String(visibleSteps.length))}
             </span>
             <span className="font-medium">
@@ -262,7 +265,9 @@ export function ProductPurchaseWizard({
               selection={selections[currentStep.id]}
               menuItemPrices={menuItemPrices}
               allMenuItems={allMenuItems}
-              onChange={(selection) => updateSelection(currentStep.id, selection)}
+              onChange={(selection) =>
+                updateSelection(currentStep.id, selection)
+              }
             />
           ) : null}
         </div>
@@ -281,8 +286,10 @@ export function ProductPurchaseWizard({
               type="button"
               variant="outline"
               className="gap-2 rounded-2xl"
-              onClick={() => setStepIndex((current) => Math.max(0, current - 1))}
-              disabled={stepIndex === 0}
+              onClick={() =>
+                setStepIndex((current) => Math.max(0, current - 1))
+              }
+              disabled={safeStepIndex === 0}
             >
               <ChevronLeft className="size-4" aria-hidden />
               {labels.back}
@@ -368,8 +375,7 @@ function FlowStepPanel({
             }
 
             const selected =
-              selection?.type === "choice" &&
-              selection.optionId === option.id;
+              selection?.type === "choice" && selection.optionId === option.id;
             const priceLabel =
               option.priceCents && option.priceCents > 0
                 ? `+${formatCurrency(option.priceCents, currency)}`
@@ -379,7 +385,9 @@ function FlowStepPanel({
               <button
                 key={option.id}
                 type="button"
-                onClick={() => onChange({ type: "choice", optionId: option.id })}
+                onClick={() =>
+                  onChange({ type: "choice", optionId: option.id })
+                }
                 className={cn(
                   "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors",
                   selected
@@ -495,7 +503,10 @@ function FlowStepPanel({
                   onChange({ type: "info", acknowledged: checked })
                 }
               />
-              <FieldLabel htmlFor={`info-${step.id}`} className="cursor-pointer">
+              <FieldLabel
+                htmlFor={`info-${step.id}`}
+                className="cursor-pointer"
+              >
                 {labels.required}
               </FieldLabel>
             </div>
@@ -549,8 +560,7 @@ function UpsellPanel({
     <div className="space-y-4 rounded-2xl border border-border p-4">
       <div>
         <p className="font-medium">
-          {upsellItem?.name ??
-            resolveLocalizedLabel(step.config.label, locale)}
+          {upsellItem?.name ?? resolveLocalizedLabel(step.config.label, locale)}
         </p>
         <p className="text-sm text-muted-foreground">
           {formatCurrency(priceCents, currency)}

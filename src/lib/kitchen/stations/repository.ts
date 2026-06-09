@@ -15,7 +15,9 @@ import type { z } from "zod";
 import {
   createKitchenStationBodySchema,
   createUpdateKitchenStationBodySchema,
+  getKitchenStationCategoryValidationError,
   reorderKitchenStationBodySchema,
+  type KitchenStationValidationMessages,
 } from "@/lib/kitchen/stations/schemas";
 
 type CreateKitchenStationInput = z.infer<
@@ -88,13 +90,61 @@ function normalizeCustomCategoryLabel(
   return trimmed ? trimmed : null;
 }
 
-function assertOtherCategoryLabel(
-  category: KitchenStationCategory,
-  customCategoryLabel: string | null,
-) {
-  if (category === "other" && !customCategoryLabel) {
-    throw new Error("Custom category label is required when category is other");
+function resolveKitchenStationCategoryFields(
+  existing: Pick<PrismaKitchenStation, "category" | "customCategoryLabel">,
+  input: UpdateKitchenStationInput,
+): {
+  category: KitchenStationCategory;
+  customCategoryLabel: string | null;
+} {
+  const nextCategory =
+    input.category !== undefined
+      ? input.category
+      : categoryFromDb[existing.category];
+  const nextCustomCategoryLabel =
+    input.customCategoryLabel !== undefined || input.category !== undefined
+      ? normalizeCustomCategoryLabel(
+          nextCategory,
+          input.customCategoryLabel !== undefined
+            ? input.customCategoryLabel
+            : existing.customCategoryLabel,
+        )
+      : existing.customCategoryLabel;
+
+  return {
+    category: nextCategory,
+    customCategoryLabel: nextCustomCategoryLabel,
+  };
+}
+
+export async function validateKitchenStationCategoryUpdate(
+  restaurantId: string,
+  stationId: string,
+  input: UpdateKitchenStationInput,
+  messages: KitchenStationValidationMessages,
+): Promise<string | null> {
+  const existing = await prisma.kitchenStation.findFirst({
+    where: {
+      id: stationId,
+      restaurantId,
+    },
+    select: {
+      category: true,
+      customCategoryLabel: true,
+    },
+  });
+
+  if (!existing) {
+    return null;
   }
+
+  const resolved = resolveKitchenStationCategoryFields(existing, input);
+
+  return getKitchenStationCategoryValidationError(
+    resolved.category,
+    resolved.customCategoryLabel,
+    messages,
+  );
 }
 
 function mapKitchenStationRecord(
@@ -224,7 +274,10 @@ export async function createKitchenStation(
     input.category,
     input.customCategoryLabel,
   );
-  assertOtherCategoryLabel(input.category, customCategoryLabel);
+
+  if (input.category === "other" && !customCategoryLabel) {
+    throw new Error("Custom category label is required when category is other");
+  }
 
   const record = await prisma.kitchenStation.create({
     data: {
@@ -262,20 +315,8 @@ export async function updateKitchenStation(
     return null;
   }
 
-  const nextCategory =
-    input.category !== undefined
-      ? input.category
-      : categoryFromDb[existing.category];
-  const nextCustomCategoryLabel =
-    input.customCategoryLabel !== undefined || input.category !== undefined
-      ? normalizeCustomCategoryLabel(
-          nextCategory,
-          input.customCategoryLabel !== undefined
-            ? input.customCategoryLabel
-            : existing.customCategoryLabel,
-        )
-      : existing.customCategoryLabel;
-  assertOtherCategoryLabel(nextCategory, nextCustomCategoryLabel);
+  const { customCategoryLabel: nextCustomCategoryLabel } =
+    resolveKitchenStationCategoryFields(existing, input);
 
   const record = await prisma.kitchenStation.update({
     where: { id: stationId },

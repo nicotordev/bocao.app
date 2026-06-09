@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
 import { formatCurrency } from "@/lib/orders/currency";
@@ -43,12 +43,13 @@ export function MenuProductPickerDialog({
     [groupedMenuItems],
   );
   const [activeCategory, setActiveCategory] = useState(categories[0] ?? "");
+  const pickerKey = `${open}-${categories.join(",")}`;
+  const [syncedPickerKey, setSyncedPickerKey] = useState(pickerKey);
 
-  useEffect(() => {
-    if (open && categories.length > 0) {
-      setActiveCategory(categories[0] ?? "");
-    }
-  }, [open, categories]);
+  if (syncedPickerKey !== pickerKey && open && categories.length > 0) {
+    setSyncedPickerKey(pickerKey);
+    setActiveCategory(categories[0] ?? "");
+  }
 
   const activeItems =
     groupedMenuItems.get(activeCategory) ??
@@ -64,7 +65,9 @@ export function MenuProductPickerDialog({
       <DialogContent className="flex max-h-[min(90vh,820px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl">
         <DialogHeader className="border-b border-border px-6 py-5">
           <DialogTitle>{labels.items.picker.title}</DialogTitle>
-          <DialogDescription>{labels.items.picker.description}</DialogDescription>
+          <DialogDescription>
+            {labels.items.picker.description}
+          </DialogDescription>
         </DialogHeader>
 
         {menuItems.length > 0 ? (

@@ -59,7 +59,7 @@ export async function updateRestaurantContentLocalesAction(input: {
     throw new Error("INVALID_INPUT");
   }
 
-  const context = await requireMenuWrite(parsed.data.restaurantId);
+  await requireMenuWrite(parsed.data.restaurantId);
   const contentLocales = await updateRestaurantContentLocales(
     parsed.data.restaurantId,
     parsed.data.contentLocales,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { CustomerOption } from "@/lib/customers/types";
-import type { CustomerFormDialogLabels } from "@/lib/customers/customer-form-labels";
 import type { Reservation, ReservationStatus } from "@/lib/reservations/types";
+import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 import { ReservationCustomerSection } from "./reservation-customer-section";
 import type {
   ReservationFormSubmitData,
@@ -30,35 +30,8 @@ import type {
   ReservationSelectedCustomer,
 } from "./reservation-dialog.types";
 
-type ReservationDialogLabels = {
-  form: {
-    guestCount: string;
-    scheduledAt: string;
-    status: string;
-    notes: string;
-    submitCreate: string;
-    submitEdit: string;
-    createDescription: string;
-    editDescription: string;
-    cancel: string;
-    saving: string;
-    save: string;
-    create: string;
-    validation: {
-      customers: string;
-    };
-    customer: CustomerFormDialogLabels["customer"] & {
-      title: string;
-      description: string;
-    };
-  };
-  actions: CustomerFormDialogLabels["actions"];
-  validation: CustomerFormDialogLabels["validation"];
-  statuses: Record<ReservationStatus, string>;
-};
-
 type ReservationDialogProps = {
-  labels: ReservationDialogLabels;
+  labels: ReservationsPageLabels;
   customers: CustomerOption[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -98,7 +71,16 @@ export function ReservationDialog({
   const [notes, setNotes] = useState("");
   const [customerError, setCustomerError] = useState("");
 
-  useEffect(() => {
+  const customerLookupKey = reservation?.customerId
+    ? (customers.find((customer) => customer.id === reservation.customerId)
+        ?.id ?? "pending")
+    : "none";
+  const formKey = `${open}-${reservation?.id ?? "new"}-${customerLookupKey}`;
+  const [syncedFormKey, setSyncedFormKey] = useState(formKey);
+
+  if (syncedFormKey !== formKey) {
+    setSyncedFormKey(formKey);
+
     if (reservation) {
       const linkedCustomer = reservation.customerId
         ? customers.find((customer) => customer.id === reservation.customerId)
@@ -148,7 +130,7 @@ export function ReservationDialog({
     }
 
     setCustomerError("");
-  }, [reservation, open, customers]);
+  }
 
   function syncExistingCustomers(nextExisting: CustomerOption[]) {
     setSelectedCustomers((current) => {

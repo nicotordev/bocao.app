@@ -4,7 +4,6 @@ import {
   getOrderCustomers,
   type OrderCustomerLabels,
 } from "@/lib/orders/order-customers";
-import { mapDbStatusToUi } from "@/lib/orders/order-mapper";
 import type {
   KitchenChannel,
   KitchenOrder,

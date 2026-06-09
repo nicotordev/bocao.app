@@ -1,5 +1,4 @@
 import type { PaginationMeta } from "@/lib/pagination";
-import type { Locale } from "@/i18n/locales";
 import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";

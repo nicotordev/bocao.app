@@ -1,8 +1,9 @@
 import { Plus, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 
 type ReservationsHeaderProps = {
-  labels: any;
+  labels: ReservationsPageLabels;
   onNew: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;

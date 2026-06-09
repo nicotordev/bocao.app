@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   createMenuCategoryAction,
@@ -47,11 +47,14 @@ export function MenuCategoryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = Boolean(category);
+  const formKey = `${open}-${category?.id ?? "new"}`;
+  const [syncedFormKey, setSyncedFormKey] = useState(formKey);
 
-  useEffect(() => {
+  if (syncedFormKey !== formKey) {
+    setSyncedFormKey(formKey);
     setName(category?.name ?? "");
     setValidationError("");
-  }, [category, open]);
+  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -147,7 +150,9 @@ export function MenuCategoryDialog({
           ) : null}
 
           <Field>
-            <FieldLabel className="required">{labels.categoryDialog.name}</FieldLabel>
+            <FieldLabel className="required">
+              {labels.categoryDialog.name}
+            </FieldLabel>
             <Input
               value={name}
               onChange={(event) => {

@@ -13,7 +13,6 @@ import { NewOrderNotesSection } from "./new-order-notes-section";
 import { NewOrderSummaryCard } from "./new-order-summary-card";
 import type {
   NewOrderFormValues,
-  NewOrderLabels,
   NewOrderLineItem,
   NewOrderNewCustomerInput,
   NewOrderPageClientProps,
@@ -33,8 +32,6 @@ function createLineItemId() {
 function createCustomerKey() {
   return crypto.randomUUID();
 }
-
-
 
 type NewOrderFormProps = Pick<
   NewOrderPageClientProps,
@@ -192,8 +189,7 @@ export function NewOrderForm({
 
     setValues((current) => {
       const existing = current.items.find(
-        (item) =>
-          item.menuItemId === menuItem.id && !item.customization,
+        (item) => item.menuItemId === menuItem.id && !item.customization,
       );
 
       if (existing) {
@@ -336,14 +332,19 @@ export function NewOrderForm({
     try {
       const response = await createOrderMutation.mutateAsync(payload);
       toast.success(labels.feedback.success);
-      router.push(`/dashboard/orders?created=${encodeURIComponent(response.order.id)}`);
+      router.push(
+        `/dashboard/orders?created=${encodeURIComponent(response.order.id)}`,
+      );
     } catch {
       toast.error(labels.feedback.error);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <form
+      onSubmit={handleSubmit}
+      className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]"
+    >
       <div className="space-y-6">
         <NewOrderChannelSection
           labels={labels}

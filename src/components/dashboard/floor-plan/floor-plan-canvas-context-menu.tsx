@@ -8,7 +8,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -87,12 +87,12 @@ export function FloorPlanCanvasContextMenu({
   onFloorDown,
 }: FloorPlanCanvasContextMenuProps) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const contextPointRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [contextPoint, setContextPoint] = useState({ x: 0, y: 0 });
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!open) {
@@ -131,10 +131,10 @@ export function FloorPlanCanvasContextMenu({
 
     event.preventDefault();
     event.stopPropagation();
-    contextPointRef.current = {
+    setContextPoint({
       x: event.clientX,
       y: event.clientY,
-    };
+    });
     setOpen(true);
   }
 
@@ -167,8 +167,8 @@ export function FloorPlanCanvasContextMenu({
                   elevated && "z-[100]",
                 )}
                 style={{
-                  left: contextPointRef.current.x,
-                  top: contextPointRef.current.y,
+                  left: contextPoint.x,
+                  top: contextPoint.y,
                 }}
               >
                 {!tablesModeActive ? (
@@ -190,8 +190,7 @@ export function FloorPlanCanvasContextMenu({
                 ) : (
                   <ContextMenuButton
                     onSelect={() => {
-                      const { x, y } = contextPointRef.current;
-                      onAddTable(x, y);
+                      onAddTable(contextPoint.x, contextPoint.y);
                       closeMenu();
                     }}
                   >

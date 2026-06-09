@@ -1,18 +1,12 @@
 "use client";
 
 import {
-  FLOOR_PLAN_TABLE_PALETTE_ID,
   FloorPlanTablePalette,
   FloorPlanTablePaletteStatic,
 } from "@/components/dashboard/floor-plan/floor-plan-table-palette";
 import type { FloorPlanPageLabels } from "@/components/dashboard/floor-plan/types";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,7 +51,6 @@ export function FloorPlanBuilderPanel({
   builderTool,
   selectedTable,
   isDndReady,
-  canEdit,
   showActions = true,
   isSaving = false,
   canCancel = false,
@@ -79,9 +72,7 @@ export function FloorPlanBuilderPanel({
             <FieldLabel>{labels.surfaceName}</FieldLabel>
             <Input
               value={draft.name}
-              onChange={(event) =>
-                onDraftChange({ name: event.target.value })
-              }
+              onChange={(event) => onDraftChange({ name: event.target.value })}
               placeholder={labels.surfaceNamePlaceholder}
             />
           </Field>

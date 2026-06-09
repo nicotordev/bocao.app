@@ -44,6 +44,32 @@ const kitchenStationCustomCategoryLabelSchema = z
   .optional()
   .nullable();
 
+export function getKitchenStationCategoryValidationError(
+  category: z.infer<typeof kitchenStationCategorySchema>,
+  customCategoryLabel: string | null | undefined,
+  messages: KitchenStationValidationMessages,
+): string | null {
+  const trimmed = customCategoryLabel?.trim();
+
+  if (category === "other" && !trimmed) {
+    return messages.otherCategoryLabel;
+  }
+
+  if (category !== "other" && trimmed) {
+    return messages.otherCategoryLabelOnlyForOther;
+  }
+
+  return null;
+}
+
+function addCustomCategoryLabelIssue(ctx: z.RefinementCtx, message: string) {
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ["customCategoryLabel"],
+    message,
+  });
+}
+
 function createValidateCustomCategoryLabel(
   messages: KitchenStationValidationMessages,
 ) {
@@ -56,22 +82,46 @@ function createValidateCustomCategoryLabel(
     data: T,
     ctx: z.RefinementCtx,
   ) => {
-    const trimmed = data.customCategoryLabel?.trim();
+    const error = getKitchenStationCategoryValidationError(
+      data.category,
+      data.customCategoryLabel,
+      messages,
+    );
 
-    if (data.category === "other" && !trimmed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["customCategoryLabel"],
-        message: messages.otherCategoryLabel,
-      });
+    if (error) {
+      addCustomCategoryLabelIssue(ctx, error);
+    }
+  };
+}
+
+function createValidateUpdateCustomCategoryLabel(
+  messages: KitchenStationValidationMessages,
+) {
+  return (
+    data: {
+      category?: z.infer<typeof kitchenStationCategorySchema>;
+      customCategoryLabel?: string | null;
+    },
+    ctx: z.RefinementCtx,
+  ) => {
+    if (data.category === undefined && data.customCategoryLabel === undefined) {
+      return;
     }
 
-    if (data.category !== "other" && trimmed) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["customCategoryLabel"],
-        message: messages.otherCategoryLabelOnlyForOther,
-      });
+    if (data.category !== undefined) {
+      if (data.category === "other" && data.customCategoryLabel === undefined) {
+        return;
+      }
+
+      const error = getKitchenStationCategoryValidationError(
+        data.category,
+        data.customCategoryLabel,
+        messages,
+      );
+
+      if (error) {
+        addCustomCategoryLabelIssue(ctx, error);
+      }
     }
   };
 }
@@ -109,7 +159,8 @@ export function createUpdateKitchenStationBodySchema(
     })
     .refine((value) => Object.keys(value).length > 0, {
       message: messages.requiredFields,
-    });
+    })
+    .superRefine(createValidateUpdateCustomCategoryLabel(messages));
 }
 
 export const kitchenStationCreateBodySchema = createKitchenStationBodySchema();

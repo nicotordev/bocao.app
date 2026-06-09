@@ -7,6 +7,7 @@ import {
   PointerSensor,
   TouchSensor,
   closestCorners,
+  useDraggable,
   useDroppable,
   useSensor,
   useSensors,
@@ -17,7 +18,6 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -28,6 +28,8 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import Image from "next/image";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import { toast } from "sonner";
@@ -93,22 +95,29 @@ export function MenuTreeBoard({
   onDeleteItem,
   onLayoutChange,
 }: MenuTreeBoardProps) {
-  const [layout, setLayout] = useState<MenuTreeLayout>(() =>
-    buildMenuTreeLayout(categories, items),
+  const baseLayout = useMemo(
+    () => buildMenuTreeLayout(categories, items),
+    [categories, items],
   );
+  const [dragLayout, setDragLayout] = useState<MenuTreeLayout | null>(null);
+  const layout = dragLayout ?? baseLayout;
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const layoutRef = useRef(layout);
   const layoutSnapshotRef = useRef<MenuTreeLayout | null>(null);
 
-  layoutRef.current = layout;
+  const [prevBaseLayout, setPrevBaseLayout] = useState(baseLayout);
+  if (prevBaseLayout !== baseLayout) {
+    setPrevBaseLayout(baseLayout);
+    setDragLayout(null);
+  }
+
+  useEffect(() => {
+    layoutRef.current = layout;
+  }, [layout]);
 
   const isFiltered = search.trim().length > 0 || !showUnavailable;
   const dragEnabled = canEdit && !isFiltered && !isSaving;
-
-  useEffect(() => {
-    setLayout(buildMenuTreeLayout(categories, items));
-  }, [categories, items]);
 
   const displayLayout = useMemo(
     () =>
@@ -172,8 +181,7 @@ export function MenuTreeBoard({
     } catch {
       const snapshot = layoutSnapshotRef.current;
       if (snapshot) {
-        setLayout(snapshot);
-        layoutRef.current = snapshot;
+        setDragLayout(snapshot);
       }
       toast.error(labels.feedback.error);
     } finally {
@@ -206,13 +214,11 @@ export function MenuTreeBoard({
       return;
     }
 
-    setLayout((current) => {
-      const nextLayout =
-        applyMenuTreeMove(current, String(active.id), String(over.id)) ??
-        current;
-
-      layoutRef.current = nextLayout;
-      return nextLayout;
+    setDragLayout((current) => {
+      const base = current ?? baseLayout;
+      return (
+        applyMenuTreeMove(base, String(active.id), String(over.id)) ?? base
+      );
     });
   }
 
@@ -228,8 +234,7 @@ export function MenuTreeBoard({
     if (!over) {
       const snapshot = layoutSnapshotRef.current;
       if (snapshot) {
-        setLayout(snapshot);
-        layoutRef.current = snapshot;
+        setDragLayout(snapshot);
       }
       layoutSnapshotRef.current = null;
       return;
@@ -242,8 +247,7 @@ export function MenuTreeBoard({
       nextLayout =
         applyMenuTreeMove(nextLayout, String(active.id), String(over.id)) ??
         nextLayout;
-      setLayout(nextLayout);
-      layoutRef.current = nextLayout;
+      setDragLayout(nextLayout);
       void persistLayout(nextLayout);
     }
 
@@ -254,8 +258,7 @@ export function MenuTreeBoard({
     setActiveId(null);
     const snapshot = layoutSnapshotRef.current;
     if (snapshot) {
-      setLayout(snapshot);
-      layoutRef.current = snapshot;
+      setDragLayout(snapshot);
     }
     layoutSnapshotRef.current = null;
   }
@@ -361,30 +364,24 @@ function MenuTreeCategorySection({
   onEditItem: (item: MenuItemRecord) => void;
   onDeleteItem: (item: MenuItemRecord) => void;
 }) {
-  const sortable = useSortable({
-    id: categoryNodeId(category.id),
-    disabled: !dragEnabled,
-    data: { type: "category" },
-  });
-
-  const dropZone = useDroppable({
-    id: categoryDropId(category.id),
-    disabled: !dragEnabled,
-    data: { type: "category-drop", categoryId: category.id },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: categoryNodeId(category.id),
+      disabled: !dragEnabled,
+      data: { type: "category" },
+    });
 
   const style = {
-    transform: CSS.Transform.toString(sortable.transform),
-    transition: sortable.transition,
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
   };
 
   return (
     <section
-      ref={sortable.setNodeRef}
+      ref={setNodeRef}
       style={style}
       className={cn(
         "rounded-3xl border border-border bg-card shadow-sm",
-        sortable.isDragging && "opacity-50",
+        isDragging && "opacity-50",
       )}
     >
       <div className="flex items-center gap-2 border-b border-border px-3 py-3">
@@ -393,8 +390,8 @@ function MenuTreeCategorySection({
             type="button"
             className="touch-none rounded-lg p-1 text-muted-foreground hover:bg-muted"
             aria-label={labels.tree.dragCategory}
-            {...sortable.attributes}
-            {...sortable.listeners}
+            {...attributes}
+            {...listeners}
           >
             <GripVertical className="size-4" aria-hidden />
           </button>
@@ -419,12 +416,11 @@ function MenuTreeCategorySection({
         ) : null}
       </div>
 
-      <div
-        ref={dropZone.setNodeRef}
-        className={cn(
-          "space-y-2 p-3 pl-5 md:pl-8",
-          dropZone.isOver && "bg-primary/5",
-        )}
+      <MenuTreeCategoryDropZone
+        categoryId={category.id}
+        dragEnabled={dragEnabled}
+        emptyLabel={labels.tree.emptyCategory}
+        itemCount={items.length}
       >
         <SortableContext
           items={items.map((item) => itemNodeId(item.id))}
@@ -445,14 +441,43 @@ function MenuTreeCategorySection({
             />
           ))}
         </SortableContext>
-
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-            {labels.tree.emptyCategory}
-          </div>
-        ) : null}
-      </div>
+      </MenuTreeCategoryDropZone>
     </section>
+  );
+}
+
+function MenuTreeCategoryDropZone({
+  categoryId,
+  dragEnabled,
+  emptyLabel,
+  itemCount,
+  children,
+}: {
+  categoryId: string;
+  dragEnabled: boolean;
+  emptyLabel: string;
+  itemCount: number;
+  children: ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: categoryDropId(categoryId),
+    disabled: !dragEnabled,
+    data: { type: "category-drop", categoryId },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn("space-y-2 p-3 pl-5 md:pl-8", isOver && "bg-primary/5")}
+    >
+      {children}
+
+      {itemCount === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
+          {emptyLabel}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -485,24 +510,24 @@ function MenuTreeItemRow({
     defaultLocale,
   );
 
-  const sortable = useSortable({
-    id: itemNodeId(item.id),
-    disabled: !dragEnabled,
-    data: { type: "item", categoryId: item.categoryId },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: itemNodeId(item.id),
+      disabled: !dragEnabled,
+      data: { type: "item", categoryId: item.categoryId },
+    });
 
   const style = {
-    transform: CSS.Transform.toString(sortable.transform),
-    transition: sortable.transition,
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
   };
 
   return (
     <div
-      ref={sortable.setNodeRef}
+      ref={setNodeRef}
       style={style}
       className={cn(
         "flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-2.5",
-        sortable.isDragging && "opacity-50",
+        isDragging && "opacity-50",
       )}
     >
       {dragEnabled ? (
@@ -510,8 +535,8 @@ function MenuTreeItemRow({
           type="button"
           className="touch-none rounded-lg p-1 text-muted-foreground hover:bg-muted"
           aria-label={labels.tree.dragItem}
-          {...sortable.attributes}
-          {...sortable.listeners}
+          {...attributes}
+          {...listeners}
         >
           <GripVertical className="size-4" aria-hidden />
         </button>
@@ -630,9 +655,12 @@ function MenuItemThumbnail({
 }) {
   if (imageUrl) {
     return (
-      <img
+      <Image
         src={imageUrl}
         alt={name}
+        width={40}
+        height={40}
+        unoptimized
         className="size-10 shrink-0 rounded-xl object-cover"
       />
     );

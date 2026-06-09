@@ -9,7 +9,13 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { toast } from "sonner";
 import { saveFloorPlanAction } from "@/app/actions/floor-plan";
 import { useDashboardFocusMode } from "@/components/dashboard/dashboard-focus-mode";
@@ -142,7 +148,11 @@ export function FloorPlanPageClient({
     null,
   );
   const [isPaletteDragging, setIsPaletteDragging] = useState(false);
-  const [isDndReady, setIsDndReady] = useState(false);
+  const isDndReady = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasDropRef = useRef<HTMLDivElement | null>(null);
   const pointerRef = useRef({ x: 0, y: 0 });
@@ -151,10 +161,6 @@ export function FloorPlanPageClient({
   const { recordHistory, undo, clearHistory } = useFloorPlanUndo<EditorDraft>();
   const { isFocused, exitFocus } = useDashboardFocusMode();
   const canvasSize = useFloorPlanCanvasSize(canvasContainerRef, isFocused);
-
-  useEffect(() => {
-    setIsDndReady(true);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -301,15 +307,13 @@ export function FloorPlanPageClient({
     builderTool === "tables" &&
     !isFloorPlanTableDragGuideDismissed();
 
-  const {
-    dismissOverlay: dismissTablesModeOverlay,
-    dismissGuide: dismissTablesModeGuide,
-  } = useFloorPlanTablesModeGuide({
-    active: shouldOfferTablesModeGuide,
-    title: labels.builder.tablesModeGuideTitle,
-    description: labels.builder.tablesModeGuideDescription,
-    doneText: labels.builder.tablesModeGuideDismiss,
-  });
+  const { dismissOverlay: dismissTablesModeOverlay } =
+    useFloorPlanTablesModeGuide({
+      active: shouldOfferTablesModeGuide,
+      title: labels.builder.tablesModeGuideTitle,
+      description: labels.builder.tablesModeGuideDescription,
+      doneText: labels.builder.tablesModeGuideDismiss,
+    });
 
   const { dismissOverlay, dismissGuide } = useFloorPlanTableDragGuide({
     active: shouldOfferTableDragGuide && !isPaletteDragging,

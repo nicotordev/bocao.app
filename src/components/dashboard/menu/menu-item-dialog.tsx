@@ -27,7 +27,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -209,7 +208,15 @@ export function MenuItemDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, item?.id, restaurantId]);
+  }, [
+    categories,
+    customTagsByKey,
+    item,
+    locale,
+    open,
+    productFlowsByMenuItemId,
+    restaurantId,
+  ]);
 
   function updateField<K extends keyof MenuItemFormValues>(
     field: K,

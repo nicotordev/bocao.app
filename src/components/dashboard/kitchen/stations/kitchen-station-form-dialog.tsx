@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,8 +79,11 @@ export function KitchenStationFormDialog({
   const [otherCategoryError, setOtherCategoryError] = useState("");
 
   const isEditing = Boolean(station);
+  const formKey = `${open}-${station?.id ?? "new"}`;
+  const [syncedFormKey, setSyncedFormKey] = useState(formKey);
 
-  useEffect(() => {
+  if (syncedFormKey !== formKey) {
+    setSyncedFormKey(formKey);
     setName(station?.name ?? "");
     setDescription(station?.description ?? "");
     setCategory(station?.category ?? "grill");
@@ -91,7 +94,7 @@ export function KitchenStationFormDialog({
     setSortOrder(station ? String(station.sortOrder + 1) : "");
     setValidationError("");
     setOtherCategoryError("");
-  }, [station, open]);
+  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();

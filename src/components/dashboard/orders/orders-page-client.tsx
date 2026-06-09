@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
@@ -55,8 +55,6 @@ export function OrdersPageClient({
     null,
   );
   const [activeTab, setActiveTab] = useState("orders");
-  const [searchDraft, setSearchDraft] = useState("");
-
   const filters = useMemo(
     () =>
       parseOrdersListSearchParams(
@@ -66,21 +64,14 @@ export function OrdersPageClient({
     [searchParams, timezone],
   );
 
-  useEffect(() => {
-    setSearchDraft(filters.search ?? "");
-  }, [filters.search]);
+  const urlSearch = filters.search ?? "";
+  const [searchDraft, setSearchDraft] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if ((filters.search ?? "") === searchDraft) {
-        return;
-      }
-
-      navigateFilters({ search: searchDraft });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [filters.search, searchDraft]);
+  if (prevUrlSearch !== urlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearchDraft(urlSearch);
+  }
 
   const kpiFilters = useMemo(() => toOrdersKpiFilters(filters), [filters]);
   const ordersQuery = useOrdersListQuery(restaurantId, filters);
@@ -117,9 +108,8 @@ export function OrdersPageClient({
     [filters],
   );
 
-  const kpiOrders = kpiQuery.data?.orders ?? [];
-
   const kpiValues = useMemo(() => {
+    const kpiOrders = kpiQuery.data?.orders ?? [];
     const values = computeOrdersKpis(kpiOrders);
     const trends = computeOrdersKpiTrends(kpiOrders, {
       notAvailable: labels.kpis.notAvailable,
@@ -128,35 +118,50 @@ export function OrdersPageClient({
     });
 
     return { ...values, trends };
-  }, [kpiOrders, labels.kpis]);
+  }, [kpiQuery.data?.orders, labels.kpis]);
 
-  function navigateFilters(
-    next: Partial<OrdersListFilters & OrdersFiltersState>,
-    options?: { page?: number },
-  ) {
-    router.push(
-      buildListUrl(
-        "/dashboard/orders",
-        {
-          search: next.search ?? filters.search,
-          status:
-            (next.status ?? filters.status) === "all"
-              ? undefined
-              : (next.status ?? filters.status),
-          channel:
-            (next.channel ?? filters.channel) === "all"
-              ? undefined
-              : (next.channel ?? filters.channel),
-          from: next.from ?? filters.from,
-          to: next.to ?? filters.to,
-        },
-        {
-          page: options?.page ?? 1,
-          pageSize: filters.pageSize,
-        },
-      ),
-    );
-  }
+  const navigateFilters = useCallback(
+    (
+      next: Partial<OrdersListFilters & OrdersFiltersState>,
+      options?: { page?: number },
+    ) => {
+      router.push(
+        buildListUrl(
+          "/dashboard/orders",
+          {
+            search: next.search ?? filters.search,
+            status:
+              (next.status ?? filters.status) === "all"
+                ? undefined
+                : (next.status ?? filters.status),
+            channel:
+              (next.channel ?? filters.channel) === "all"
+                ? undefined
+                : (next.channel ?? filters.channel),
+            from: next.from ?? filters.from,
+            to: next.to ?? filters.to,
+          },
+          {
+            page: options?.page ?? 1,
+            pageSize: filters.pageSize,
+          },
+        ),
+      );
+    },
+    [filters, router],
+  );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (urlSearch === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [navigateFilters, searchDraft, urlSearch]);
 
   const clearFilters = () => {
     const { from, to } = createDefaultOrdersDateRange(timezone);

@@ -35,9 +35,10 @@ import type { Reservation, ReservationStatus } from "@/lib/reservations/types";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { useLocale } from "next-intl";
+import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 
 type ReservationsTableProps = {
-  labels: any;
+  labels: ReservationsPageLabels;
   reservations: Reservation[];
   onEdit: (reservation: Reservation) => void;
   onUpdateStatus: (id: string, status: ReservationStatus) => void;
@@ -92,7 +93,7 @@ export function ReservationsTable({
               <TableHead className="w-[120px]">
                 {labels.form.scheduledAt}
               </TableHead>
-              <TableHead>{labels.form.guestName}</TableHead>
+              <TableHead>{labels.form.customer.name}</TableHead>
               <TableHead className="text-center w-[120px]">
                 {labels.form.guestCount}
               </TableHead>
@@ -264,7 +265,7 @@ function ReservationActions({
   disabled = false,
   variant = "icon",
 }: {
-  labels: any;
+  labels: ReservationsPageLabels;
   reservation: Reservation;
   onEdit: () => void;
   onUpdateStatus: (status: ReservationStatus) => void;

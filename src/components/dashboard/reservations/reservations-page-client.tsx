@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { useReservationsListQuery } from "@/lib/query/reservations/reservations.queries";
@@ -24,11 +24,12 @@ import type {
   ReservationsKpiValues,
   ReservationStatus,
 } from "@/lib/reservations/types";
+import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 import type { CustomerOption } from "@/lib/customers/types";
-import { format, startOfDay } from "date-fns";
+import { startOfDay } from "date-fns";
 
 type ReservationsPageClientProps = {
-  labels: any;
+  labels: ReservationsPageLabels;
   restaurantId: string;
   customers: CustomerOption[];
   initialReservation?: Reservation | null;
@@ -45,8 +46,6 @@ export function ReservationsPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const openedViaDeepLink = useRef(Boolean(initialReservation));
-  const [searchDraft, setSearchDraft] = useState("");
-
   const filters = useMemo(
     () =>
       parseReservationsListSearchParams(
@@ -55,34 +54,26 @@ export function ReservationsPageClient({
     [searchParams],
   );
 
-  useEffect(() => {
-    setSearchDraft(filters.search ?? "");
-  }, [filters.search]);
+  const urlSearch = filters.search ?? "";
+  const [searchDraft, setSearchDraft] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if ((filters.search ?? "") === searchDraft) {
-        return;
-      }
-
-      navigateFilters({ search: searchDraft });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [filters.search, searchDraft]);
+  if (prevUrlSearch !== urlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearchDraft(urlSearch);
+  }
 
   const [activeReservation, setActiveReservation] =
     useState<Reservation | null>(initialReservation);
   const [isDialogOpen, setIsDialogOpen] = useState(Boolean(initialReservation));
 
-  useEffect(() => {
-    if (!initialReservation) {
-      return;
-    }
-
+  const [prevInitialReservation, setPrevInitialReservation] =
+    useState(initialReservation);
+  if (initialReservation && prevInitialReservation !== initialReservation) {
+    setPrevInitialReservation(initialReservation);
     setActiveReservation(initialReservation);
     setIsDialogOpen(true);
-  }, [initialReservation]);
+  }
 
   const reservationsQuery = useReservationsListQuery(restaurantId, filters);
 
@@ -129,44 +120,59 @@ export function ReservationsPageClient({
     guests: 0,
   };
 
-  function navigateFilters(
-    next: {
-      search?: string;
-      status?: string;
-      date?: Date | undefined;
-    },
-    options?: { page?: number },
-  ) {
-    const nextFrom = next.date
-      ? startOfDay(next.date).toISOString()
-      : filters.from;
-    const nextTo = next.date
-      ? new Date(
-          startOfDay(next.date).getTime() + 24 * 60 * 60 * 1000 - 1,
-        ).toISOString()
-      : filters.to;
+  const navigateFilters = useCallback(
+    (
+      next: {
+        search?: string;
+        status?: string;
+        date?: Date | undefined;
+      },
+      options?: { page?: number },
+    ) => {
+      const nextFrom = next.date
+        ? startOfDay(next.date).toISOString()
+        : filters.from;
+      const nextTo = next.date
+        ? new Date(
+            startOfDay(next.date).getTime() + 24 * 60 * 60 * 1000 - 1,
+          ).toISOString()
+        : filters.to;
 
-    router.push(
-      buildListUrl(
-        "/dashboard/reservations",
-        {
-          search: next.search ?? filters.search,
-          status:
-            (next.status ?? filters.status) === "all"
-              ? undefined
-              : (next.status ?? filters.status),
-          from:
-            next.date === undefined && "date" in next ? undefined : nextFrom,
-          to: next.date === undefined && "date" in next ? undefined : nextTo,
-          reservationId: searchParams.get("reservationId") ?? undefined,
-        },
-        {
-          page: options?.page ?? 1,
-          pageSize: filters.pageSize,
-        },
-      ),
-    );
-  }
+      router.push(
+        buildListUrl(
+          "/dashboard/reservations",
+          {
+            search: next.search ?? filters.search,
+            status:
+              (next.status ?? filters.status) === "all"
+                ? undefined
+                : (next.status ?? filters.status),
+            from:
+              next.date === undefined && "date" in next ? undefined : nextFrom,
+            to: next.date === undefined && "date" in next ? undefined : nextTo,
+            reservationId: searchParams.get("reservationId") ?? undefined,
+          },
+          {
+            page: options?.page ?? 1,
+            pageSize: filters.pageSize,
+          },
+        ),
+      );
+    },
+    [filters, router, searchParams],
+  );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (urlSearch === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [navigateFilters, searchDraft, urlSearch]);
 
   const handleCreate = () => {
     setActiveReservation(null);

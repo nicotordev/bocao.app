@@ -1,5 +1,16 @@
 import { getTranslations } from "next-intl/server";
 
+export type ReservationsPageLabels = Awaited<
+  ReturnType<typeof getReservationsPageLabels>
+> & {
+  pagination: {
+    previous: string;
+    next: string;
+    page: string;
+    of: string;
+  };
+};
+
 export async function getReservationsPageLabels() {
   const t = await getTranslations("dashboard.reservations");
 

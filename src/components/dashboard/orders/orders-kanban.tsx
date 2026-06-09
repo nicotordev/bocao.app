@@ -12,7 +12,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useKanbanDragGuide } from "@/hooks/use-kanban-drag-guide";
 import { isKanbanDragGuideDismissed } from "@/lib/orders/kanban-guide";
 import {
@@ -60,34 +60,30 @@ export function OrdersKanban({
   showDragGuide = false,
 }: OrdersKanbanProps) {
   const [activeOrder, setActiveOrder] = useState<DashboardOrder | null>(null);
-  const [phantomOrder, setPhantomOrder] = useState<DashboardOrder | null>(null);
+  const [phantomDismissed, setPhantomDismissed] = useState(false);
 
   const shouldOfferGuide = showDragGuide && !isKanbanDragGuideDismissed();
 
   const removePhantomOrder = useCallback(() => {
-    setPhantomOrder(null);
+    setPhantomDismissed(true);
   }, []);
 
-  useEffect(() => {
-    if (!shouldOfferGuide || orders.length > 0) {
-      setPhantomOrder(null);
-      return;
+  const phantomOrder = useMemo(() => {
+    if (phantomDismissed || !shouldOfferGuide || orders.length > 0) {
+      return null;
     }
 
-    setPhantomOrder(
-      (current) =>
-        current ??
-        createKanbanGuidePhantomOrder({
-          customerName: labels.kanban.guidePhantomCustomer,
-          total: labels.kanban.guidePhantomTotal,
-          owner: labels.kanban.guidePhantomOwner,
-        }),
-    );
+    return createKanbanGuidePhantomOrder({
+      customerName: labels.kanban.guidePhantomCustomer,
+      total: labels.kanban.guidePhantomTotal,
+      owner: labels.kanban.guidePhantomOwner,
+    });
   }, [
     labels.kanban.guidePhantomCustomer,
     labels.kanban.guidePhantomOwner,
     labels.kanban.guidePhantomTotal,
     orders.length,
+    phantomDismissed,
     shouldOfferGuide,
   ]);
 

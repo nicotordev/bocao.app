@@ -8,21 +8,20 @@ type CanvasSize = {
   height: number;
 };
 
+const collapsedCanvasSize: CanvasSize = {
+  width: FLOOR_PLAN_CANVAS.width,
+  height: FLOOR_PLAN_CANVAS.height,
+};
+
 export function useFloorPlanCanvasSize(
   containerRef: RefObject<HTMLElement | null>,
   expanded: boolean,
 ) {
-  const [size, setSize] = useState<CanvasSize>({
-    width: FLOOR_PLAN_CANVAS.width,
-    height: FLOOR_PLAN_CANVAS.height,
-  });
+  const [expandedSize, setExpandedSize] =
+    useState<CanvasSize>(collapsedCanvasSize);
 
   useEffect(() => {
     if (!expanded) {
-      setSize({
-        width: FLOOR_PLAN_CANVAS.width,
-        height: FLOOR_PLAN_CANVAS.height,
-      });
       return;
     }
 
@@ -40,7 +39,7 @@ export function useFloorPlanCanvasSize(
       }
 
       const rect = element.getBoundingClientRect();
-      setSize({
+      setExpandedSize({
         width: Math.max(480, Math.floor(rect.width)),
         height: Math.max(360, Math.floor(rect.height)),
       });
@@ -54,5 +53,5 @@ export function useFloorPlanCanvasSize(
     return () => observer.disconnect();
   }, [containerRef, expanded]);
 
-  return size;
+  return expanded ? expandedSize : collapsedCanvasSize;
 }

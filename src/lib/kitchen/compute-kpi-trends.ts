@@ -23,7 +23,6 @@ export function computeKitchenKpiTrends(
   orders: KitchenOrder[],
   labels: KitchenKpiTrendLabels,
 ): KitchenKpiTrendValues {
-  const activeOrders = orders.filter((order) => order.status !== "delivered");
   const preparingOrders = orders.filter((order) =>
     ["received", "in_preparation", "waiting", "delayed"].includes(order.status),
   );

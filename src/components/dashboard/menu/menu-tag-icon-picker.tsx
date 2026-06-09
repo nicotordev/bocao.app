@@ -1,7 +1,7 @@
 "use client";
 
 import type { MenuTagIconId } from "@/lib/menu/tag-icons";
-import { getMenuTagIcon, MENU_TAG_ICON_IDS } from "@/lib/menu/tag-icons";
+import { MENU_TAG_ICON_IDS, MENU_TAG_ICONS } from "@/lib/menu/tag-icons";
 import { cn } from "@/lib/utils";
 
 type MenuTagIconPickerProps = {
@@ -18,17 +18,9 @@ export function MenuTagIconPicker({
   className,
 }: MenuTagIconPickerProps) {
   return (
-    <div
-      className={cn(
-        "grid grid-cols-5 gap-1.5 sm:grid-cols-10",
-        className,
-      )}
-    >
+    <div className={cn("grid grid-cols-5 gap-1.5 sm:grid-cols-10", className)}>
       {MENU_TAG_ICON_IDS.map((iconId) => {
-        const Icon = getMenuTagIcon(iconId);
-        if (!Icon) {
-          return null;
-        }
+        const Icon = MENU_TAG_ICONS[iconId];
 
         const isSelected = value === iconId;
 
@@ -63,10 +55,10 @@ export function MenuTagIconGlyph({
   icon?: MenuTagIconId;
   className?: string;
 }) {
-  const Icon = getMenuTagIcon(icon);
-  if (!Icon) {
+  if (!icon) {
     return null;
   }
 
+  const Icon = MENU_TAG_ICONS[icon];
   return <Icon className={className} aria-hidden />;
 }

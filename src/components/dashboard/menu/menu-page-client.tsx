@@ -2,7 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
 import { deleteMenuItemAction } from "@/app/actions/menu";
 import { ListPagination } from "@/components/dashboard/list-pagination";
@@ -38,7 +44,6 @@ import type { MenuPageClientProps } from "./types";
 import type {
   ProductFlowBlockRecord,
   ProductFlowTemplateRecord,
-  ProductPurchaseFlowRecord,
 } from "@/lib/product-flow/types";
 
 export function MenuPageClient({
@@ -62,28 +67,19 @@ export function MenuPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRefreshing, startRefresh] = useTransition();
-  const [searchDraft, setSearchDraft] = useState("");
-
   const filters = useMemo(
     () => parseMenuListSearchParams(Object.fromEntries(searchParams.entries())),
     [searchParams],
   );
 
-  useEffect(() => {
-    setSearchDraft(filters.search ?? "");
-  }, [filters.search]);
+  const urlSearch = filters.search ?? "";
+  const [searchDraft, setSearchDraft] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if ((filters.search ?? "") === searchDraft) {
-        return;
-      }
-
-      navigateFilters({ search: searchDraft });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [filters.search, searchDraft]);
+  if (prevUrlSearch !== urlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearchDraft(urlSearch);
+  }
 
   const [contentLocales, setContentLocales] = useState(initialContentLocales);
   const [localeOptionsState, setLocaleOptionsState] = useState(localeOptions);
@@ -107,21 +103,48 @@ export function MenuPageClient({
     initialProductFlowsByMenuItemId,
   );
 
-  useEffect(() => {
+  const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
+  if (prevInitialItems !== initialItems) {
+    setPrevInitialItems(initialItems);
     setItems(initialItems);
+  }
+
+  const [prevInitialCategories, setPrevInitialCategories] =
+    useState(initialCategories);
+  if (prevInitialCategories !== initialCategories) {
+    setPrevInitialCategories(initialCategories);
     setCategories(initialCategories);
-    setCustomTagDefinitions(initialCustomTagDefinitions);
-    setFlowBlocks(initialFlowBlocks);
-    setFlowTemplates(initialFlowTemplates);
-    setProductFlowsByMenuItemId(initialProductFlowsByMenuItemId);
-  }, [
-    initialItems,
-    initialCategories,
+  }
+
+  const [prevInitialCustomTags, setPrevInitialCustomTags] = useState(
     initialCustomTagDefinitions,
-    initialFlowBlocks,
-    initialFlowTemplates,
+  );
+  if (prevInitialCustomTags !== initialCustomTagDefinitions) {
+    setPrevInitialCustomTags(initialCustomTagDefinitions);
+    setCustomTagDefinitions(initialCustomTagDefinitions);
+  }
+
+  const [prevInitialFlowBlocks, setPrevInitialFlowBlocks] =
+    useState(initialFlowBlocks);
+  if (prevInitialFlowBlocks !== initialFlowBlocks) {
+    setPrevInitialFlowBlocks(initialFlowBlocks);
+    setFlowBlocks(initialFlowBlocks);
+  }
+
+  const [prevInitialFlowTemplates, setPrevInitialFlowTemplates] =
+    useState(initialFlowTemplates);
+  if (prevInitialFlowTemplates !== initialFlowTemplates) {
+    setPrevInitialFlowTemplates(initialFlowTemplates);
+    setFlowTemplates(initialFlowTemplates);
+  }
+
+  const [prevInitialProductFlows, setPrevInitialProductFlows] = useState(
     initialProductFlowsByMenuItemId,
-  ]);
+  );
+  if (prevInitialProductFlows !== initialProductFlowsByMenuItemId) {
+    setPrevInitialProductFlows(initialProductFlowsByMenuItemId);
+    setProductFlowsByMenuItemId(initialProductFlowsByMenuItemId);
+  }
 
   const customTagLabels = useMemo(
     () =>
@@ -149,37 +172,52 @@ export function MenuPageClient({
 
   const contentFiltersActive = hasMenuContentFilters(filters);
 
-  function navigateFilters(
-    next: {
-      search?: string;
-      categoryId?: string;
-      showUnavailable?: boolean;
-    },
-    options?: { page?: number },
-  ) {
-    const nextCategoryId = next.categoryId ?? filters.categoryId;
+  const navigateFilters = useCallback(
+    (
+      next: {
+        search?: string;
+        categoryId?: string;
+        showUnavailable?: boolean;
+      },
+      options?: { page?: number },
+    ) => {
+      const nextCategoryId = next.categoryId ?? filters.categoryId;
 
-    router.push(
-      buildListUrl(
-        "/dashboard/menu",
-        {
-          search: next.search ?? filters.search,
-          category:
-            nextCategoryId && nextCategoryId !== "all"
-              ? nextCategoryId
-              : undefined,
-          showUnavailable:
-            (next.showUnavailable ?? filters.showUnavailable) === false
-              ? "false"
-              : undefined,
-        },
-        {
-          page: options?.page ?? 1,
-          pageSize: filters.pageSize,
-        },
-      ),
-    );
-  }
+      router.push(
+        buildListUrl(
+          "/dashboard/menu",
+          {
+            search: next.search ?? filters.search,
+            category:
+              nextCategoryId && nextCategoryId !== "all"
+                ? nextCategoryId
+                : undefined,
+            showUnavailable:
+              (next.showUnavailable ?? filters.showUnavailable) === false
+                ? "false"
+                : undefined,
+          },
+          {
+            page: options?.page ?? 1,
+            pageSize: filters.pageSize,
+          },
+        ),
+      );
+    },
+    [filters, router],
+  );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (urlSearch === searchDraft) {
+        return;
+      }
+
+      navigateFilters({ search: searchDraft });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [navigateFilters, searchDraft, urlSearch]);
 
   function handleRefresh() {
     startRefresh(() => {
