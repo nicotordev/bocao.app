@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDown, LayoutGrid, List, Search, SlidersHorizontal } from "lucide-react";
+import {
+  TbChevronDown,
+  TbLayoutGrid,
+  TbList,
+  TbSearch,
+  TbAdjustmentsHorizontal,
+} from "react-icons/tb";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +74,7 @@ export function KitchenToolbar({
           {labels.toolbar.search}
         </label>
         <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <TbSearch className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={filters.search}
             onChange={(event) =>
@@ -168,9 +174,9 @@ export function KitchenToolbar({
             <div className="flex items-center gap-2">
               <CollapsibleTrigger asChild>
                 <Button variant="outline" className="flex-1 gap-2">
-                  <SlidersHorizontal className="size-4" />
+                  <TbAdjustmentsHorizontal className="size-4" />
                   {labels.actions.toggleFilters}
-                  <ChevronDown
+                  <TbChevronDown
                     className={
                       mobileOpen
                         ? "size-4 rotate-180 transition-transform"
@@ -212,11 +218,11 @@ export function KitchenToolbar({
               {views.map((mode) => (
                 <TabsTrigger key={mode} value={mode} className="gap-1.5">
                   {mode === "cards" ? (
-                    <LayoutGrid className="size-3.5" aria-hidden />
+                    <TbLayoutGrid className="size-3.5" aria-hidden />
                   ) : mode === "kanban" ? (
-                    <List className="size-3.5" aria-hidden />
+                    <TbList className="size-3.5" aria-hidden />
                   ) : (
-                    <List className="size-3.5 rotate-90" aria-hidden />
+                    <TbList className="size-3.5 rotate-90" aria-hidden />
                   )}
                   {labels.views[mode]}
                 </TabsTrigger>

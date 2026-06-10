@@ -1,6 +1,9 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import {
+  TbPlus,
+  TbTrash,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -300,7 +303,7 @@ export function FlowBlockEditor({
               className="gap-2 rounded-2xl"
               onClick={addOption}
             >
-              <Plus className="size-4" aria-hidden />
+              <TbPlus className="size-4" aria-hidden />
               {labels.blockEditor.addOption}
             </Button>
           </div>
@@ -321,7 +324,7 @@ export function FlowBlockEditor({
                   onClick={() => removeOption(option.id)}
                   aria-label={labels.blockEditor.removeOption}
                 >
-                  <Trash2 className="size-4" aria-hidden />
+                  <TbTrash className="size-4" aria-hidden />
                 </Button>
               </div>
 

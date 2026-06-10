@@ -1,6 +1,8 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import {
+  TbMessageCircle,
+} from "react-icons/tb";
 import {
   Sheet,
   SheetContent,
@@ -68,7 +70,7 @@ export function OrderDetailsDrawer({
                 </div>
                 {order.channel === "whatsapp" ? (
                   <div className="mt-4 flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
-                    <MessageCircle className="size-4" aria-hidden />
+                    <TbMessageCircle className="size-4" aria-hidden />
                     {labels.channels.whatsapp}
                   </div>
                 ) : null}

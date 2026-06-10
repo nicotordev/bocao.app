@@ -1,4 +1,4 @@
-import { Download, Megaphone, Plus, Upload } from "lucide-react";
+import { TbDownload, TbPlus, TbSpeakerphone, TbUpload } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { CustomersLabels } from "./types";
@@ -32,7 +32,7 @@ export function CustomersHeader({
       </div>
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 xl:grid-cols-4">
         <Button className="gap-2" onClick={onNewCustomer ?? showComingSoon}>
-          <Plus className="size-4" aria-hidden />
+          <TbPlus className="size-4" aria-hidden />
           {labels.actions.newCustomer}
         </Button>
         <Button
@@ -40,15 +40,15 @@ export function CustomersHeader({
           className="gap-2"
           onClick={onImportCustomers ?? showComingSoon}
         >
-          <Upload className="size-4" aria-hidden />
+          <TbUpload className="size-4" aria-hidden />
           {labels.importCustomers.button}
         </Button>
         <Button variant="outline" className="gap-2" onClick={onExport}>
-          <Download className="size-4" aria-hidden />
+          <TbDownload className="size-4" aria-hidden />
           {labels.actions.export}
         </Button>
         <Button variant="outline" className="gap-2" onClick={showComingSoon}>
-          <Megaphone className="size-4" aria-hidden />
+          <TbSpeakerphone className="size-4" aria-hidden />
           {labels.actions.createCampaign}
         </Button>
       </div>

@@ -1,10 +1,11 @@
 import {
-  CalendarDays,
-  Globe2,
-  MessageCircle,
-  Store,
-  Truck,
-} from "lucide-react";
+  TbCalendar,
+  TbWorld,
+  TbMessageCircle,
+  TbBuildingStore,
+  TbTruck,
+} from "react-icons/tb";
+import type { IconType } from "react-icons";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CustomerChannel } from "@/lib/customers/types";
@@ -25,15 +26,12 @@ const channelClassName: Record<CustomerChannel, string> = {
 };
 
 const channelIcons = {
-  whatsapp: MessageCircle,
-  web: Globe2,
-  in_person: Store,
-  delivery: Truck,
-  reservation: CalendarDays,
-} satisfies Record<
-  CustomerChannel,
-  React.ComponentType<{ className?: string }>
->;
+  whatsapp: TbMessageCircle,
+  web: TbWorld,
+  in_person: TbBuildingStore,
+  delivery: TbTruck,
+  reservation: TbCalendar,
+} satisfies Record<CustomerChannel, IconType>;
 
 export function CustomerChannelBadge({
   channel,

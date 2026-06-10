@@ -1,6 +1,10 @@
 "use client";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  TbPencil,
+  TbPlus,
+  TbTrash,
+} from "react-icons/tb";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -142,7 +146,7 @@ export function FlowTemplatesPanel({
               })
             }
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.library.newTemplate}
           </Button>
         </div>
@@ -209,7 +213,7 @@ export function FlowTemplatesPanel({
                   onClick={() => void handleDelete(editor.templateId)}
                   aria-label={labels.library.deleteTemplate}
                 >
-                  <Trash2 className="size-4" aria-hidden />
+                  <TbTrash className="size-4" aria-hidden />
                 </Button>
               ) : null}
             </div>
@@ -257,7 +261,7 @@ export function FlowTemplatesPanel({
               onClick={() => void handleSave()}
               disabled={isSaving}
             >
-              <Pencil className="size-4" aria-hidden />
+              <TbPencil className="size-4" aria-hidden />
               {isSaving ? labels.actions.saving : labels.actions.save}
             </Button>
           </div>

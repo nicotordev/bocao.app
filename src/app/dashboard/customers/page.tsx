@@ -7,6 +7,7 @@ import type {
 } from "@/components/dashboard/customers/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
 import { parseCustomersListSearchParams } from "@/lib/customers/filters";
+import { listCustomers } from "@/lib/customers/repository";
 import { loadCustomersPageData } from "@/lib/customers/server";
 import { getQueryClient } from "@/lib/query/get-query-client";
 import { customersPageQueryOptions } from "@/lib/query/customers/customers.queries";
@@ -26,6 +27,7 @@ export default async function CustomersPage({
   const queryClient = getQueryClient();
   const resolvedSearchParams = searchParamsToRecord(await searchParams);
   const filters = parseCustomersListSearchParams(resolvedSearchParams);
+  const customerOptions = restaurantId ? await listCustomers(restaurantId) : [];
 
   if (restaurantId && context) {
     await queryClient.prefetchQuery({
@@ -58,6 +60,7 @@ export default async function CustomersPage({
       edit: t("actions.edit"),
       addTag: t("actions.addTag"),
       archive: t("actions.archive"),
+      delete: t("actions.delete"),
       editProfile: t("actions.editProfile"),
       sendWhatsapp: t("actions.sendWhatsapp"),
       addNote: t("actions.addNote"),
@@ -210,10 +213,72 @@ export default async function CustomersPage({
       description: t("empty.description"),
       cta: t("empty.cta"),
     },
+    bulkActions: {
+      selectedCount: t.raw("bulkActions.selectedCount"),
+      clearSelection: t("bulkActions.clearSelection"),
+      export: t("bulkActions.export"),
+      createCampaign: t("bulkActions.createCampaign"),
+      saveToSegment: t("bulkActions.saveToSegment"),
+      archive: t("bulkActions.archive"),
+      delete: t("bulkActions.delete"),
+    },
+    deleteDialog: {
+      title: t("deleteDialog.title"),
+      titleBulk: t("deleteDialog.titleBulk"),
+      description: t.raw("deleteDialog.description"),
+      descriptionBulk: t.raw("deleteDialog.descriptionBulk"),
+      confirm: t("deleteDialog.confirm"),
+      cancel: t("deleteDialog.cancel"),
+      success: t("deleteDialog.success"),
+      successBulk: t.raw("deleteDialog.successBulk"),
+      error: t("deleteDialog.error"),
+    },
+    savedSegments: {
+      title: t("savedSegments.title"),
+      subtitle: t("savedSegments.subtitle"),
+      smartTitle: t("savedSegments.smartTitle"),
+      smartSubtitle: t("savedSegments.smartSubtitle"),
+      create: t("savedSegments.create"),
+      createTitle: t("savedSegments.createTitle"),
+      createDescription: t("savedSegments.createDescription"),
+      saveTitle: t("savedSegments.saveTitle"),
+      saveDescription: t.raw("savedSegments.saveDescription"),
+      addCustomersTitle: t("savedSegments.addCustomersTitle"),
+      addCustomersDescription: t.raw("savedSegments.addCustomersDescription"),
+      addCustomersDescriptionFallback: t(
+        "savedSegments.addCustomersDescriptionFallback",
+      ),
+      name: t("savedSegments.name"),
+      namePlaceholder: t("savedSegments.namePlaceholder"),
+      description: t("savedSegments.description"),
+      descriptionPlaceholder: t("savedSegments.descriptionPlaceholder"),
+      noDescription: t("savedSegments.noDescription"),
+      saveMode: t("savedSegments.saveMode"),
+      createNew: t("savedSegments.createNew"),
+      addToExisting: t("savedSegments.addToExisting"),
+      segment: t("savedSegments.segment"),
+      selectSegment: t("savedSegments.selectSegment"),
+      search: t("savedSegments.search"),
+      searchPlaceholder: t("savedSegments.searchPlaceholder"),
+      empty: t("savedSegments.empty"),
+      selectedCount: t.raw("savedSegments.selectedCount"),
+      selectAllCustomers: t("savedSegments.selectAllCustomers"),
+      importCustomer: t("savedSegments.importCustomer"),
+      addCustomers: t("savedSegments.addCustomers"),
+      cancel: t("savedSegments.cancel"),
+      save: t("savedSegments.save"),
+      created: t("savedSegments.created"),
+      addedToExisting: t("savedSegments.addedToExisting"),
+      saveError: t("savedSegments.saveError"),
+      nameRequired: t("savedSegments.nameRequired"),
+      noCustomersSelected: t("savedSegments.noCustomersSelected"),
+    },
     accessibility: {
       openActions: t("accessibility.openActions"),
       openDetails: t("accessibility.openDetails"),
       openFilters: t("accessibility.openFilters"),
+      selectCustomer: t.raw("accessibility.selectCustomer"),
+      selectAllCustomers: t("accessibility.selectAllCustomers"),
     },
     pagination: {
       previous: tCommon("pagination.previous"),
@@ -266,6 +331,7 @@ export default async function CustomersPage({
     },
     feedback: {
       createError: t("feedback.createError"),
+      deleteError: t("feedback.deleteError"),
     },
     importCustomers: {
       button: t("importCustomers.button"),
@@ -327,6 +393,7 @@ export default async function CustomersPage({
         labels={labels}
         segmentLabels={segmentLabels}
         restaurantId={restaurantId}
+        customerOptions={customerOptions}
       />
     </HydrationBoundary>
   );

@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, X } from "lucide-react";
+import {
+  TbPlus,
+  TbX,
+} from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { FloorPlanTablePicker } from "@/components/dashboard/floor-plan/floor-plan-table-picker";
 import type { CustomerOption } from "@/lib/customers/types";
@@ -119,7 +122,7 @@ export function NewOrderCustomerSection({
             className="gap-2"
             onClick={() => setCustomerDialogOpen(true)}
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.actions.addCustomer}
           </Button>
         </CardHeader>
@@ -370,7 +373,7 @@ function SelectedCustomersList({
               onClick={() => onRemove(customer.key)}
               aria-label={labels.actions.removeCustomer}
             >
-              <X className="size-4" aria-hidden />
+              <TbX className="size-4" aria-hidden />
             </Button>
           </div>
         ))}

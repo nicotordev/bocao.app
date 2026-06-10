@@ -1,3 +1,7 @@
+import type { CustomerSavedSegmentSummary } from "@/lib/customers/saved-segments.types";
+
+export type { CustomerSavedSegmentSummary };
+
 export type CustomerOption = {
   id: string;
   name: string;
@@ -153,6 +157,7 @@ export type CustomersListResponse = {
     totalPages: number;
   };
   segments: CustomerSegmentCard[];
+  savedSegments: CustomerSavedSegmentSummary[];
   activity: CustomerActivityEvent[];
   insights: CustomerInsight[];
   kpis: CustomersKpiValues;

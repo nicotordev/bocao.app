@@ -1,4 +1,10 @@
-import { Globe2, MessageCircle, Store, Truck } from "lucide-react";
+import {
+  TbWorld,
+  TbMessageCircle,
+  TbBuildingStore,
+  TbTruck,
+} from "react-icons/tb";
+import type { IconType } from "react-icons";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { OrderChannel, OrdersLabels } from "./types";
@@ -18,12 +24,12 @@ const channelClassName: Record<OrderChannel, string> = {
 };
 
 const channelIcons = {
-  whatsapp: MessageCircle,
-  web: Globe2,
-  dineIn: Store,
-  uberEats: Truck,
-  rappi: Truck,
-} satisfies Record<OrderChannel, React.ComponentType<{ className?: string }>>;
+  whatsapp: TbMessageCircle,
+  web: TbWorld,
+  dineIn: TbBuildingStore,
+  uberEats: TbTruck,
+  rappi: TbTruck,
+} satisfies Record<OrderChannel, IconType>;
 
 export function OrderChannelBadge({
   channel,

@@ -34,6 +34,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     sort: searchParams.get("sort") ?? undefined,
     tab: searchParams.get("tab") ?? undefined,
     customerId: searchParams.get("customerId") ?? undefined,
+    savedSegmentId: searchParams.get("savedSegmentId") ?? undefined,
     page: searchParams.get("page") ?? undefined,
     pageSize: searchParams.get("pageSize") ?? undefined,
   });

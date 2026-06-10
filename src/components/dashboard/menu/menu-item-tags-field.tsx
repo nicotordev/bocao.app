@@ -1,6 +1,9 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import {
+  TbPlus,
+  TbX,
+} from "react-icons/tb";
 import { useLocale } from "next-intl";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -246,7 +249,7 @@ export function MenuItemTagsField({
                   aria-label={`${labels.remove}: ${resolveMenuTagLabel(tag, catalogLabels, customLabels)}`}
                   onClick={() => removeTag(tag.key)}
                 >
-                  <X className="size-3" aria-hidden />
+                  <TbX className="size-3" aria-hidden />
                 </button>
               ) : null}
             </Badge>
@@ -354,7 +357,7 @@ export function MenuItemTagsField({
               onClick={addCustomTagFromDraft}
               disabled={!canSubmitCustom}
             >
-              <Plus className="mr-1 size-4" aria-hidden />
+              <TbPlus className="mr-1 size-4" aria-hidden />
               {labels.add}
             </Button>
           </div>

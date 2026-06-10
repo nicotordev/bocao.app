@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { NewCustomerDialog } from "@/components/dashboard/orders/new/new-customer-dialog";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
@@ -19,9 +19,13 @@ import {
 } from "@/lib/customers/filters";
 import type {
   CustomerListItem,
+  CustomerOption,
   CustomerSegmentCard,
 } from "@/lib/customers/types";
-import { useCreateCustomerMutation } from "@/lib/query/customers/customers.mutations";
+import {
+  useCreateCustomerMutation,
+  useDeleteCustomersMutation,
+} from "@/lib/query/customers/customers.mutations";
 import {
   useCustomerDetailQuery,
   useCustomersPageQuery,
@@ -34,6 +38,9 @@ import { CustomersActivityFeed } from "./customers-activity-feed";
 import { CustomersHeader } from "./customers-header";
 import { CustomersKpis } from "./customers-kpis";
 import { CustomersSegments } from "./customers-segments";
+import { CustomersBulkActionsBar } from "./customers-bulk-actions-bar";
+import { DeleteCustomersConfirmDialog } from "./delete-customers-confirm-dialog";
+import { SaveCustomersSegmentDialog } from "./save-customers-segment-dialog";
 import { CustomersTable } from "./customers-table";
 import {
   CustomersToolbar,
@@ -45,6 +52,7 @@ type CustomersPageClientProps = {
   labels: CustomersLabels;
   segmentLabels: CustomerSegmentLabelMap;
   restaurantId: string;
+  customerOptions: CustomerOption[];
 };
 
 function buildCustomersCsv(customers: CustomerListItem[]) {
@@ -74,9 +82,7 @@ function buildCustomersCsv(customers: CustomerListItem[]) {
 
   return [header, ...rows]
     .map((row) =>
-      row
-        .map((value) => `"${value.replaceAll('"', '""')}"`)
-        .join(","),
+      row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
     )
     .join("\n");
 }
@@ -120,6 +126,7 @@ function buildCustomersHref(filters: CustomersListFilters) {
       sort: sort === "last_visit" ? undefined : sort,
       tab: tab === "customers" ? undefined : tab,
       customerId: filters.customerId,
+      savedSegmentId: filters.savedSegmentId,
     },
     {
       page: filters.page,
@@ -132,11 +139,24 @@ export function CustomersPageClient({
   labels,
   segmentLabels,
   restaurantId,
+  customerOptions,
 }: CustomersPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
+  const [importCustomersDialogOpen, setImportCustomersDialogOpen] =
+    useState(false);
+  const [saveSegmentDialogOpen, setSaveSegmentDialogOpen] = useState(false);
+  const [selectedCustomerIds, setSelectedCustomerIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargets, setDeleteTargets] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const createCustomerMutation = useCreateCustomerMutation(restaurantId);
+  const deleteCustomersMutation = useDeleteCustomersMutation(restaurantId);
   const filters = useMemo(
     () =>
       parseCustomersListSearchParams(
@@ -156,6 +176,19 @@ export function CustomersPageClient({
 
   const pageData = customersQuery.data;
   const customers = pageData?.customers ?? [];
+
+  useEffect(() => {
+    setSelectedCustomerIds(new Set());
+  }, [
+    filters.page,
+    filters.pageSize,
+    filters.search,
+    filters.segment,
+    filters.channel,
+    filters.sort,
+    filters.savedSegmentId,
+    restaurantId,
+  ]);
   const pagination = pageData?.pagination ?? {
     page: filters.page,
     pageSize: filters.pageSize,
@@ -207,17 +240,78 @@ export function CustomersPageClient({
     [navigateFilters],
   );
 
-  const handleExport = () => {
-    if (customers.length === 0) {
+  const handleExport = (rows: CustomerListItem[] = customers) => {
+    if (rows.length === 0) {
       toast.error(labels.actions.exportEmpty);
       return;
     }
 
     downloadCsvFile(
       `customers-${new Date().toISOString().slice(0, 10)}.csv`,
-      buildCustomersCsv(customers),
+      buildCustomersCsv(rows),
     );
     toast.success(labels.actions.exportSuccess);
+  };
+
+  const selectedCustomers = useMemo(
+    () => customers.filter((customer) => selectedCustomerIds.has(customer.id)),
+    [customers, selectedCustomerIds],
+  );
+
+  const showComingSoon = () => {
+    toast.message(labels.actions.comingSoon);
+  };
+
+  const openDeleteDialog = useCallback(
+    (targets: Array<{ id: string; name: string }>) => {
+      if (targets.length === 0) {
+        return;
+      }
+
+      setDeleteTargets(targets);
+      setDeleteDialogOpen(true);
+    },
+    [],
+  );
+
+  const handleConfirmDelete = async () => {
+    if (deleteTargets.length === 0) {
+      return;
+    }
+
+    try {
+      const deletedCount = await deleteCustomersMutation.mutateAsync(
+        deleteTargets.map((target) => target.id),
+      );
+
+      toast.success(
+        deletedCount > 1
+          ? labels.deleteDialog.successBulk.replace(
+              "{count}",
+              String(deletedCount),
+            )
+          : labels.deleteDialog.success,
+      );
+
+      const deletedIds = new Set(deleteTargets.map((target) => target.id));
+
+      if (selectedCustomerId && deletedIds.has(selectedCustomerId)) {
+        navigateFilters({ customerId: undefined });
+      }
+
+      setSelectedCustomerIds((current) => {
+        const next = new Set(current);
+        for (const id of deletedIds) {
+          next.delete(id);
+        }
+        return next;
+      });
+      setDeleteDialogOpen(false);
+      setDeleteTargets([]);
+      refreshCustomersPage();
+    } catch {
+      toast.error(labels.feedback.deleteError);
+    }
   };
 
   const handleSelectCustomer = (customer: CustomerListItem) => {
@@ -233,8 +327,24 @@ export function CustomersPageClient({
   const handleViewSegmentCustomers = (segmentId: CustomerSegmentCard["id"]) => {
     navigateFilters({
       segment: mapSegmentCardToFilter(segmentId),
+      savedSegmentId: undefined,
       tab: "customers",
     });
+  };
+
+  const handleViewSavedSegmentCustomers = (savedSegmentId: string) => {
+    navigateFilters({
+      segment: "all",
+      savedSegmentId,
+      tab: "customers",
+    });
+  };
+
+  const refreshCustomersPage = () => {
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.customers.pages(),
+    });
+    router.refresh();
   };
 
   const activeTab = filters.tab ?? "customers";
@@ -272,6 +382,7 @@ export function CustomersPageClient({
         labels={labels}
         onExport={handleExport}
         onNewCustomer={() => setNewCustomerDialogOpen(true)}
+        onImportCustomers={() => setImportCustomersDialogOpen(true)}
       />
       <CustomersKpis labels={labels.kpis} values={kpis} />
 
@@ -296,6 +407,7 @@ export function CustomersPageClient({
                     sort: "last_visit",
                     tab: "customers",
                     customerId: undefined,
+                    savedSegmentId: undefined,
                   });
                 }}
               />
@@ -314,7 +426,9 @@ export function CustomersPageClient({
             }}
           >
             <TabsList>
-              <TabsTrigger value="customers">{labels.tabs.customers}</TabsTrigger>
+              <TabsTrigger value="customers">
+                {labels.tabs.customers}
+              </TabsTrigger>
               <TabsTrigger value="segments">{labels.tabs.segments}</TabsTrigger>
               <TabsTrigger value="activity">{labels.tabs.activity}</TabsTrigger>
             </TabsList>
@@ -323,11 +437,35 @@ export function CustomersPageClient({
               <QueryResultState query={customersQuery}>
                 {() => (
                   <>
+                    <CustomersBulkActionsBar
+                      labels={labels.bulkActions}
+                      selectedCount={selectedCustomerIds.size}
+                      onClearSelection={() => setSelectedCustomerIds(new Set())}
+                      onExport={() => handleExport(selectedCustomers)}
+                      onCreateCampaign={showComingSoon}
+                      onSaveToSegment={() => setSaveSegmentDialogOpen(true)}
+                      onArchive={showComingSoon}
+                      onDelete={() =>
+                        openDeleteDialog(
+                          selectedCustomers.map((customer) => ({
+                            id: customer.id,
+                            name: customer.name,
+                          })),
+                        )
+                      }
+                    />
                     <CustomersTable
                       labels={labels}
                       segmentLabels={segmentLabels}
                       customers={customers}
+                      selectedCustomerIds={selectedCustomerIds}
+                      onSelectedCustomerIdsChange={setSelectedCustomerIds}
                       onSelectCustomer={handleSelectCustomer}
+                      onDeleteCustomer={(customer) =>
+                        openDeleteDialog([
+                          { id: customer.id, name: customer.name },
+                        ])
+                      }
                     />
                     <ListPagination
                       basePath="/dashboard/customers"
@@ -349,6 +487,7 @@ export function CustomersPageClient({
                             : toolbarValue.sort,
                         tab: activeTab === "customers" ? undefined : activeTab,
                         customerId: selectedCustomerId ?? undefined,
+                        savedSegmentId: filters.savedSegmentId,
                       }}
                     />
                   </>
@@ -360,7 +499,13 @@ export function CustomersPageClient({
               <CustomersSegments
                 labels={labels}
                 segments={pageData?.segments ?? []}
+                savedSegments={pageData?.savedSegments ?? []}
+                customerOptions={customerOptions}
+                restaurantId={restaurantId}
                 onViewCustomers={handleViewSegmentCustomers}
+                onViewSavedSegment={handleViewSavedSegmentCustomers}
+                onImportCustomers={() => setImportCustomersDialogOpen(true)}
+                onSegmentsChanged={refreshCustomersPage}
               />
             </TabsContent>
 
@@ -390,6 +535,9 @@ export function CustomersPageClient({
         customer={detailQuery.data ?? null}
         open={selectedCustomerId !== null}
         onOpenChange={handleDrawerOpenChange}
+        onDeleteCustomer={(customer) =>
+          openDeleteDialog([{ id: customer.id, name: customer.name }])
+        }
       />
 
       <NewCustomerDialog
@@ -398,6 +546,36 @@ export function CustomersPageClient({
         labels={labels.formDialog}
         restaurantId={restaurantId}
         onAddCustomer={handleCreateCustomer}
+      />
+
+      <ImportCustomersDialog
+        open={importCustomersDialogOpen}
+        onOpenChange={setImportCustomersDialogOpen}
+        labels={labels}
+        restaurantId={restaurantId}
+        onSuccess={refreshCustomersPage}
+      />
+
+      <SaveCustomersSegmentDialog
+        open={saveSegmentDialogOpen}
+        onOpenChange={setSaveSegmentDialogOpen}
+        labels={labels.savedSegments}
+        restaurantId={restaurantId}
+        customerIds={[...selectedCustomerIds]}
+        savedSegments={pageData?.savedSegments ?? []}
+        onSuccess={() => {
+          setSelectedCustomerIds(new Set());
+          refreshCustomersPage();
+        }}
+      />
+
+      <DeleteCustomersConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        labels={labels.deleteDialog}
+        customers={deleteTargets}
+        isPending={deleteCustomersMutation.isPending}
+        onConfirm={handleConfirmDelete}
       />
     </main>
   );

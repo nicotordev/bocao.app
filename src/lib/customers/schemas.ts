@@ -9,3 +9,7 @@ export const createCustomerBodySchema = z.object({
   notes: z.string().trim().optional(),
   avatar: z.string().trim().url().optional(),
 });
+
+export const deleteCustomersBodySchema = z.object({
+  customerIds: z.array(z.string().min(1)).min(1),
+});

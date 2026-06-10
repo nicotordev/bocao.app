@@ -17,7 +17,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, GripVertical, Plus, Trash2, Workflow } from "lucide-react";
+import {
+  TbEye,
+  TbGripVertical,
+  TbPlus,
+  TbTrash,
+  TbRoute,
+} from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { createFlowTemplateAction } from "@/app/actions/product-flow";
@@ -128,7 +134,7 @@ function SortableFlowStepRow({
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="size-4" aria-hidden />
+        <TbGripVertical className="size-4" aria-hidden />
       </button>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{label}</p>
@@ -143,7 +149,7 @@ function SortableFlowStepRow({
         onClick={onRemove}
         aria-label={removeAriaLabel}
       >
-        <Trash2 className="size-4" aria-hidden />
+        <TbTrash className="size-4" aria-hidden />
       </Button>
     </div>
   );
@@ -297,7 +303,7 @@ export function ProductFlowBuilder({
       <div className="flex flex-col gap-4 rounded-3xl border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Workflow className="size-5" aria-hidden />
+            <TbRoute className="size-5" aria-hidden />
           </div>
           <div>
             <p className="font-medium">{labels.builder.title}</p>
@@ -397,7 +403,7 @@ export function ProductFlowBuilder({
                     <span className="truncate">
                       {resolveLocalizedLabel(block.config.label, locale)}
                     </span>
-                    <Plus className="size-4 shrink-0" aria-hidden />
+                    <TbPlus className="size-4 shrink-0" aria-hidden />
                   </button>
                 ))}
               </div>
@@ -423,7 +429,7 @@ export function ProductFlowBuilder({
                   className="gap-2 rounded-2xl"
                   onClick={() => setPreviewOpen(true)}
                 >
-                  <Eye className="size-4" aria-hidden />
+                  <TbEye className="size-4" aria-hidden />
                   {labels.builder.preview}
                 </Button>
               ) : null}

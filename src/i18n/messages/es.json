@@ -1104,6 +1104,7 @@
         "edit": "Editar",
         "addTag": "Agregar etiqueta",
         "archive": "Archivar",
+        "delete": "Eliminar",
         "editProfile": "Editar perfil",
         "sendWhatsapp": "Enviar WhatsApp",
         "addNote": "Agregar nota",
@@ -1151,7 +1152,19 @@
         "draftCustomerName": "Ingresa el nombre del cliente"
       },
       "feedback": {
-        "createError": "No pudimos crear el cliente. Intenta nuevamente."
+        "createError": "No pudimos crear el cliente. Intenta nuevamente.",
+        "deleteError": "No pudimos eliminar el cliente. Intenta nuevamente."
+      },
+      "deleteDialog": {
+        "title": "Eliminar cliente",
+        "titleBulk": "Eliminar clientes",
+        "description": "Esto eliminará permanentemente a {name}. El historial de pedidos se conservará, pero se quitará el perfil del cliente. Esta acción no se puede deshacer.",
+        "descriptionBulk": "Esto eliminará permanentemente a {count} clientes. El historial de pedidos se conservará, pero se quitarán sus perfiles. Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "success": "Cliente eliminado correctamente",
+        "successBulk": "{count} clientes eliminados correctamente",
+        "error": "No pudimos eliminar el cliente. Intenta nuevamente."
       },
       "kpis": {
         "total": "Clientes totales",
@@ -1303,10 +1316,59 @@
         "description": "Cuando recibas pedidos o reservas, los clientes aparecerán aquí automáticamente.",
         "cta": "Importar clientes"
       },
+      "bulkActions": {
+        "selectedCount": "{count} seleccionados",
+        "clearSelection": "Limpiar selección",
+        "export": "Exportar seleccionados",
+        "createCampaign": "Crear campaña",
+        "saveToSegment": "Guardar en segmento",
+        "archive": "Archivar",
+        "delete": "Eliminar"
+      },
+      "savedSegments": {
+        "title": "Segmentos guardados",
+        "subtitle": "Crea grupos personalizados y reutilízalos en campañas y filtros.",
+        "smartTitle": "Segmentos inteligentes",
+        "smartSubtitle": "Calculados automáticamente según actividad y gasto de los clientes.",
+        "create": "Crear segmento",
+        "createTitle": "Crear segmento",
+        "createDescription": "Ponle nombre al segmento y agrega clientes después.",
+        "saveTitle": "Guardar en segmento",
+        "saveDescription": "Guarda {count} clientes seleccionados en un segmento.",
+        "addCustomersTitle": "Agregar clientes",
+        "addCustomersDescription": "Agrega clientes existentes de este restaurante a {name}.",
+        "addCustomersDescriptionFallback": "Agrega clientes existentes de este restaurante al segmento.",
+        "name": "Nombre",
+        "namePlaceholder": "Ej. VIP almuerzo",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Notas opcionales para tu equipo",
+        "noDescription": "Sin descripción",
+        "saveMode": "¿Cómo quieres guardarlos?",
+        "createNew": "Crear un segmento nuevo",
+        "addToExisting": "Agregar a un segmento existente",
+        "segment": "Segmento",
+        "selectSegment": "Selecciona un segmento",
+        "search": "Buscar",
+        "searchPlaceholder": "Buscar por nombre, teléfono o email",
+        "empty": "No hay clientes que coincidan con tu búsqueda.",
+        "selectedCount": "{count} seleccionados",
+        "selectAllCustomers": "Seleccionar todos los clientes visibles",
+        "importCustomer": "Importar cliente",
+        "addCustomers": "Agregar clientes",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "created": "Segmento creado correctamente",
+        "addedToExisting": "Clientes agregados al segmento",
+        "saveError": "No pudimos guardar el segmento. Intenta de nuevo.",
+        "nameRequired": "Ingresa un nombre para el segmento",
+        "noCustomersSelected": "Selecciona al menos un cliente"
+      },
       "accessibility": {
         "openActions": "Abrir acciones del cliente",
         "openDetails": "Abrir detalle del cliente",
-        "openFilters": "Abrir filtros"
+        "openFilters": "Abrir filtros",
+        "selectCustomer": "Seleccionar {name}",
+        "selectAllCustomers": "Seleccionar todos los clientes de esta página"
       },
       "importCustomers": {
         "button": "Importar clientes",

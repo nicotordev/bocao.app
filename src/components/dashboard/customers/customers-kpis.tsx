@@ -1,12 +1,12 @@
 import {
-  DollarSign,
-  Minus,
-  TrendingDown,
-  TrendingUp,
-  UserCheck,
-  UserMinus,
-  Users,
-} from "lucide-react";
+  TbCurrencyDollar,
+  TbMinus,
+  TbTrendingDown,
+  TbTrendingUp,
+  TbUserCheck,
+  TbUserMinus,
+  TbUsers,
+} from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CustomersKpiValues } from "@/lib/customers/types";
@@ -20,25 +20,25 @@ type CustomersKpisProps = {
 const kpis = [
   {
     key: "total",
-    icon: Users,
+    icon: TbUsers,
     accent: "text-primary",
     trendClass: "border-primary/30 bg-primary/10 text-primary",
   },
   {
     key: "frequent",
-    icon: UserCheck,
+    icon: TbUserCheck,
     accent: "text-chart-1",
     trendClass: "border-chart-1/30 bg-chart-1/10 text-chart-1",
   },
   {
     key: "averageTicket",
-    icon: DollarSign,
+    icon: TbCurrencyDollar,
     accent: "text-chart-2",
     trendClass: "border-chart-2/30 bg-chart-2/10 text-chart-2",
   },
   {
     key: "inactive",
-    icon: UserMinus,
+    icon: TbUserMinus,
     accent: "text-destructive",
     trendClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
@@ -46,14 +46,14 @@ const kpis = [
 
 function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
   if (trend === "down") {
-    return TrendingDown;
+    return TbTrendingDown;
   }
 
   if (trend === "up") {
-    return TrendingUp;
+    return TbTrendingUp;
   }
 
-  return Minus;
+  return TbMinus;
 }
 
 export function CustomersKpis({ labels, values }: CustomersKpisProps) {

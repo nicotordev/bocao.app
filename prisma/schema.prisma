@@ -237,6 +237,7 @@ model Restaurant {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   customers            Customer[]
+  customerSavedSegments CustomerSavedSegment[]
   menuCategories       MenuCategory[]
   menuItems            MenuItem[]
   orders               Order[]
@@ -335,14 +336,44 @@ model Customer {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderLinks   OrderCustomer[]
-  reservations Reservation[]
+  restaurant           Restaurant                    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderLinks           OrderCustomer[]
+  reservations         Reservation[]
+  savedSegmentMembers  CustomerSavedSegmentMember[]
 
   @@index([restaurantId])
   @@index([email])
   @@index([phone])
   @@index([documentId])
+}
+
+model CustomerSavedSegment {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant                   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  members    CustomerSavedSegmentMember[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+}
+
+model CustomerSavedSegmentMember {
+  id         String   @id @default(cuid())
+  segmentId  String
+  customerId String
+  createdAt  DateTime @default(now())
+
+  segment  CustomerSavedSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  customer Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([segmentId, customerId])
+  @@index([customerId])
+  @@index([segmentId])
 }
 
 model MenuCategory {

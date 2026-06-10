@@ -1,19 +1,19 @@
 "use client";
 
 import {
-  Edit,
-  MoreHorizontal,
-  Trash2,
-  Calendar,
-  Phone,
-  Users,
-  CheckCircle2,
-  UserCheck,
-  Check,
-  XSquare,
-  UserMinus,
-  FileText,
-} from "lucide-react";
+  TbEdit,
+  TbDots,
+  TbTrash,
+  TbCalendar,
+  TbPhone,
+  TbUsers,
+  TbCircleCheck,
+  TbUserCheck,
+  TbCheck,
+  TbSquareX,
+  TbUserMinus,
+  TbFileText,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { ReservationStatusBadge } from "@/components/dashboard/reservations/reservation-status-badge";
 import {
@@ -61,7 +61,7 @@ export function ReservationsTable({
     return (
       <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center animate-in fade-in-50 duration-200">
         <div className="mx-auto grid size-16 place-items-center rounded-3xl border border-border bg-muted/40">
-          <Calendar className="size-7 text-muted-foreground" aria-hidden />
+          <TbCalendar className="size-7 text-muted-foreground" aria-hidden />
         </div>
         <h3 className="mt-5 font-heading text-lg font-semibold">
           {labels.empty.title}
@@ -129,7 +129,7 @@ export function ReservationsTable({
                       </p>
                       {res.guestPhone ? (
                         <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 leading-none">
-                          <Phone className="size-3 shrink-0 opacity-60" />
+                          <TbPhone className="size-3 shrink-0 opacity-60" />
                           {res.guestPhone}
                         </p>
                       ) : null}
@@ -137,7 +137,7 @@ export function ReservationsTable({
                   </TableCell>
                   <TableCell className="text-center">
                     <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-muted text-[11px] font-semibold text-muted-foreground">
-                      <Users className="size-3" />
+                      <TbUsers className="size-3" />
                       {res.guestCount}
                     </span>
                   </TableCell>
@@ -153,7 +153,7 @@ export function ReservationsTable({
                         className="flex items-center gap-1.5"
                         title={res.notes}
                       >
-                        <FileText className="size-3.5 shrink-0 text-muted-foreground/60" />
+                        <TbFileText className="size-3.5 shrink-0 text-muted-foreground/60" />
                         <span className="truncate">{res.notes}</span>
                       </span>
                     ) : (
@@ -203,7 +203,7 @@ export function ReservationsTable({
                   </p>
                   {res.guestPhone && (
                     <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1 leading-none">
-                      <Phone className="size-3 shrink-0 opacity-60" />
+                      <TbPhone className="size-3 shrink-0 opacity-60" />
                       {res.guestPhone}
                     </p>
                   )}
@@ -214,7 +214,7 @@ export function ReservationsTable({
                     label={labels.statuses[res.status]}
                   />
                   <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 bg-muted text-[10px] font-semibold text-muted-foreground">
-                    <Users className="size-2.5" />
+                    <TbUsers className="size-2.5" />
                     {res.guestCount}
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export function ReservationsTable({
 
               {res.notes && (
                 <div className="text-[11px] text-muted-foreground bg-muted/20 border border-border/30 rounded-2xl p-2.5 flex items-start gap-1.5">
-                  <FileText className="size-3.5 shrink-0 text-muted-foreground/50 mt-0.5" />
+                  <TbFileText className="size-3.5 shrink-0 text-muted-foreground/50 mt-0.5" />
                   <span className="leading-normal">{res.notes}</span>
                 </div>
               )}
@@ -235,7 +235,7 @@ export function ReservationsTable({
                   onClick={() => onEdit(res)}
                   disabled={isUpdating}
                 >
-                  <Edit className="size-3" />
+                  <TbEdit className="size-3" />
                   {labels.actions.edit}
                 </Button>
                 <ReservationActions
@@ -281,7 +281,7 @@ function ReservationActions({
         className="h-8 w-8"
         disabled={disabled}
       >
-        <MoreHorizontal className="size-4" />
+        <TbDots className="size-4" />
       </Button>
     ) : (
       <Button
@@ -290,7 +290,7 @@ function ReservationActions({
         className="h-8 rounded-xl text-xs gap-1"
         disabled={disabled}
       >
-        <MoreHorizontal className="size-3" />
+        <TbDots className="size-3" />
         {labels.actions.menu}
       </Button>
     );
@@ -304,7 +304,7 @@ function ReservationActions({
             className="rounded-lg py-2"
             onSelect={() => onUpdateStatus("CONFIRMED")}
           >
-            <CheckCircle2 className="size-4 mr-2 text-blue-500" />
+            <TbCircleCheck className="size-4 mr-2 text-blue-500" />
             {labels.actions.confirm}
           </DropdownMenuItem>
         )}
@@ -313,7 +313,7 @@ function ReservationActions({
             className="rounded-lg py-2"
             onSelect={() => onUpdateStatus("SEATED")}
           >
-            <UserCheck className="size-4 mr-2 text-purple-500" />
+            <TbUserCheck className="size-4 mr-2 text-purple-500" />
             {labels.actions.seat}
           </DropdownMenuItem>
         )}
@@ -322,7 +322,7 @@ function ReservationActions({
             className="rounded-lg py-2"
             onSelect={() => onUpdateStatus("COMPLETED")}
           >
-            <Check className="size-4 mr-2 text-emerald-500" />
+            <TbCheck className="size-4 mr-2 text-emerald-500" />
             {labels.actions.complete}
           </DropdownMenuItem>
         )}
@@ -332,7 +332,7 @@ function ReservationActions({
             className="rounded-lg py-2"
             onSelect={() => onUpdateStatus("NO_SHOW")}
           >
-            <UserMinus className="size-4 mr-2 text-zinc-500" />
+            <TbUserMinus className="size-4 mr-2 text-zinc-500" />
             {labels.actions.noShow}
           </DropdownMenuItem>
         )}
@@ -342,7 +342,7 @@ function ReservationActions({
               className="rounded-lg py-2 text-red-500 focus:text-red-500 focus:bg-red-500/10"
               onSelect={() => onUpdateStatus("CANCELLED")}
             >
-              <XSquare className="size-4 mr-2" />
+              <TbSquareX className="size-4 mr-2" />
               {labels.actions.cancel}
             </DropdownMenuItem>
           )}
@@ -350,7 +350,7 @@ function ReservationActions({
         <DropdownMenuSeparator className="opacity-50" />
 
         <DropdownMenuItem className="rounded-lg py-2" onSelect={onEdit}>
-          <Edit className="size-4 mr-2 text-muted-foreground" />
+          <TbEdit className="size-4 mr-2 text-muted-foreground" />
           {labels.actions.edit}
         </DropdownMenuItem>
 
@@ -360,7 +360,7 @@ function ReservationActions({
           className="rounded-lg py-2 text-red-500 focus:text-red-500 focus:bg-red-500/10"
           onSelect={onDelete}
         >
-          <Trash2 className="size-4 mr-2" />
+          <TbTrash className="size-4 mr-2" />
           {labels.actions.delete}
         </DropdownMenuItem>
       </DropdownMenuContent>

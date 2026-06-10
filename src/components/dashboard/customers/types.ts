@@ -19,6 +19,7 @@ export type CustomersLabels = {
     edit: string;
     addTag: string;
     archive: string;
+    delete: string;
     editProfile: string;
     sendWhatsapp: string;
     addNote: string;
@@ -135,10 +136,70 @@ export type CustomersLabels = {
     description: string;
     cta: string;
   };
+  bulkActions: {
+    selectedCount: string;
+    clearSelection: string;
+    export: string;
+    createCampaign: string;
+    saveToSegment: string;
+    archive: string;
+    delete: string;
+  };
+  deleteDialog: {
+    title: string;
+    titleBulk: string;
+    description: string;
+    descriptionBulk: string;
+    confirm: string;
+    cancel: string;
+    success: string;
+    successBulk: string;
+    error: string;
+  };
+  savedSegments: {
+    title: string;
+    subtitle: string;
+    smartTitle: string;
+    smartSubtitle: string;
+    create: string;
+    createTitle: string;
+    createDescription: string;
+    saveTitle: string;
+    saveDescription: string;
+    addCustomersTitle: string;
+    addCustomersDescription: string;
+    addCustomersDescriptionFallback: string;
+    name: string;
+    namePlaceholder: string;
+    description: string;
+    descriptionPlaceholder: string;
+    noDescription: string;
+    saveMode: string;
+    createNew: string;
+    addToExisting: string;
+    segment: string;
+    selectSegment: string;
+    search: string;
+    searchPlaceholder: string;
+    empty: string;
+    selectedCount: string;
+    selectAllCustomers: string;
+    importCustomer: string;
+    addCustomers: string;
+    cancel: string;
+    save: string;
+    created: string;
+    addedToExisting: string;
+    saveError: string;
+    nameRequired: string;
+    noCustomersSelected: string;
+  };
   accessibility: {
     openActions: string;
     openDetails: string;
     openFilters: string;
+    selectCustomer: string;
+    selectAllCustomers: string;
   };
   pagination: {
     previous: string;
@@ -149,6 +210,7 @@ export type CustomersLabels = {
   formDialog: CustomerFormDialogLabels;
   feedback: {
     createError: string;
+    deleteError: string;
   };
   importCustomers: {
     button: string;

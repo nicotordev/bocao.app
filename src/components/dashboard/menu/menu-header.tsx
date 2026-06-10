@@ -1,4 +1,4 @@
-import { Import, Plus, RefreshCcw } from "lucide-react";
+import { TbFileImport, TbPlus, TbRefresh } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import type { MenuPageLabels } from "./types";
 
@@ -40,16 +40,16 @@ export function MenuHeader({
                 className="gap-2"
                 onClick={onImportProducts}
               >
-                <Import className="size-4" aria-hidden />
+                <TbFileImport className="size-4" aria-hidden />
                 {labels.importProducts.button}
               </Button>
             ) : null}
             <Button variant="outline" className="gap-2" onClick={onNewCategory}>
-              <Plus className="size-4" aria-hidden />
+              <TbPlus className="size-4" aria-hidden />
               {labels.actions.newCategory}
             </Button>
             <Button className="gap-2" onClick={onNewItem}>
-              <Plus className="size-4" aria-hidden />
+              <TbPlus className="size-4" aria-hidden />
               {labels.actions.newItem}
             </Button>
           </>
@@ -61,7 +61,7 @@ export function MenuHeader({
             onClick={onRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCcw
+            <TbRefresh
               className={isRefreshing ? "size-4 animate-spin" : "size-4"}
               aria-hidden
             />

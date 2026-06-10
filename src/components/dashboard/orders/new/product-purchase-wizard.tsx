@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  TbChevronLeft,
+  TbChevronRight,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -305,7 +308,7 @@ function ProductPurchaseWizardBody({
               }
               disabled={currentStepIndex === 0}
             >
-              <ChevronLeft className="size-4" aria-hidden />
+              <TbChevronLeft className="size-4" aria-hidden />
               {labels.back}
             </Button>
             <Button
@@ -315,7 +318,7 @@ function ProductPurchaseWizardBody({
             >
               {isLastStep ? labels.confirm : labels.next}
               {!isLastStep ? (
-                <ChevronRight className="size-4" aria-hidden />
+                <TbChevronRight className="size-4" aria-hidden />
               ) : null}
             </Button>
           </div>

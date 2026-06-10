@@ -1,6 +1,12 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Pencil, Power, Trash2 } from "lucide-react";
+import {
+  TbArrowDown,
+  TbArrowUp,
+  TbPencil,
+  TbPower,
+  TbTrash,
+} from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,7 +138,7 @@ export function KitchenStationCard({
             onClick={() => onEdit(station)}
             disabled={isMutating}
           >
-            <Pencil className="size-4" aria-hidden />
+            <TbPencil className="size-4" aria-hidden />
             {labels.card.edit}
           </Button>
           <Button
@@ -142,7 +148,7 @@ export function KitchenStationCard({
             onClick={() => onToggleActive(station)}
             disabled={isMutating}
           >
-            <Power className="size-4" aria-hidden />
+            <TbPower className="size-4" aria-hidden />
             {station.isActive ? labels.card.deactivate : labels.card.activate}
           </Button>
           <div className="flex items-center gap-1">
@@ -153,7 +159,7 @@ export function KitchenStationCard({
               disabled={isMutating || isFirst}
               aria-label={labels.card.moveUp}
             >
-              <ArrowUp className="size-4" aria-hidden />
+              <TbArrowUp className="size-4" aria-hidden />
             </Button>
             <Button
               variant="ghost"
@@ -162,7 +168,7 @@ export function KitchenStationCard({
               disabled={isMutating || isLast}
               aria-label={labels.card.moveDown}
             >
-              <ArrowDown className="size-4" aria-hidden />
+              <TbArrowDown className="size-4" aria-hidden />
             </Button>
           </div>
           {canDelete ? (
@@ -173,7 +179,7 @@ export function KitchenStationCard({
               onClick={() => onDelete(station)}
               disabled={isMutating}
             >
-              <Trash2 className="size-4" aria-hidden />
+              <TbTrash className="size-4" aria-hidden />
               {labels.card.delete}
             </Button>
           ) : (
@@ -186,7 +192,7 @@ export function KitchenStationCard({
                     className="gap-2"
                     disabled
                   >
-                    <Trash2 className="size-4" aria-hidden />
+                    <TbTrash className="size-4" aria-hidden />
                     {labels.card.delete}
                   </Button>
                 </span>

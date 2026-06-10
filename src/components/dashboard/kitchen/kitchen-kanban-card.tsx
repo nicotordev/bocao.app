@@ -4,8 +4,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
-import { AlertTriangle } from "lucide-react";
-import { TbGripVertical } from "react-icons/tb";
+import { TbAlertTriangle, TbGripVertical } from "react-icons/tb";
 import {
   isKitchenOrderActiveDelayed,
   isKitchenOrderCompletedLate,
@@ -109,13 +108,13 @@ export function KitchenKanbanCardView({
               {order.number}
             </p>
             {activeDelayed ? (
-              <AlertTriangle
+              <TbAlertTriangle
                 className="size-4 shrink-0 text-destructive"
                 aria-hidden
               />
             ) : null}
             {completedLate ? (
-              <AlertTriangle
+              <TbAlertTriangle
                 className="size-4 shrink-0 text-warning"
                 aria-hidden
               />

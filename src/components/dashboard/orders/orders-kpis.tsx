@@ -1,12 +1,12 @@
 import {
-  ChefHat,
-  Clock3,
-  DollarSign,
-  Minus,
-  PackageCheck,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+  TbChefHat,
+  TbClock,
+  TbCurrencyDollar,
+  TbMinus,
+  TbClipboardCheck,
+  TbTrendingDown,
+  TbTrendingUp,
+} from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { OrdersKpiValues } from "@/lib/orders/compute-kpis";
@@ -20,36 +20,36 @@ type OrdersKpisProps = {
 const kpis = [
   {
     key: "active",
-    icon: Clock3,
+    icon: TbClock,
     accent: "text-chart-4",
   },
   {
     key: "preparing",
-    icon: ChefHat,
+    icon: TbChefHat,
     accent: "text-chart-2",
   },
   {
     key: "ready",
-    icon: PackageCheck,
+    icon: TbClipboardCheck,
     accent: "text-chart-1",
   },
   {
     key: "sales",
-    icon: DollarSign,
+    icon: TbCurrencyDollar,
     accent: "text-primary",
   },
 ] as const;
 
 function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
   if (trend === "down") {
-    return TrendingDown;
+    return TbTrendingDown;
   }
 
   if (trend === "up") {
-    return TrendingUp;
+    return TbTrendingUp;
   }
 
-  return Minus;
+  return TbMinus;
 }
 
 export function OrdersKpis({ labels, values }: OrdersKpisProps) {

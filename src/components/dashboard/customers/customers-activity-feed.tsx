@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import { TbActivity } from "react-icons/tb";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -46,7 +46,7 @@ export function CustomersActivityFeed({
     <Card className="border-border/70 bg-card/80">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Activity className="size-4 text-primary" aria-hidden />
+          <TbActivity className="size-4 text-primary" aria-hidden />
           <CardTitle>{labels.activity.title}</CardTitle>
         </div>
         <CardDescription>{labels.activity.subtitle}</CardDescription>

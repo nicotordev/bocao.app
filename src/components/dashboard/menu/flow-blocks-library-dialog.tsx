@@ -1,6 +1,10 @@
 "use client";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  TbPencil,
+  TbPlus,
+  TbTrash,
+} from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -265,7 +269,7 @@ export function FlowBlocksLibraryDialog({
                 className="gap-2 rounded-2xl"
                 onClick={startCreate}
               >
-                <Plus className="size-4" aria-hidden />
+                <TbPlus className="size-4" aria-hidden />
                 {labels.library.newBlock}
               </Button>
             </div>
@@ -337,7 +341,7 @@ export function FlowBlocksLibraryDialog({
                       onClick={() => void handleDelete(editor.blockId)}
                       aria-label={labels.library.deleteBlock}
                     >
-                      <Trash2 className="size-4" aria-hidden />
+                      <TbTrash className="size-4" aria-hidden />
                     </Button>
                   ) : null}
                 </div>
@@ -419,7 +423,7 @@ export function FlowBlocksLibraryDialog({
               onClick={() => void handleSave()}
               disabled={isSaving}
             >
-              <Pencil className="size-4" aria-hidden />
+              <TbPencil className="size-4" aria-hidden />
               {isSaving ? labels.actions.saving : labels.actions.save}
             </Button>
           ) : null}

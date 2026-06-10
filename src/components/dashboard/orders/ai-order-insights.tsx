@@ -1,4 +1,6 @@
-import { Sparkles } from "lucide-react";
+import {
+  TbSparkles,
+} from "react-icons/tb";
 import {
   Card,
   CardContent,
@@ -24,7 +26,7 @@ export function AiOrderInsights({ labels, items = [] }: AiOrderInsightsProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="grid size-8 shrink-0 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
-              <Sparkles className="size-4" aria-hidden />
+              <TbSparkles className="size-4" aria-hidden />
             </span>
             <div>
               <CardTitle className="text-base">{labels.title}</CardTitle>

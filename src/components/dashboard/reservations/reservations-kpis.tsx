@@ -4,7 +4,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, CalendarDays, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  TbUsers,
+  TbCalendar,
+  TbCircleCheck,
+  TbAlertCircle,
+} from "react-icons/tb";
 
 type ReservationsKpisProps = {
   labels: {
@@ -32,7 +37,7 @@ export function ReservationsKpis({ labels, values }: ReservationsKpisProps) {
               {values.total}
             </CardTitle>
           </div>
-          <CalendarDays className="size-5 text-muted-foreground" />
+          <TbCalendar className="size-5 text-muted-foreground" />
         </CardHeader>
       </Card>
 
@@ -44,7 +49,7 @@ export function ReservationsKpis({ labels, values }: ReservationsKpisProps) {
               {values.confirmed}
             </CardTitle>
           </div>
-          <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-500" />
+          <TbCircleCheck className="size-5 text-emerald-600 dark:text-emerald-500" />
         </CardHeader>
       </Card>
 
@@ -56,7 +61,7 @@ export function ReservationsKpis({ labels, values }: ReservationsKpisProps) {
               {values.pending}
             </CardTitle>
           </div>
-          <AlertCircle className="size-5 text-amber-500" />
+          <TbAlertCircle className="size-5 text-amber-500" />
         </CardHeader>
       </Card>
 
@@ -68,7 +73,7 @@ export function ReservationsKpis({ labels, values }: ReservationsKpisProps) {
               {values.guests}
             </CardTitle>
           </div>
-          <Users className="size-5 text-indigo-600 dark:text-indigo-400" />
+          <TbUsers className="size-5 text-indigo-600 dark:text-indigo-400" />
         </CardHeader>
       </Card>
     </section>

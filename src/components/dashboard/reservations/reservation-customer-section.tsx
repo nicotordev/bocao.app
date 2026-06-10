@@ -1,6 +1,9 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import {
+  TbPlus,
+  TbX,
+} from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { NewCustomerDialog } from "@/components/dashboard/orders/new/new-customer-dialog";
 import type { CustomerFormDialogLabels } from "@/lib/customers/customer-form-labels";
@@ -79,7 +82,7 @@ export function ReservationCustomerSection({
             className="gap-2 rounded-2xl"
             onClick={() => setCustomerDialogOpen(true)}
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.actions.addCustomer}
           </Button>
         </div>
@@ -208,7 +211,7 @@ function SelectedCustomersList({
               onClick={() => onRemove(customer.key)}
               aria-label={labels.actions.removeCustomer}
             >
-              <X className="size-4" aria-hidden />
+              <TbX className="size-4" aria-hidden />
             </Button>
           </div>
         ))}

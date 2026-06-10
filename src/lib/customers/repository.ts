@@ -1,7 +1,12 @@
 import { buildCustomersActivityFeed } from "@/lib/customers/compute-activity";
 import { computeCustomerInsights } from "@/lib/customers/compute-insights";
 import { computeCustomersKpis } from "@/lib/customers/compute-kpis";
-import type { CustomersListFilters } from "@/lib/customers/filters";
+import {
+  buildCustomersPrismaOrderBy,
+  buildCustomersPrismaWhere,
+  needsComputedCustomerPipeline,
+  type CustomersListFilters,
+} from "@/lib/customers/filters";
 import { formatMoney, formatRelativeDate } from "@/lib/customers/format";
 import {
   buildSegmentContext,
@@ -20,7 +25,9 @@ import type {
   CustomerSegmentCard,
   CustomersListResponse,
 } from "@/lib/customers/types";
-import { buildPaginationMeta } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
+import { listSavedCustomerSegments } from "@/lib/customers/saved-segments.repository";
+import { buildPaginationMeta, getSkipTake } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
 const customerInclude = {
@@ -70,7 +77,9 @@ function sortCustomers(
       sorted.sort((left, right) => left.name.localeCompare(right.name));
       break;
     case "total_spend":
-      sorted.sort((left, right) => right.totalSpendCents - left.totalSpendCents);
+      sorted.sort(
+        (left, right) => right.totalSpendCents - left.totalSpendCents,
+      );
       break;
     case "order_count":
       sorted.sort((left, right) => right.orderCount - left.orderCount);
@@ -99,28 +108,11 @@ function sortCustomers(
   return sorted;
 }
 
-function filterCustomers(
+function applyCustomerComputedFilters(
   customers: CustomerListItem[],
   filters: CustomersListFilters,
 ): CustomerListItem[] {
-  const search = filters.search?.trim().toLowerCase();
-
   return customers.filter((customer) => {
-    if (search) {
-      const haystack = [
-        customer.name,
-        customer.phone ?? "",
-        customer.email ?? "",
-        ...customer.tags,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (!haystack.includes(search)) {
-        return false;
-      }
-    }
-
     if (
       filters.segment &&
       !customerMatchesSegmentFilter(customer.segments, filters.segment)
@@ -216,8 +208,7 @@ function buildSegmentCards(
       .map((customer) => customer.lastVisitAt)
       .filter((value): value is string => Boolean(value))
       .sort(
-        (left, right) =>
-          new Date(right).getTime() - new Date(left).getTime(),
+        (left, right) => new Date(right).getTime() - new Date(left).getTime(),
       )[0];
 
     return {
@@ -235,9 +226,9 @@ function buildSegmentCards(
   });
 }
 
-async function fetchCustomerRecords(restaurantId: string) {
+async function fetchCustomerRecords(where: Prisma.CustomerWhereInput) {
   return prisma.customer.findMany({
-    where: { restaurantId },
+    where,
     include: customerInclude,
     orderBy: [{ name: "asc" }],
   });
@@ -247,9 +238,13 @@ async function mapAllCustomers(
   restaurantId: string,
   options: ListCustomersOptions,
 ): Promise<CustomerListItem[]> {
-  const records = await fetchCustomerRecords(restaurantId);
+  const records = await fetchCustomerRecords({ restaurantId });
   const preliminary = records.map((record) =>
-    mapCustomerRecord(record, { restaurantAverageTicketCents: 0, spendPercentile90Cents: 0 }, options),
+    mapCustomerRecord(
+      record,
+      { restaurantAverageTicketCents: 0, spendPercentile90Cents: 0 },
+      options,
+    ),
   );
   const context = buildSegmentContext(preliminary);
 
@@ -318,17 +313,67 @@ export async function getCustomer(
   });
 }
 
+export async function deleteCustomers(
+  restaurantId: string,
+  customerIds: string[],
+): Promise<number> {
+  const uniqueIds = [...new Set(customerIds)];
+
+  if (uniqueIds.length === 0) {
+    return 0;
+  }
+
+  const result = await prisma.customer.deleteMany({
+    where: {
+      restaurantId,
+      id: { in: uniqueIds },
+    },
+  });
+
+  return result.count;
+}
+
 export async function listCustomersPage(
   restaurantId: string,
   filters: CustomersListFilters,
   options: ListCustomersOptions,
 ): Promise<CustomersListResponse> {
-  const allCustomers = await mapAllCustomers(restaurantId, options);
-  const filtered = filterCustomers(allCustomers, filters);
-  const sorted = sortCustomers(filtered, filters.sort);
-  const pagination = buildPaginationMeta(sorted.length, filters);
-  const start = (pagination.page - 1) * pagination.pageSize;
-  const customers = sorted.slice(start, start + pagination.pageSize);
+  const prismaWhere = buildCustomersPrismaWhere(restaurantId, filters);
+  const [allCustomers, savedSegments] = await Promise.all([
+    mapAllCustomers(restaurantId, options),
+    listSavedCustomerSegments(restaurantId),
+  ]);
+  const segmentContext = buildSegmentContext(allCustomers);
+
+  let customers: CustomerListItem[];
+  let pagination: ReturnType<typeof buildPaginationMeta>;
+
+  if (needsComputedCustomerPipeline(filters)) {
+    const records = await fetchCustomerRecords(prismaWhere);
+    const mapped = records.map((record) =>
+      mapCustomerRecord(record, segmentContext, options),
+    );
+    const filtered = applyCustomerComputedFilters(mapped, filters);
+    const sorted = sortCustomers(filtered, filters.sort);
+    pagination = buildPaginationMeta(sorted.length, filters);
+    const start = (pagination.page - 1) * pagination.pageSize;
+    customers = sorted.slice(start, start + pagination.pageSize);
+  } else {
+    const total = await prisma.customer.count({ where: prismaWhere });
+    pagination = buildPaginationMeta(total, filters);
+    const { skip, take } = getSkipTake(pagination);
+    const records = await prisma.customer.findMany({
+      where: prismaWhere,
+      include: customerInclude,
+      orderBy: buildCustomersPrismaOrderBy(filters.sort),
+      skip,
+      take,
+    });
+    customers = records.map((record) =>
+      mapCustomerRecord(record, segmentContext, options),
+    );
+  }
+
   const segments = buildSegmentCards(
     allCustomers,
     options.locale,
@@ -350,6 +395,7 @@ export async function listCustomersPage(
     customers,
     pagination,
     segments,
+    savedSegments,
     activity,
     insights,
     kpis,
@@ -361,9 +407,13 @@ export async function getCustomerDetail(
   customerId: string,
   options: ListCustomersOptions,
 ): Promise<CustomerDetail | null> {
-  const records = await fetchCustomerRecords(restaurantId);
+  const records = await fetchCustomerRecords({ restaurantId });
   const preliminary = records.map((record) =>
-    mapCustomerRecord(record, { restaurantAverageTicketCents: 0, spendPercentile90Cents: 0 }, options),
+    mapCustomerRecord(
+      record,
+      { restaurantAverageTicketCents: 0, spendPercentile90Cents: 0 },
+      options,
+    ),
   );
   const context = buildSegmentContext(preliminary);
   const record = records.find((entry) => entry.id === customerId);

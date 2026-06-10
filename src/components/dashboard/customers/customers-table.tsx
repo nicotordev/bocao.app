@@ -1,15 +1,17 @@
 "use client";
 
 import {
-  Archive,
-  Edit3,
-  Eye,
-  Megaphone,
-  MoreHorizontal,
-  Tag,
-} from "lucide-react";
+  TbArchive,
+  TbPencil,
+  TbEye,
+  TbSpeakerphone,
+  TbDots,
+  TbTag,
+  TbTrash,
+} from "react-icons/tb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,15 +38,39 @@ type CustomersTableProps = {
   labels: CustomersLabels;
   segmentLabels: CustomerSegmentLabelMap;
   customers: CustomerListItem[];
+  selectedCustomerIds: Set<string>;
+  onSelectedCustomerIdsChange: (next: Set<string>) => void;
   onSelectCustomer: (customer: CustomerListItem) => void;
+  onDeleteCustomer: (customer: CustomerListItem) => void;
 };
+
+function getPageCheckState(
+  customerIds: string[],
+  selectedCustomerIds: Set<string>,
+): boolean | "indeterminate" {
+  const selectedCount = customerIds.filter((id) =>
+    selectedCustomerIds.has(id),
+  ).length;
+
+  if (selectedCount === 0) {
+    return false;
+  }
+
+  if (selectedCount === customerIds.length) {
+    return true;
+  }
+
+  return "indeterminate";
+}
 
 function CustomerActions({
   labels,
   onViewProfile,
+  onDelete,
 }: {
   labels: CustomersLabels;
   onViewProfile: () => void;
+  onDelete: () => void;
 }) {
   const showComingSoon = () => {
     toast.message(labels.actions.comingSoon);
@@ -59,30 +85,37 @@ function CustomerActions({
           aria-label={labels.accessibility.openActions}
           onClick={(event) => event.stopPropagation()}
         >
-          <MoreHorizontal className="size-4" aria-hidden />
+          <TbDots className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
+      <DropdownMenuContent
+        align="end"
+        onClick={(event) => event.stopPropagation()}
+      >
         <DropdownMenuItem onClick={onViewProfile}>
-          <Eye className="size-4" aria-hidden />
+          <TbEye className="size-4" aria-hidden />
           {labels.actions.viewProfile}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={showComingSoon}>
-          <Edit3 className="size-4" aria-hidden />
+          <TbPencil className="size-4" aria-hidden />
           {labels.actions.edit}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={showComingSoon}>
-          <Megaphone className="size-4" aria-hidden />
+          <TbSpeakerphone className="size-4" aria-hidden />
           {labels.actions.createCampaign}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={showComingSoon}>
-          <Tag className="size-4" aria-hidden />
+          <TbTag className="size-4" aria-hidden />
           {labels.actions.addTag}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={showComingSoon}>
-          <Archive className="size-4" aria-hidden />
+          <TbArchive className="size-4" aria-hidden />
           {labels.actions.archive}
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onClick={onDelete}>
+          <TbTrash className="size-4" aria-hidden />
+          {labels.actions.delete}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -93,8 +126,41 @@ export function CustomersTable({
   labels,
   segmentLabels,
   customers,
+  selectedCustomerIds,
+  onSelectedCustomerIdsChange,
   onSelectCustomer,
+  onDeleteCustomer,
 }: CustomersTableProps) {
+  const customerIds = customers.map((customer) => customer.id);
+  const pageCheckState = getPageCheckState(customerIds, selectedCustomerIds);
+
+  const toggleCustomer = (customerId: string, checked: boolean) => {
+    const next = new Set(selectedCustomerIds);
+
+    if (checked) {
+      next.add(customerId);
+    } else {
+      next.delete(customerId);
+    }
+
+    onSelectedCustomerIdsChange(next);
+  };
+
+  const toggleAllOnPage = (checked: boolean) => {
+    if (!checked) {
+      const next = new Set(selectedCustomerIds);
+      for (const customerId of customerIds) {
+        next.delete(customerId);
+      }
+      onSelectedCustomerIdsChange(next);
+      return;
+    }
+
+    onSelectedCustomerIdsChange(
+      new Set([...selectedCustomerIds, ...customerIds]),
+    );
+  };
+
   if (customers.length === 0) {
     return (
       <CustomersEmptyState
@@ -110,6 +176,15 @@ export function CustomersTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={pageCheckState}
+                  onCheckedChange={(checked) =>
+                    toggleAllOnPage(checked === true)
+                  }
+                  aria-label={labels.accessibility.selectAllCustomers}
+                />
+              </TableHead>
               <TableHead>{labels.table.customer}</TableHead>
               <TableHead>{labels.table.contact}</TableHead>
               <TableHead>{labels.table.segment}</TableHead>
@@ -118,7 +193,9 @@ export function CustomersTable({
               <TableHead>{labels.table.averageTicket}</TableHead>
               <TableHead>{labels.table.lastVisit}</TableHead>
               <TableHead>{labels.table.channel}</TableHead>
-              <TableHead className="text-right">{labels.table.actions}</TableHead>
+              <TableHead className="text-right">
+                {labels.table.actions}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -127,6 +204,9 @@ export function CustomersTable({
                 key={customer.id}
                 className="cursor-pointer"
                 tabIndex={0}
+                data-state={
+                  selectedCustomerIds.has(customer.id) ? "selected" : undefined
+                }
                 onClick={() => onSelectCustomer(customer)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
@@ -135,10 +215,26 @@ export function CustomersTable({
                 }}
               >
                 <TableCell>
+                  <Checkbox
+                    checked={selectedCustomerIds.has(customer.id)}
+                    onCheckedChange={(checked) =>
+                      toggleCustomer(customer.id, checked === true)
+                    }
+                    onClick={(event) => event.stopPropagation()}
+                    aria-label={labels.accessibility.selectCustomer.replace(
+                      "{name}",
+                      customer.name,
+                    )}
+                  />
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar size="sm">
                       {customer.avatar ? (
-                        <AvatarImage src={customer.avatar} alt={customer.name} />
+                        <AvatarImage
+                          src={customer.avatar}
+                          alt={customer.name}
+                        />
                       ) : null}
                       <AvatarFallback>{customer.initials}</AvatarFallback>
                     </Avatar>
@@ -167,7 +263,9 @@ export function CustomersTable({
                   />
                 </TableCell>
                 <TableCell>{customer.orderCount}</TableCell>
-                <TableCell className="font-medium">{customer.totalSpend}</TableCell>
+                <TableCell className="font-medium">
+                  {customer.totalSpend}
+                </TableCell>
                 <TableCell>{customer.averageTicket}</TableCell>
                 <TableCell>{customer.lastVisitRelative}</TableCell>
                 <TableCell>
@@ -180,6 +278,7 @@ export function CustomersTable({
                   <CustomerActions
                     labels={labels}
                     onViewProfile={() => onSelectCustomer(customer)}
+                    onDelete={() => onDeleteCustomer(customer)}
                   />
                 </TableCell>
               </TableRow>
@@ -190,48 +289,66 @@ export function CustomersTable({
 
       <div className="grid gap-3 lg:hidden">
         {customers.map((customer) => (
-          <button
+          <div
             key={customer.id}
-            type="button"
-            onClick={() => onSelectCustomer(customer)}
-            className="rounded-3xl border border-border/70 bg-card p-4 text-left shadow-sm transition hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm"
           >
             <div className="flex items-start gap-3">
-              <Avatar>
-                {customer.avatar ? (
-                  <AvatarImage src={customer.avatar} alt={customer.name} />
-                ) : null}
-                <AvatarFallback>{customer.initials}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{customer.name}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {customer.phone ?? customer.email ?? "—"}
-                    </p>
+              <Checkbox
+                checked={selectedCustomerIds.has(customer.id)}
+                onCheckedChange={(checked) =>
+                  toggleCustomer(customer.id, checked === true)
+                }
+                aria-label={labels.accessibility.selectCustomer.replace(
+                  "{name}",
+                  customer.name,
+                )}
+              />
+              <button
+                type="button"
+                onClick={() => onSelectCustomer(customer)}
+                className="min-w-0 flex-1 text-left transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <div className="flex items-start gap-3">
+                  <Avatar>
+                    {customer.avatar ? (
+                      <AvatarImage src={customer.avatar} alt={customer.name} />
+                    ) : null}
+                    <AvatarFallback>{customer.initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{customer.name}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {customer.phone ?? customer.email ?? "—"}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold">
+                        {customer.totalSpend}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <CustomerSegmentBadge
+                        segment={customer.segment}
+                        labels={segmentLabels}
+                      />
+                      <CustomerChannelBadge
+                        channel={customer.primaryChannel}
+                        labels={labels.channels}
+                      />
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                      <span>
+                        {labels.table.orders}: {customer.orderCount}
+                      </span>
+                      <span>{customer.lastVisitRelative}</span>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold">{customer.totalSpend}</p>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <CustomerSegmentBadge
-                    segment={customer.segment}
-                    labels={segmentLabels}
-                  />
-                  <CustomerChannelBadge
-                    channel={customer.primaryChannel}
-                    labels={labels.channels}
-                  />
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                  <span>
-                    {labels.table.orders}: {customer.orderCount}
-                  </span>
-                  <span>{customer.lastVisitRelative}</span>
-                </div>
-              </div>
+              </button>
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </>

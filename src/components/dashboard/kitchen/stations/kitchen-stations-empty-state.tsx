@@ -1,6 +1,8 @@
 "use client";
 
-import { Flame } from "lucide-react";
+import {
+  TbFlame,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -25,7 +27,7 @@ export function KitchenStationsEmptyState({
     <Empty className="border border-dashed border-border/70 bg-card/50">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <Flame className="size-7 text-muted-foreground" aria-hidden />
+          <TbFlame className="size-7 text-muted-foreground" aria-hidden />
         </EmptyMedia>
         <EmptyTitle>{labels.title}</EmptyTitle>
         <EmptyDescription>{labels.description}</EmptyDescription>

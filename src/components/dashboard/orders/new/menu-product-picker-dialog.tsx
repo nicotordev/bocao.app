@@ -1,6 +1,8 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import {
+  TbPlus,
+} from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
@@ -185,7 +187,7 @@ function MenuProductCard({
       </span>
       <span className="flex items-center pr-1">
         <span className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
-          <Plus className="size-5" aria-hidden />
+          <TbPlus className="size-5" aria-hidden />
         </span>
       </span>
     </button>

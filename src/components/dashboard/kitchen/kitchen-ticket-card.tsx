@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  AlertTriangle,
-  CheckCircle2,
-  PackageCheck,
-  Pause,
-  Play,
-} from "lucide-react";
+  TbAlertTriangle,
+  TbCircleCheck,
+  TbClipboardCheck,
+  TbPlayerPause,
+  TbPlayerPlay,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   isKitchenOrderActiveDelayed,
@@ -109,13 +109,13 @@ export function KitchenTicketCard({
           </div>
           {activeDelayed ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
-              <AlertTriangle className="size-3" aria-hidden />
+              <TbAlertTriangle className="size-3" aria-hidden />
               {labels.statuses.delayed}
             </span>
           ) : null}
           {completedLate ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-warning/35 bg-warning/15 px-2 py-0.5 text-[11px] font-medium text-warning-foreground">
-              <AlertTriangle className="size-3 text-warning" aria-hidden />
+              <TbAlertTriangle className="size-3 text-warning" aria-hidden />
               {labels.statuses.deliveredLate}
             </span>
           ) : null}
@@ -138,7 +138,7 @@ export function KitchenTicketCard({
               className="min-h-11 flex-1 gap-1.5"
               onClick={() => onStart?.(order)}
             >
-              <Play className="size-4" aria-hidden />
+              <TbPlayerPlay className="size-4" aria-hidden />
               {labels.actions.start}
             </Button>
           ) : null}
@@ -148,7 +148,7 @@ export function KitchenTicketCard({
               className="min-h-11 flex-1 gap-1.5"
               onClick={() => onMarkReady?.(order)}
             >
-              <CheckCircle2 className="size-4" aria-hidden />
+              <TbCircleCheck className="size-4" aria-hidden />
               {labels.actions.markReady}
             </Button>
           ) : null}
@@ -158,7 +158,7 @@ export function KitchenTicketCard({
               className="min-h-11 flex-1 gap-1.5"
               onClick={() => onMarkDelivered?.(order)}
             >
-              <PackageCheck className="size-4" aria-hidden />
+              <TbClipboardCheck className="size-4" aria-hidden />
               {labels.actions.markDelivered}
             </Button>
           ) : null}
@@ -169,7 +169,7 @@ export function KitchenTicketCard({
               className="min-h-11 shrink-0 gap-1.5 px-4"
               onClick={() => onPause?.(order)}
             >
-              <Pause className="size-4" aria-hidden />
+              <TbPlayerPause className="size-4" aria-hidden />
               {order.isPaused ? labels.actions.resume : labels.actions.pause}
             </Button>
           ) : null}

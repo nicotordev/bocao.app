@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { Download, Plus, RefreshCcw } from "lucide-react";
+import {
+  TbDownload,
+  TbPlus,
+  TbRefresh,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import type { OrdersLabels } from "./types";
 
@@ -29,12 +33,12 @@ export function OrdersHeader({
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3 lg:flex">
         <Button className="gap-2" asChild>
           <Link href="/dashboard/orders/new">
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.actions.newOrder}
           </Link>
         </Button>
         <Button variant="secondary" className="gap-2" onClick={onExport}>
-          <Download className="size-4" aria-hidden />
+          <TbDownload className="size-4" aria-hidden />
           {labels.actions.export}
         </Button>
         <Button
@@ -43,7 +47,7 @@ export function OrdersHeader({
           onClick={onRefresh}
           disabled={isRefreshing}
         >
-          <RefreshCcw
+          <TbRefresh
             className={isRefreshing ? "size-4 animate-spin" : "size-4"}
             aria-hidden
           />

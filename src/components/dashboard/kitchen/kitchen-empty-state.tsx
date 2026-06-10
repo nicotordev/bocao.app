@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ChefHat } from "lucide-react";
+import {
+  TbChefHat,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -22,7 +24,7 @@ export function KitchenEmptyState({ labels }: KitchenEmptyStateProps) {
     <Empty className="border border-dashed border-border/70 bg-card/50">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <ChefHat aria-hidden />
+          <TbChefHat aria-hidden />
         </EmptyMedia>
         <EmptyTitle>{labels.title}</EmptyTitle>
         <EmptyDescription className="max-w-md">{labels.description}</EmptyDescription>

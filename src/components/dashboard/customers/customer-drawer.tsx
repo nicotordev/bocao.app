@@ -1,12 +1,13 @@
 "use client";
 
 import {
-  Archive,
-  Edit3,
-  Megaphone,
-  MessageCircle,
-  StickyNote,
-} from "lucide-react";
+  TbArchive,
+  TbPencil,
+  TbSpeakerphone,
+  TbMessageCircle,
+  TbNote,
+  TbTrash,
+} from "react-icons/tb";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ type CustomerDrawerProps = {
   customer: CustomerDetail | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDeleteCustomer?: (customer: CustomerDetail) => void;
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -49,6 +51,7 @@ export function CustomerDrawer({
   customer,
   open,
   onOpenChange,
+  onDeleteCustomer,
 }: CustomerDrawerProps) {
   const isMobile = useIsMobile();
 
@@ -294,7 +297,7 @@ export function CustomerDrawer({
 
             <div className="grid gap-2">
               <Button className="gap-2" onClick={showComingSoon}>
-                <Edit3 className="size-4" aria-hidden />
+                <TbPencil className="size-4" aria-hidden />
                 {labels.actions.editProfile}
               </Button>
               <Button
@@ -302,7 +305,7 @@ export function CustomerDrawer({
                 className="gap-2"
                 onClick={showComingSoon}
               >
-                <Megaphone className="size-4" aria-hidden />
+                <TbSpeakerphone className="size-4" aria-hidden />
                 {labels.actions.createCampaign}
               </Button>
               <Button
@@ -310,7 +313,7 @@ export function CustomerDrawer({
                 className="gap-2"
                 onClick={showComingSoon}
               >
-                <MessageCircle className="size-4" aria-hidden />
+                <TbMessageCircle className="size-4" aria-hidden />
                 {labels.actions.sendWhatsapp}
               </Button>
               <Button
@@ -318,7 +321,7 @@ export function CustomerDrawer({
                 className="gap-2"
                 onClick={showComingSoon}
               >
-                <StickyNote className="size-4" aria-hidden />
+                <TbNote className="size-4" aria-hidden />
                 {labels.actions.addNote}
               </Button>
               <Button
@@ -326,8 +329,20 @@ export function CustomerDrawer({
                 className="gap-2 text-destructive"
                 onClick={showComingSoon}
               >
-                <Archive className="size-4" aria-hidden />
+                <TbArchive className="size-4" aria-hidden />
                 {labels.actions.archive}
+              </Button>
+              <Button
+                variant="ghost"
+                className="gap-2 text-destructive"
+                onClick={() => {
+                  if (customer && onDeleteCustomer) {
+                    onDeleteCustomer(customer);
+                  }
+                }}
+              >
+                <TbTrash className="size-4" aria-hidden />
+                {labels.actions.delete}
               </Button>
             </div>
           </div>

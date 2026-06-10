@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { TbPlus } from "react-icons/tb";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { uploadCustomerAvatarAction } from "@/app/actions/customers";
@@ -312,7 +312,7 @@ export function NewCustomerDialog({
             onClick={() => void handleAddCustomer()}
             disabled={isSubmitting}
           >
-            <Plus className="mr-2 size-4" />
+            <TbPlus className="mr-2 size-4" />
             {labels.customer.picker.addCustomer}
           </Button>
         </DialogFooter>

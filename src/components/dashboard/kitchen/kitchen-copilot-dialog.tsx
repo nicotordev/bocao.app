@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { TbSparkles } from "react-icons/tb";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,7 @@ export function KitchenCopilotDialog({
   return (
     <>
       <Button type="button" className="gap-2" onClick={() => setOpen(true)}>
-        <Sparkles className="size-4" aria-hidden />
+        <TbSparkles className="size-4" aria-hidden />
         {actionLabel}
       </Button>
 

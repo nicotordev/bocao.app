@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Maximize2, Minimize2, RefreshCcw, Settings2 } from "lucide-react";
+import {
+  TbMaximize,
+  TbMinimize,
+  TbRefresh,
+  TbSettings,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { useDashboardFocusMode } from "@/components/dashboard/dashboard-focus-mode";
 import type { KitchenLabels } from "./types";
@@ -41,9 +46,9 @@ export function KitchenHeader({
             onClick={isFocused ? exitFocus : enterFocus}
           >
             {isFocused ? (
-              <Minimize2 className="size-4" aria-hidden />
+              <TbMinimize className="size-4" aria-hidden />
             ) : (
-              <Maximize2 className="size-4" aria-hidden />
+              <TbMaximize className="size-4" aria-hidden />
             )}
             {isFocused
               ? labels.actions.exitFullscreen
@@ -55,7 +60,7 @@ export function KitchenHeader({
             onClick={onRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCcw
+            <TbRefresh
               className={isRefreshing ? "size-4 animate-spin" : "size-4"}
               aria-hidden
             />
@@ -63,7 +68,7 @@ export function KitchenHeader({
           </Button>
           <Button variant="outline" className="gap-2" asChild>
             <Link href="/dashboard/kitchen/stations">
-              <Settings2 className="size-4" aria-hidden />
+              <TbSettings className="size-4" aria-hidden />
               {labels.actions.configureStations}
             </Link>
           </Button>

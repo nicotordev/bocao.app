@@ -1,6 +1,9 @@
 "use client";
 
-import { Minus, Plus } from "lucide-react";
+import {
+  TbMinus,
+  TbPlus,
+} from "react-icons/tb";
 import { useState } from "react";
 import { toast } from "sonner";
 import { uploadOrderItemImageAction } from "@/app/actions/menu";
@@ -167,7 +170,7 @@ export function CustomProductDialog({
                     onClick={() => setCustomQuantity((quantity) => Math.max(1, quantity - 1))}
                     aria-label={labels.actions.removeItem}
                   >
-                    <Minus className="size-4" aria-hidden />
+                    <TbMinus className="size-4" aria-hidden />
                   </Button>
                   <Input
                     type="number"
@@ -189,7 +192,7 @@ export function CustomProductDialog({
                     onClick={() => setCustomQuantity((quantity) => Math.min(99, quantity + 1))}
                     aria-label={labels.actions.addItem}
                   >
-                    <Plus className="size-4" aria-hidden />
+                    <TbPlus className="size-4" aria-hidden />
                   </Button>
                 </div>
               </Field>
@@ -210,7 +213,7 @@ export function CustomProductDialog({
 
         <DialogFooter className="border-t border-border px-6 py-4">
           <Button type="button" onClick={handleAddCustomProduct}>
-            <Plus className="mr-2 size-4" />
+            <TbPlus className="mr-2 size-4" />
             {labels.items.picker.addProduct}
           </Button>
         </DialogFooter>

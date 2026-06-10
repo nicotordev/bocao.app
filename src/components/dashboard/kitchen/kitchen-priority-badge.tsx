@@ -1,4 +1,10 @@
-import { AlertTriangle, ArrowDown, Flame, Timer } from "lucide-react";
+import {
+  TbAlertTriangle,
+  TbArrowDown,
+  TbFlame,
+  TbClock,
+} from "react-icons/tb";
+import type { IconType } from "react-icons";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { KitchenPriority } from "@/lib/kitchen/types";
@@ -12,22 +18,22 @@ type KitchenPriorityBadgeProps = {
 
 const priorityConfig: Record<
   KitchenPriority,
-  { icon: typeof Timer; className: string }
+  { icon: IconType; className: string }
 > = {
   normal: {
-    icon: ArrowDown,
+    icon: TbArrowDown,
     className: "border-border bg-muted/40 text-muted-foreground",
   },
   high: {
-    icon: Timer,
+    icon: TbClock,
     className: "border-chart-3/30 bg-chart-3/10 text-chart-3",
   },
   urgent: {
-    icon: Flame,
+    icon: TbFlame,
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   delayed: {
-    icon: AlertTriangle,
+    icon: TbAlertTriangle,
     className: "border-destructive/40 bg-destructive/15 text-destructive",
   },
 };

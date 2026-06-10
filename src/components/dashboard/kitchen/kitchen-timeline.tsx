@@ -1,6 +1,8 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import {
+  TbActivity,
+} from "react-icons/tb";
 import {
   Card,
   CardContent,
@@ -32,7 +34,7 @@ export function KitchenTimeline({
     <Card className="border-border/70 bg-card/80">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Activity className="size-4 text-primary" aria-hidden />
+          <TbActivity className="size-4 text-primary" aria-hidden />
           <CardTitle>{labels.timeline.title}</CardTitle>
         </div>
         <CardDescription>{labels.timeline.subtitle}</CardDescription>

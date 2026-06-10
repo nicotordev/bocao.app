@@ -1,4 +1,7 @@
-import { Upload, Users } from "lucide-react";
+import {
+  TbUpload,
+  TbUsers,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -24,7 +27,7 @@ export function CustomersEmptyState({
     <Empty className="rounded-3xl border border-border/70 bg-card/80 py-16">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <Users className="size-5" aria-hidden />
+          <TbUsers className="size-5" aria-hidden />
         </EmptyMedia>
         <EmptyTitle>{labels.title}</EmptyTitle>
         <EmptyDescription>{labels.description}</EmptyDescription>
@@ -36,7 +39,7 @@ export function CustomersEmptyState({
             toast.message(comingSoonLabel);
           }}
         >
-          <Upload className="size-4" aria-hidden />
+          <TbUpload className="size-4" aria-hidden />
           {labels.cta}
         </Button>
       </EmptyContent>

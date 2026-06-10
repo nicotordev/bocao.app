@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { TbAdjustmentsHorizontal } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -211,7 +211,7 @@ export function CustomersToolbar(props: CustomersToolbarProps) {
               size="icon"
               aria-label={props.labels.accessibility.openFilters}
             >
-              <SlidersHorizontal className="size-4" aria-hidden />
+              <TbAdjustmentsHorizontal className="size-4" aria-hidden />
             </Button>
           </CollapsibleTrigger>
         </div>

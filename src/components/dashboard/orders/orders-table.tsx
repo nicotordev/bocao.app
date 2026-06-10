@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import {
-  Copy,
-  Edit3,
-  Eye,
-  MoreHorizontal,
-  Printer,
-  RefreshCcw,
-  XCircle,
-} from "lucide-react";
+  TbCopy,
+  TbPencil,
+  TbEye,
+  TbDots,
+  TbPrinter,
+  TbRefresh,
+  TbCircleX,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -177,7 +177,7 @@ function OrderActions({
           aria-label={labels.accessibility.openActions}
           onClick={(event) => event.stopPropagation()}
         >
-          <MoreHorizontal className="size-4" aria-hidden />
+          <TbDots className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -185,28 +185,28 @@ function OrderActions({
         onClick={(event) => event.stopPropagation()}
       >
         <DropdownMenuItem onSelect={onSelect}>
-          <Eye className="size-4" aria-hidden />
+          <TbEye className="size-4" aria-hidden />
           {labels.actions.viewDetail}
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Edit3 className="size-4" aria-hidden />
+          <TbPencil className="size-4" aria-hidden />
           {labels.actions.edit}
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Printer className="size-4" aria-hidden />
+          <TbPrinter className="size-4" aria-hidden />
           {labels.actions.print}
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <Copy className="size-4" aria-hidden />
+          <TbCopy className="size-4" aria-hidden />
           {labels.actions.duplicate}
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <RefreshCcw className="size-4" aria-hidden />
+          <TbRefresh className="size-4" aria-hidden />
           {labels.actions.changeStatus}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">
-          <XCircle className="size-4" aria-hidden />
+          <TbCircleX className="size-4" aria-hidden />
           {labels.actions.cancel}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -219,7 +219,7 @@ export function OrdersEmptyState({ labels }: { labels: OrdersLabels }) {
     <Empty className="border border-dashed border-border/70 bg-card/50">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <Eye className="size-7 text-muted-foreground" aria-hidden />
+          <TbEye className="size-7 text-muted-foreground" aria-hidden />
         </EmptyMedia>
         <EmptyTitle>{labels.empty.title}</EmptyTitle>
         <EmptyDescription>{labels.empty.description}</EmptyDescription>

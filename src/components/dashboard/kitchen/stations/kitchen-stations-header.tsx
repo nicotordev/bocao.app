@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Plus } from "lucide-react";
+import {
+  TbArrowLeft,
+  TbPlus,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import type { KitchenStationsLabels } from "./types";
 
@@ -26,7 +29,7 @@ export function KitchenStationsHeader({
           asChild
         >
           <Link href="/dashboard/kitchen">
-            <ArrowLeft className="size-4" aria-hidden />
+            <TbArrowLeft className="size-4" aria-hidden />
             {labels.backToKitchen}
           </Link>
         </Button>
@@ -39,7 +42,7 @@ export function KitchenStationsHeader({
       </div>
       {canEdit ? (
         <Button className="gap-2 self-start lg:self-auto" onClick={onCreate}>
-          <Plus className="size-4" aria-hidden />
+          <TbPlus className="size-4" aria-hidden />
           {labels.createStation}
         </Button>
       ) : null}

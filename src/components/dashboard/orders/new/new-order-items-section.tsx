@@ -1,6 +1,10 @@
 "use client";
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import {
+  TbMinus,
+  TbPlus,
+  TbTrash,
+} from "react-icons/tb";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/orders/currency";
 import { Button } from "@/components/ui/button";
@@ -99,7 +103,7 @@ export function NewOrderItemsSection({
             className="gap-2"
             onClick={() => setMenuDialogOpen(true)}
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.actions.addItem}
           </Button>
           <Button
@@ -108,7 +112,7 @@ export function NewOrderItemsSection({
             className="gap-2"
             onClick={() => setCustomDialogOpen(true)}
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
             {labels.items.picker.customProduct}
           </Button>
         </div>
@@ -228,7 +232,7 @@ function OrderListItem({
             onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
             aria-label={labels.actions.removeItem}
           >
-            <Minus className="size-4" aria-hidden />
+            <TbMinus className="size-4" aria-hidden />
           </Button>
           <span className="min-w-8 text-center text-sm font-medium">{item.quantity}</span>
           <Button
@@ -238,7 +242,7 @@ function OrderListItem({
             onClick={() => onUpdateQuantity(Math.min(99, item.quantity + 1))}
             aria-label={labels.actions.addItem}
           >
-            <Plus className="size-4" aria-hidden />
+            <TbPlus className="size-4" aria-hidden />
           </Button>
         </div>
 
@@ -253,7 +257,7 @@ function OrderListItem({
           onClick={onRemove}
           aria-label={labels.actions.removeItem}
         >
-          <Trash2 className="size-4" aria-hidden />
+          <TbTrash className="size-4" aria-hidden />
         </Button>
       </div>
     </li>

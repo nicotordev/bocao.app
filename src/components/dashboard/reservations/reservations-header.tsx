@@ -1,4 +1,7 @@
-import { Plus, RefreshCcw } from "lucide-react";
+import {
+  TbPlus,
+  TbRefresh,
+} from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import type { ReservationsPageLabels } from "@/lib/reservations/page-labels";
 
@@ -27,7 +30,7 @@ export function ReservationsHeader({
       </div>
       <div className="flex flex-wrap gap-2">
         <Button className="gap-2" onClick={onNew}>
-          <Plus className="size-4" aria-hidden />
+          <TbPlus className="size-4" aria-hidden />
           {labels.actions.newReservation}
         </Button>
         {onRefresh && (
@@ -37,7 +40,7 @@ export function ReservationsHeader({
             onClick={onRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCcw
+            <TbRefresh
               className={isRefreshing ? "size-4 animate-spin" : "size-4"}
               aria-hidden
             />

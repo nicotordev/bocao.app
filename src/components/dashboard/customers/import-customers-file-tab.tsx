@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Upload } from "lucide-react";
+import { TbDownload, TbUpload } from "react-icons/tb";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -167,7 +167,7 @@ export function ImportCustomersFileTab({
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" className="gap-2 rounded-2xl" asChild>
           <a href={getCustomersImportTemplateUrl(restaurantId)} download>
-            <Download className="size-4" aria-hidden />
+            <TbDownload className="size-4" aria-hidden />
             {labels.downloadTemplate}
           </a>
         </Button>
@@ -178,7 +178,7 @@ export function ImportCustomersFileTab({
           onClick={() => inputRef.current?.click()}
           disabled={isParsing || isImporting}
         >
-          <Upload className="size-4" aria-hidden />
+          <TbUpload className="size-4" aria-hidden />
           {labels.uploadFile}
         </Button>
 
@@ -201,7 +201,7 @@ export function ImportCustomersFileTab({
           isParsing && "pointer-events-none opacity-60",
         )}
       >
-        <Upload className="mx-auto mb-3 size-8 text-muted-foreground" />
+        <TbUpload className="mx-auto mb-3 size-8 text-muted-foreground" />
         <p className="font-medium">{labels.uploadFile}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {labels.dropFileHint}

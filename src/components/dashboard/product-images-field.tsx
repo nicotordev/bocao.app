@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ImagePlus, Loader2, X } from "lucide-react";
+import {
+  TbChevronLeft,
+  TbChevronRight,
+  TbPhotoPlus,
+  TbLoader2,
+  TbX,
+} from "react-icons/tb";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -143,7 +149,7 @@ export function ProductImagesField({
                 onClick={() => removeImage(url)}
                 aria-label={labels.removePhoto}
               >
-                <X className="size-3.5" aria-hidden />
+                <TbX className="size-3.5" aria-hidden />
               </Button>
             ) : null}
 
@@ -162,7 +168,7 @@ export function ProductImagesField({
                     `Move photo ${index + 1} earlier`
                   }
                 >
-                  <ChevronLeft className="size-4" aria-hidden />
+                  <TbChevronLeft className="size-4" aria-hidden />
                 </Button>
                 <Button
                   type="button"
@@ -177,7 +183,7 @@ export function ProductImagesField({
                     `Move photo ${index + 1} later`
                   }
                 >
-                  <ChevronRight className="size-4" aria-hidden />
+                  <TbChevronRight className="size-4" aria-hidden />
                 </Button>
               </div>
             ) : null}
@@ -196,9 +202,9 @@ export function ProductImagesField({
             disabled={isUploading}
           >
             {isUploading ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <TbLoader2 className="size-4 animate-spin" aria-hidden />
             ) : (
-              <ImagePlus className="size-4" aria-hidden />
+              <TbPhotoPlus className="size-4" aria-hidden />
             )}
             <span>{isUploading ? labels.uploading : labels.addPhoto}</span>
           </button>

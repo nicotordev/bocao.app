@@ -34,6 +34,10 @@ function buildCustomersSearchParams(filters?: CustomersListFilters) {
     params.set("customerId", filters.customerId);
   }
 
+  if (filters?.savedSegmentId) {
+    params.set("savedSegmentId", filters.savedSegmentId);
+  }
+
   if (filters?.page && filters.page > 1) {
     params.set("page", String(filters.page));
   }
@@ -83,4 +87,33 @@ export async function postCustomer(
   );
 
   return response.customer;
+}
+
+export async function deleteCustomer(
+  restaurantId: string,
+  customerId: string,
+): Promise<number> {
+  const response = await apiRequest<{ deletedCount: number }>(
+    `/api/restaurants/${restaurantId}/customers/${encodeURIComponent(
+      customerId,
+    )}`,
+    { method: "DELETE" },
+  );
+
+  return response.deletedCount;
+}
+
+export async function deleteCustomers(
+  restaurantId: string,
+  customerIds: string[],
+): Promise<number> {
+  const response = await apiRequest<{ deletedCount: number }>(
+    `/api/restaurants/${restaurantId}/customers/delete`,
+    {
+      method: "POST",
+      body: { customerIds },
+    },
+  );
+
+  return response.deletedCount;
 }

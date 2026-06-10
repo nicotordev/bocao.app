@@ -22,12 +22,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  FolderTree,
-  GripVertical,
-  ImageIcon,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+  TbFolderRoot,
+  TbGripVertical,
+  TbPhoto,
+  TbPencil,
+  TbTrash,
+} from "react-icons/tb";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -398,10 +398,10 @@ function MenuTreeCategorySection({
             {...attributes}
             {...listeners}
           >
-            <GripVertical className="size-4" aria-hidden />
+            <TbGripVertical className="size-4" aria-hidden />
           </button>
         ) : null}
-        <FolderTree className="size-4 text-primary" aria-hidden />
+        <TbFolderRoot className="size-4 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="font-medium">{category.name}</p>
           <p className="text-xs text-muted-foreground">
@@ -416,7 +416,7 @@ function MenuTreeCategorySection({
             onClick={onEditCategory}
             aria-label={labels.actions.edit}
           >
-            <Pencil className="size-4" aria-hidden />
+            <TbPencil className="size-4" aria-hidden />
           </Button>
         ) : null}
       </div>
@@ -545,7 +545,7 @@ function MenuTreeItemRow({
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="size-4" aria-hidden />
+          <TbGripVertical className="size-4" aria-hidden />
         </button>
       ) : null}
 
@@ -584,7 +584,7 @@ function MenuTreeItemRow({
             onClick={onEdit}
             aria-label={labels.actions.edit}
           >
-            <Pencil className="size-4" aria-hidden />
+            <TbPencil className="size-4" aria-hidden />
           </Button>
           <Button
             type="button"
@@ -593,7 +593,7 @@ function MenuTreeItemRow({
             onClick={onDelete}
             aria-label={labels.actions.delete}
           >
-            <Trash2 className="size-4" aria-hidden />
+            <TbTrash className="size-4" aria-hidden />
           </Button>
         </div>
       ) : null}
@@ -612,7 +612,7 @@ function MenuTreeCategoryPreview({
 }) {
   return (
     <div className="flex min-w-[260px] items-center gap-2 rounded-3xl border border-primary/30 bg-card px-4 py-3 shadow-md ring-2 ring-primary/15">
-      <FolderTree className="size-4 text-primary" aria-hidden />
+      <TbFolderRoot className="size-4 text-primary" aria-hidden />
       <div>
         <p className="font-medium">{category.name}</p>
         <p className="text-xs text-muted-foreground">
@@ -675,7 +675,7 @@ function MenuItemThumbnail({
 
   return (
     <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-      <ImageIcon className="size-4" aria-hidden />
+      <TbPhoto className="size-4" aria-hidden />
     </div>
   );
 }

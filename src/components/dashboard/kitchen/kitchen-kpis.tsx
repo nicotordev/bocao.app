@@ -1,12 +1,12 @@
 import {
-  AlertTriangle,
-  ChefHat,
-  Clock3,
-  Minus,
-  PackageCheck,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+  TbAlertTriangle,
+  TbChefHat,
+  TbClock,
+  TbMinus,
+  TbClipboardCheck,
+  TbTrendingDown,
+  TbTrendingUp,
+} from "react-icons/tb";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { KitchenKpiValues } from "@/lib/kitchen/types";
@@ -20,25 +20,25 @@ type KitchenKpisProps = {
 const kpis = [
   {
     key: "active",
-    icon: Clock3,
+    icon: TbClock,
     accent: "text-chart-4",
     trendClass: "border-primary/30 bg-primary/10 text-primary",
   },
   {
     key: "averageTime",
-    icon: ChefHat,
+    icon: TbChefHat,
     accent: "text-chart-2",
     trendClass: "border-chart-2/30 bg-chart-2/10 text-chart-2",
   },
   {
     key: "delayed",
-    icon: AlertTriangle,
+    icon: TbAlertTriangle,
     accent: "text-destructive",
     trendClass: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   {
     key: "ready",
-    icon: PackageCheck,
+    icon: TbClipboardCheck,
     accent: "text-chart-1",
     trendClass: "border-chart-1/30 bg-chart-1/10 text-chart-1",
   },
@@ -46,14 +46,14 @@ const kpis = [
 
 function resolveTrendIcon(trend: "up" | "down" | "neutral" | undefined) {
   if (trend === "down") {
-    return TrendingDown;
+    return TbTrendingDown;
   }
 
   if (trend === "up") {
-    return TrendingUp;
+    return TbTrendingUp;
   }
 
-  return Minus;
+  return TbMinus;
 }
 
 export function KitchenKpis({ labels, values }: KitchenKpisProps) {

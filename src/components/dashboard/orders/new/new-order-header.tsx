@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import {
+  TbArrowLeft,
+} from "react-icons/tb";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -43,7 +45,7 @@ export function NewOrderHeader({ labels }: NewOrderHeaderProps) {
         </div>
         <Button variant="outline" className="gap-2 self-start" asChild>
           <Link href="/dashboard/orders">
-            <ArrowLeft className="size-4" aria-hidden />
+            <TbArrowLeft className="size-4" aria-hidden />
             {labels.actions.back}
           </Link>
         </Button>

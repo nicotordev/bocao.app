@@ -1,3 +1,4 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
 import {
   parsePaginationParams,
@@ -17,6 +18,7 @@ export type CustomersListFilters = {
   sort?: CustomerSortField;
   tab?: "customers" | "segments" | "activity";
   customerId?: string;
+  savedSegmentId?: string;
 } & PaginationParams;
 
 const customerSegmentSchema = z.enum([
@@ -57,6 +59,7 @@ export const customersListQuerySchema = z
     sort: customerSortSchema.optional(),
     tab: customerTabSchema.optional(),
     customerId: z.string().optional(),
+    savedSegmentId: z.string().optional(),
   })
   .merge(paginationQuerySchema);
 
@@ -75,6 +78,7 @@ export function parseCustomersListSearchParams(
     sort: getValue("sort"),
     tab: getValue("tab"),
     customerId: getValue("customerId"),
+    savedSegmentId: getValue("savedSegmentId"),
     page: getValue("page"),
     pageSize: getValue("pageSize"),
   });
@@ -96,6 +100,7 @@ export function parseCustomersListSearchParams(
     sort: parsed.data.sort ?? "last_visit",
     tab: parsed.data.tab ?? "customers",
     customerId: parsed.data.customerId,
+    savedSegmentId: parsed.data.savedSegmentId,
     page: parsed.data.page,
     pageSize: parsed.data.pageSize,
   };
@@ -104,7 +109,13 @@ export function parseCustomersListSearchParams(
 export type CustomersListFilterPatch = Partial<
   Pick<
     CustomersListFilters,
-    "search" | "segment" | "channel" | "sort" | "tab" | "customerId"
+    | "search"
+    | "segment"
+    | "channel"
+    | "sort"
+    | "tab"
+    | "customerId"
+    | "savedSegmentId"
   >
 >;
 
@@ -119,8 +130,58 @@ export function areCustomersListFiltersEqual(
     (left.sort ?? "last_visit") === (right.sort ?? "last_visit") &&
     (left.tab ?? "customers") === (right.tab ?? "customers") &&
     left.customerId === right.customerId &&
+    left.savedSegmentId === right.savedSegmentId &&
     left.page === right.page &&
     left.pageSize === right.pageSize
+  );
+}
+
+export function buildCustomersPrismaWhere(
+  restaurantId: string,
+  filters: Pick<CustomersListFilters, "search" | "savedSegmentId">,
+): Prisma.CustomerWhereInput {
+  const where: Prisma.CustomerWhereInput = { restaurantId };
+  const search = filters.search?.trim();
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
+      { notes: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  if (filters.savedSegmentId) {
+    where.savedSegmentMembers = {
+      some: { segmentId: filters.savedSegmentId },
+    };
+  }
+
+  return where;
+}
+
+export function buildCustomersPrismaOrderBy(
+  sort: CustomersListFilters["sort"],
+): Prisma.CustomerOrderByWithRelationInput[] {
+  switch (sort) {
+    case "created_at":
+      return [{ createdAt: "desc" }];
+    case "name":
+    default:
+      return [{ name: "asc" }];
+  }
+}
+
+export function needsComputedCustomerPipeline(
+  filters: CustomersListFilters,
+): boolean {
+  return (
+    (filters.segment !== undefined && filters.segment !== "all") ||
+    (filters.channel !== undefined && filters.channel !== "all") ||
+    (filters.sort !== undefined &&
+      filters.sort !== "name" &&
+      filters.sort !== "created_at")
   );
 }
 
@@ -138,7 +199,9 @@ export function buildTargetCustomersListFilters(
       next.channel !== (current.channel ?? "all")) ||
     (next.sort !== undefined && next.sort !== (current.sort ?? "last_visit")) ||
     (next.tab !== undefined && next.tab !== (current.tab ?? "customers")) ||
-    ("customerId" in next && next.customerId !== current.customerId);
+    ("customerId" in next && next.customerId !== current.customerId) ||
+    ("savedSegmentId" in next &&
+      next.savedSegmentId !== current.savedSegmentId);
 
   return {
     search:
@@ -148,6 +211,10 @@ export function buildTargetCustomersListFilters(
     sort: next.sort ?? current.sort ?? "last_visit",
     tab: next.tab ?? current.tab ?? "customers",
     customerId: "customerId" in next ? next.customerId : current.customerId,
+    savedSegmentId:
+      "savedSegmentId" in next
+        ? next.savedSegmentId
+        : current.savedSegmentId,
     page: options?.page ?? (hasFilterChange ? 1 : current.page),
     pageSize: current.pageSize,
   };

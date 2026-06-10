@@ -1,6 +1,8 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import {
+  TbSparkles,
+} from "react-icons/tb";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +44,7 @@ export function CustomerInsightsCard({
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
-            <Sparkles className="size-4" aria-hidden />
+            <TbSparkles className="size-4" aria-hidden />
           </span>
           <div>
             <CardTitle>{labels.insights.title}</CardTitle>

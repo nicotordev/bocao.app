@@ -1104,6 +1104,7 @@
         "edit": "Edit",
         "addTag": "Add tag",
         "archive": "Archive",
+        "delete": "Delete",
         "editProfile": "Edit profile",
         "sendWhatsapp": "Send WhatsApp",
         "addNote": "Add note",
@@ -1151,7 +1152,19 @@
         "draftCustomerName": "Enter the customer name"
       },
       "feedback": {
-        "createError": "We could not create the customer. Please try again."
+        "createError": "We could not create the customer. Please try again.",
+        "deleteError": "We could not delete the customer. Please try again."
+      },
+      "deleteDialog": {
+        "title": "Delete customer",
+        "titleBulk": "Delete customers",
+        "description": "This will permanently delete {name}. Order history will remain, but the customer profile will be removed. This action cannot be undone.",
+        "descriptionBulk": "This will permanently delete {count} customers. Order history will remain, but their profiles will be removed. This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "success": "Customer deleted successfully",
+        "successBulk": "{count} customers deleted successfully",
+        "error": "We could not delete the customer. Please try again."
       },
       "kpis": {
         "total": "Total customers",
@@ -1303,10 +1316,59 @@
         "description": "When you receive orders or reservations, customers will appear here automatically.",
         "cta": "Import customers"
       },
+      "bulkActions": {
+        "selectedCount": "{count} selected",
+        "clearSelection": "Clear selection",
+        "export": "Export selected",
+        "createCampaign": "Create campaign",
+        "saveToSegment": "Save to segment",
+        "archive": "Archive",
+        "delete": "Delete"
+      },
+      "savedSegments": {
+        "title": "Saved segments",
+        "subtitle": "Create custom groups and reuse them for campaigns and filters.",
+        "smartTitle": "Smart segments",
+        "smartSubtitle": "Automatically calculated from customer activity and spend.",
+        "create": "Create segment",
+        "createTitle": "Create segment",
+        "createDescription": "Name a new segment and add customers to it afterwards.",
+        "saveTitle": "Save to segment",
+        "saveDescription": "Save {count} selected customers to a segment.",
+        "addCustomersTitle": "Add customers",
+        "addCustomersDescription": "Add existing customers from this restaurant to {name}.",
+        "addCustomersDescriptionFallback": "Add existing customers from this restaurant to the segment.",
+        "name": "Name",
+        "namePlaceholder": "e.g. VIP lunch guests",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional notes for your team",
+        "noDescription": "No description",
+        "saveMode": "How do you want to save them?",
+        "createNew": "Create a new segment",
+        "addToExisting": "Add to an existing segment",
+        "segment": "Segment",
+        "selectSegment": "Select a segment",
+        "search": "Search",
+        "searchPlaceholder": "Search by name, phone, or email",
+        "empty": "No customers match your search.",
+        "selectedCount": "{count} selected",
+        "selectAllCustomers": "Select all visible customers",
+        "importCustomer": "Import customer",
+        "addCustomers": "Add customers",
+        "cancel": "Cancel",
+        "save": "Save",
+        "created": "Segment created successfully",
+        "addedToExisting": "Customers added to the segment",
+        "saveError": "We could not save the segment. Please try again.",
+        "nameRequired": "Enter a segment name",
+        "noCustomersSelected": "Select at least one customer"
+      },
       "accessibility": {
         "openActions": "Open customer actions",
         "openDetails": "Open customer details",
-        "openFilters": "Open filters"
+        "openFilters": "Open filters",
+        "selectCustomer": "Select {name}",
+        "selectAllCustomers": "Select all customers on this page"
       },
       "importCustomers": {
         "button": "Import customers",
