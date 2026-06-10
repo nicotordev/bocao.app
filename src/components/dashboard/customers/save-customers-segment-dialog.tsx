@@ -53,7 +53,8 @@ export function SaveCustomersSegmentDialog({
   const [existingSegmentId, setExistingSegmentId] = useState("");
 
   const createMutation = useCreateSavedCustomerSegmentMutation(restaurantId);
-  const addMembersMutation = useAddSavedCustomerSegmentMembersMutation(restaurantId);
+  const addMembersMutation =
+    useAddSavedCustomerSegmentMembersMutation(restaurantId);
   const isPending = createMutation.isPending || addMembersMutation.isPending;
 
   useEffect(() => {
@@ -66,14 +67,18 @@ export function SaveCustomersSegmentDialog({
   }, [open]);
 
   useEffect(() => {
-    if (
-      mode === "existing" &&
-      !existingSegmentId &&
-      savedSegments.length > 0
-    ) {
-      setExistingSegmentId(savedSegments[0]?.id ?? "");
+    if (mode !== "existing" || savedSegments.length === 0) {
+      return;
     }
-  }, [existingSegmentId, mode, savedSegments]);
+
+    setExistingSegmentId((current) => {
+      if (current && savedSegments.some((segment) => segment.id === current)) {
+        return current;
+      }
+
+      return savedSegments[0]?.id ?? "";
+    });
+  }, [mode, savedSegments]);
 
   async function handleSubmit() {
     if (customerIds.length === 0) {
@@ -134,7 +139,16 @@ export function SaveCustomersSegmentDialog({
             <Label>{labels.saveMode}</Label>
             <Select
               value={mode}
-              onValueChange={(value) => setMode(value as "new" | "existing")}
+              onValueChange={(value) => {
+                const nextMode = value as "new" | "existing";
+                setMode(nextMode);
+
+                if (nextMode === "existing" && savedSegments.length > 0) {
+                  setExistingSegmentId(
+                    (current) => current || (savedSegments[0]?.id ?? ""),
+                  );
+                }
+              }}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -163,7 +177,9 @@ export function SaveCustomersSegmentDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="segment-description">{labels.description}</Label>
+                <Label htmlFor="segment-description">
+                  {labels.description}
+                </Label>
                 <Textarea
                   id="segment-description"
                   value={description}

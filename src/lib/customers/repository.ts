@@ -17,6 +17,10 @@ import {
   customerMatchesSegmentFilter,
   isReservationFrequentCustomer,
 } from "@/lib/customers/segments";
+import {
+  mapCustomerOption,
+  mapCustomerOptions,
+} from "@/lib/customers/customer-option";
 import type {
   CreateCustomerInput,
   CustomerDetail,
@@ -255,7 +259,7 @@ export async function createCustomer(
   restaurantId: string,
   input: CreateCustomerInput,
 ): Promise<CustomerOption> {
-  return prisma.customer.create({
+  const customer = await prisma.customer.create({
     data: {
       restaurantId,
       name: input.name.trim(),
@@ -274,6 +278,8 @@ export async function createCustomer(
       documentId: true,
     },
   });
+
+  return mapCustomerOption(customer);
 }
 
 export async function listCustomers(
@@ -291,14 +297,14 @@ export async function listCustomers(
     orderBy: [{ name: "asc" }],
   });
 
-  return customers;
+  return mapCustomerOptions(customers);
 }
 
 export async function getCustomer(
   restaurantId: string,
   customerId: string,
 ): Promise<CustomerOption | null> {
-  return prisma.customer.findFirst({
+  const customer = await prisma.customer.findFirst({
     where: {
       id: customerId,
       restaurantId,
@@ -311,6 +317,8 @@ export async function getCustomer(
       documentId: true,
     },
   });
+
+  return customer ? mapCustomerOption(customer) : null;
 }
 
 export async function deleteCustomers(
