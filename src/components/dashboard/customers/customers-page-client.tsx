@@ -4,7 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { NewCustomerDialog } from "@/components/dashboard/orders/new/new-customer-dialog";
+import { BulkCustomerTagsDialog } from "./bulk-customer-tags-dialog";
+import { CustomerDialog } from "./customer-dialog";
+import { CustomerProfileDialog } from "./customer-profile-dialog";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
@@ -22,9 +24,12 @@ import type {
   CustomerOption,
   CustomerSegmentCard,
 } from "@/lib/customers/types";
+import { useBulkCustomerTagsMutation } from "@/lib/query/customers/customer-tags.mutations";
+import { useCustomerTagsQuery } from "@/lib/query/customers/customer-tags.queries";
 import {
   useCreateCustomerMutation,
   useDeleteCustomersMutation,
+  useUpdateCustomerMutation,
 } from "@/lib/query/customers/customers.mutations";
 import {
   useCustomerDetailQuery,
@@ -32,7 +37,6 @@ import {
 } from "@/lib/query/customers/customers.queries";
 import { queryKeys } from "@/lib/query/query-keys";
 import { ImportCustomersDialog } from "./import-customers-dialog";
-import { CustomerDrawer } from "./customer-drawer";
 import { CustomerInsightsCard } from "./customer-insights-card";
 import { CustomersActivityFeed } from "./customers-activity-feed";
 import { CustomersHeader } from "./customers-header";
@@ -52,6 +56,7 @@ type CustomersPageClientProps = {
   labels: CustomersLabels;
   segmentLabels: CustomerSegmentLabelMap;
   restaurantId: string;
+  organizationId: string;
   customerOptions: CustomerOption[];
 };
 
@@ -141,12 +146,22 @@ export function CustomersPageClient({
   labels,
   segmentLabels,
   restaurantId,
+  organizationId,
   customerOptions,
 }: CustomersPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
+  const [customerDialogMode, setCustomerDialogMode] = useState<
+    "create" | "edit" | null
+  >(null);
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(
+    null,
+  );
+  const [bulkTagOperation, setBulkTagOperation] = useState<
+    "add" | "remove" | null
+  >(null);
+  const [singleTagCustomerIds, setSingleTagCustomerIds] = useState<string[]>([]);
   const [importCustomersDialogOpen, setImportCustomersDialogOpen] =
     useState(false);
   const [saveSegmentDialogOpen, setSaveSegmentDialogOpen] = useState(false);
@@ -158,7 +173,10 @@ export function CustomersPageClient({
     Array<{ id: string; name: string }>
   >([]);
   const createCustomerMutation = useCreateCustomerMutation(restaurantId);
+  const updateCustomerMutation = useUpdateCustomerMutation(restaurantId);
   const deleteCustomersMutation = useDeleteCustomersMutation(restaurantId);
+  const bulkTagsMutation = useBulkCustomerTagsMutation(restaurantId);
+  const customerTagsQuery = useCustomerTagsQuery(organizationId);
   const filters = useMemo(
     () =>
       parseCustomersListSearchParams(
@@ -170,10 +188,13 @@ export function CustomersPageClient({
   const selectedCustomerId = filters.customerId ?? null;
 
   const customersQuery = useCustomersPageQuery(restaurantId, filters);
+  const profileCustomerId = selectedCustomerId;
+  const editCustomerId =
+    customerDialogMode === "edit" ? editingCustomerId : null;
   const detailQuery = useCustomerDetailQuery(
     restaurantId,
-    selectedCustomerId ?? "",
-    Boolean(selectedCustomerId),
+    profileCustomerId ?? editCustomerId ?? "",
+    Boolean(profileCustomerId || editCustomerId),
   );
 
   const pageData = customersQuery.data;
@@ -267,10 +288,6 @@ export function CustomersPageClient({
     [customers, selectedCustomerIds],
   );
 
-  const showComingSoon = () => {
-    toast.message(labels.actions.comingSoon);
-  };
-
   const openDeleteDialog = useCallback(
     (targets: Array<{ id: string; name: string }>) => {
       if (targets.length === 0) {
@@ -358,7 +375,20 @@ export function CustomersPageClient({
 
   const activeTab = filters.tab ?? "customers";
 
-  const handleCreateCustomer = async (input: {
+  const customerDialogLabels = {
+    ...labels.formDialog,
+    tags: labels.tags,
+    createTitle: labels.customerDialog.createTitle,
+    createDescription: labels.customerDialog.createDescription,
+    createButton: labels.customerDialog.createButton,
+    editTitle: labels.customerDialog.editTitle,
+    editDescription: labels.customerDialog.editDescription,
+    editButton: labels.customerDialog.editButton,
+    createSuccess: labels.customerDialog.createSuccess,
+    editSuccess: labels.customerDialog.editSuccess,
+  };
+
+  const handleCustomerDialogSubmit = async (input: {
     name: string;
     phone: string;
     email: string;
@@ -366,23 +396,58 @@ export function CustomersPageClient({
     address: string;
     notes: string;
     avatar: string;
+    tagIds: string[];
   }) => {
-    try {
-      const customer = await createCustomerMutation.mutateAsync({
-        name: input.name,
-        phone: input.phone || undefined,
-        email: input.email || undefined,
-        documentId: input.documentId || undefined,
-        address: input.address || undefined,
-        notes: input.notes || undefined,
-        avatar: input.avatar || undefined,
-      });
+    const payload = {
+      name: input.name,
+      phone: input.phone || undefined,
+      email: input.email || undefined,
+      documentId: input.documentId || undefined,
+      address: input.address || undefined,
+      notes: input.notes || undefined,
+      avatar: input.avatar || undefined,
+      tagIds: input.tagIds,
+    };
 
+    try {
+      if (customerDialogMode === "edit" && editingCustomerId) {
+        await updateCustomerMutation.mutateAsync({
+          customerId: editingCustomerId,
+          input: payload,
+        });
+        refreshCustomersPage();
+        return;
+      }
+
+      const customer = await createCustomerMutation.mutateAsync(payload);
       navigateFilters({ customerId: customer.id, tab: "customers" });
+      refreshCustomersPage();
     } catch {
-      toast.error(labels.feedback.createError);
-      throw new Error(labels.feedback.createError);
+      toast.error(
+        customerDialogMode === "edit"
+          ? labels.feedback.updateError
+          : labels.feedback.createError,
+      );
+      throw new Error("CUSTOMER_SAVE_FAILED");
     }
+  };
+
+  const handleBulkTagsConfirm = async (tagIds: string[]) => {
+    const operation = bulkTagOperation ?? "add";
+    const customerIds =
+      singleTagCustomerIds.length > 0
+        ? singleTagCustomerIds
+        : [...selectedCustomerIds];
+
+    await bulkTagsMutation.mutateAsync({
+      customerIds,
+      tagIds,
+      operation,
+    });
+
+    setSelectedCustomerIds(new Set());
+    setSingleTagCustomerIds([]);
+    refreshCustomersPage();
   };
 
   return (
@@ -390,7 +455,10 @@ export function CustomersPageClient({
       <CustomersHeader
         labels={labels}
         onExport={handleExport}
-        onNewCustomer={() => setNewCustomerDialogOpen(true)}
+        onNewCustomer={() => {
+          setEditingCustomerId(null);
+          setCustomerDialogMode("create");
+        }}
         onImportCustomers={() => setImportCustomersDialogOpen(true)}
       />
       <CustomersKpis labels={labels.kpis} values={kpis} />
@@ -451,9 +519,15 @@ export function CustomersPageClient({
                       selectedCount={selectedCustomerIds.size}
                       onClearSelection={() => setSelectedCustomerIds(new Set())}
                       onExport={() => handleExport(selectedCustomers)}
-                      onCreateCampaign={showComingSoon}
                       onSaveToSegment={() => setSaveSegmentDialogOpen(true)}
-                      onArchive={showComingSoon}
+                      onAddTag={() => {
+                        setSingleTagCustomerIds([]);
+                        setBulkTagOperation("add");
+                      }}
+                      onRemoveTag={() => {
+                        setSingleTagCustomerIds([]);
+                        setBulkTagOperation("remove");
+                      }}
                       onDelete={() =>
                         openDeleteDialog(
                           selectedCustomers.map((customer) => ({
@@ -470,6 +544,17 @@ export function CustomersPageClient({
                       selectedCustomerIds={selectedCustomerIds}
                       onSelectedCustomerIdsChange={setSelectedCustomerIds}
                       onSelectCustomer={handleSelectCustomer}
+                      onEditCustomer={(customer) => {
+                        if (selectedCustomerId) {
+                          navigateFilters({ customerId: undefined });
+                        }
+                        setEditingCustomerId(customer.id);
+                        setCustomerDialogMode("edit");
+                      }}
+                      onAddTags={(customer) => {
+                        setSingleTagCustomerIds([customer.id]);
+                        setBulkTagOperation("add");
+                      }}
                       onDeleteCustomer={(customer) =>
                         openDeleteDialog([
                           { id: customer.id, name: customer.name },
@@ -538,23 +623,54 @@ export function CustomersPageClient({
         </aside>
       </div>
 
-      <CustomerDrawer
+      <CustomerProfileDialog
         labels={labels}
         segmentLabels={segmentLabels}
-        customer={detailQuery.data ?? null}
-        open={selectedCustomerId !== null}
+        customer={profileCustomerId ? (detailQuery.data ?? null) : null}
+        open={profileCustomerId !== null}
         onOpenChange={handleDrawerOpenChange}
-        onDeleteCustomer={(customer) =>
-          openDeleteDialog([{ id: customer.id, name: customer.name }])
-        }
       />
 
-      <NewCustomerDialog
-        open={newCustomerDialogOpen}
-        onOpenChange={setNewCustomerDialogOpen}
-        labels={labels.formDialog}
+      <CustomerDialog
+        mode={customerDialogMode === "edit" ? "edit" : "create"}
+        open={customerDialogMode !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCustomerDialogMode(null);
+            setEditingCustomerId(null);
+          }
+        }}
+        labels={customerDialogLabels}
         restaurantId={restaurantId}
-        onAddCustomer={handleCreateCustomer}
+        organizationId={organizationId}
+        customer={
+          customerDialogMode === "edit" ? (detailQuery.data ?? null) : null
+        }
+        editCustomerId={editingCustomerId}
+        isSubmitting={
+          createCustomerMutation.isPending || updateCustomerMutation.isPending
+        }
+        onSubmit={handleCustomerDialogSubmit}
+      />
+
+      <BulkCustomerTagsDialog
+        open={bulkTagOperation !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBulkTagOperation(null);
+            setSingleTagCustomerIds([]);
+          }
+        }}
+        operation={bulkTagOperation ?? "add"}
+        labels={labels.tags.bulk}
+        tags={customerTagsQuery.data ?? []}
+        customerCount={
+          singleTagCustomerIds.length > 0
+            ? singleTagCustomerIds.length
+            : selectedCustomerIds.size
+        }
+        isPending={bulkTagsMutation.isPending}
+        onConfirm={handleBulkTagsConfirm}
       />
 
       <ImportCustomersDialog

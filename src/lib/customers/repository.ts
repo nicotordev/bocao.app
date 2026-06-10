@@ -21,6 +21,10 @@ import {
   mapCustomerOption,
   mapCustomerOptions,
 } from "@/lib/customers/customer-option";
+import {
+  bulkUpdateCustomerTags,
+  syncCustomerTagAssignments,
+} from "@/lib/customers/tags.repository";
 import type {
   CreateCustomerInput,
   CustomerDetail,
@@ -28,6 +32,7 @@ import type {
   CustomerOption,
   CustomerSegmentCard,
   CustomersListResponse,
+  UpdateCustomerInput,
 } from "@/lib/customers/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { listSavedCustomerSegments } from "@/lib/customers/saved-segments.repository";
@@ -60,7 +65,28 @@ const customerInclude = {
       createdAt: true,
     },
   },
-} as const;
+  tagAssignments: {
+    include: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  },
+  savedSegmentMembers: {
+    include: {
+      segment: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.CustomerInclude;
 
 type ListCustomersOptions = {
   currency: string;
@@ -255,20 +281,60 @@ async function mapAllCustomers(
   return records.map((record) => mapCustomerRecord(record, context, options));
 }
 
+async function getRestaurantOrganizationId(restaurantId: string) {
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+    select: { organizationId: true },
+  });
+
+  if (!restaurant) {
+    throw new Error("RESTAURANT_NOT_FOUND");
+  }
+
+  return restaurant.organizationId;
+}
+
+function buildCustomerData(input: {
+  name?: string;
+  phone?: string;
+  email?: string;
+  documentId?: string;
+  address?: string;
+  notes?: string;
+  avatar?: string;
+}) {
+  return {
+    ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+    ...(input.phone !== undefined
+      ? { phone: input.phone.trim() || null }
+      : {}),
+    ...(input.email !== undefined
+      ? { email: input.email.trim() || null }
+      : {}),
+    ...(input.documentId !== undefined
+      ? { documentId: input.documentId.trim() || null }
+      : {}),
+    ...(input.address !== undefined
+      ? { address: input.address.trim() || null }
+      : {}),
+    ...(input.notes !== undefined ? { notes: input.notes.trim() || null } : {}),
+    ...(input.avatar !== undefined
+      ? { avatar: input.avatar.trim() || null }
+      : {}),
+  };
+}
+
 export async function createCustomer(
   restaurantId: string,
   input: CreateCustomerInput,
 ): Promise<CustomerOption> {
+  const organizationId = await getRestaurantOrganizationId(restaurantId);
+
   const customer = await prisma.customer.create({
     data: {
       restaurantId,
+      ...buildCustomerData(input),
       name: input.name.trim(),
-      phone: input.phone?.trim() || null,
-      email: input.email?.trim() || null,
-      documentId: input.documentId?.trim() || null,
-      address: input.address?.trim() || null,
-      notes: input.notes?.trim() || null,
-      avatar: input.avatar?.trim() || null,
     },
     select: {
       id: true,
@@ -279,7 +345,64 @@ export async function createCustomer(
     },
   });
 
+  if (input.tagIds && input.tagIds.length > 0) {
+    await syncCustomerTagAssignments(
+      customer.id,
+      organizationId,
+      input.tagIds,
+    );
+  }
+
   return mapCustomerOption(customer);
+}
+
+export async function updateCustomer(
+  restaurantId: string,
+  customerId: string,
+  input: UpdateCustomerInput,
+): Promise<CustomerOption> {
+  const organizationId = await getRestaurantOrganizationId(restaurantId);
+  const existing = await prisma.customer.findFirst({
+    where: {
+      id: customerId,
+      restaurantId,
+    },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    throw new Error("CUSTOMER_NOT_FOUND");
+  }
+
+  const customer = await prisma.customer.update({
+    where: { id: customerId },
+    data: buildCustomerData(input),
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      documentId: true,
+    },
+  });
+
+  if (input.tagIds !== undefined) {
+    await syncCustomerTagAssignments(
+      customerId,
+      organizationId,
+      input.tagIds,
+    );
+  }
+
+  return mapCustomerOption(customer);
+}
+
+export async function bulkAssignCustomerTags(
+  restaurantId: string,
+  input: Parameters<typeof bulkUpdateCustomerTags>[2],
+) {
+  const organizationId = await getRestaurantOrganizationId(restaurantId);
+  return bulkUpdateCustomerTags(restaurantId, organizationId, input);
 }
 
 export async function listCustomers(

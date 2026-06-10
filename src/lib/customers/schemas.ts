@@ -7,7 +7,8 @@ export const createCustomerBodySchema = z.object({
   documentId: z.string().trim().optional(),
   address: z.string().trim().optional(),
   notes: z.string().trim().optional(),
-  avatar: z.string().trim().url().optional(),
+  avatar: z.string().trim().url().optional().or(z.literal("")),
+  tagIds: z.array(z.string().min(1)).optional(),
 });
 
 export const deleteCustomersBodySchema = z.object({

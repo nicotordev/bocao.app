@@ -4,6 +4,7 @@ import type {
   CustomerDetail,
   CustomerOption,
   CustomersPageData,
+  UpdateCustomerInput,
 } from "@/lib/customers/types";
 import { apiRequest } from "@/lib/query/api-client";
 
@@ -101,6 +102,24 @@ export async function deleteCustomer(
   );
 
   return response.deletedCount;
+}
+
+export async function patchCustomer(
+  restaurantId: string,
+  customerId: string,
+  input: UpdateCustomerInput,
+): Promise<CustomerOption> {
+  const response = await apiRequest<{ customer: CustomerOption }>(
+    `/api/restaurants/${restaurantId}/customers/${encodeURIComponent(
+      customerId,
+    )}`,
+    {
+      method: "PATCH",
+      body: input,
+    },
+  );
+
+  return response.customer;
 }
 
 export async function deleteCustomers(

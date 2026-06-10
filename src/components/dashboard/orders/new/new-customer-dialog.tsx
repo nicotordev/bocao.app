@@ -1,10 +1,8 @@
 "use client";
 
 import { TbPlus } from "react-icons/tb";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { uploadCustomerAvatarAction } from "@/app/actions/customers";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,10 +12,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { getCustomerInitials } from "@/lib/customers/format";
+import {
+  CustomerForm,
+  type CustomerFormLabels,
+} from "@/components/dashboard/customers/customer-form";
+import { useCustomerFormAvatar } from "@/components/dashboard/customers/use-customer-form-avatar";
+import {
+  emptyCustomerFormValues,
+  type CustomerFormValues,
+} from "@/lib/customers/customer-form-values";
 import type { CustomerFormDialogLabels } from "@/lib/customers/customer-form-labels";
 import type { NewOrderNewCustomerInput } from "./types";
 
@@ -31,16 +34,6 @@ type NewCustomerDialogProps = {
   ) => void | Promise<void>;
 };
 
-const emptyForm: NewOrderNewCustomerInput = {
-  name: "",
-  phone: "",
-  email: "",
-  documentId: "",
-  address: "",
-  notes: "",
-  avatar: "",
-};
-
 export function NewCustomerDialog({
   open,
   onOpenChange,
@@ -48,98 +41,39 @@ export function NewCustomerDialog({
   restaurantId,
   onAddCustomer,
 }: NewCustomerDialogProps) {
-  const avatarInputId = useId();
-  const [form, setForm] = useState<NewOrderNewCustomerInput>(emptyForm);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState("");
+  const [form, setForm] = useState<CustomerFormValues>(emptyCustomerFormValues);
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { avatarState, resetAvatar, resolveAvatarUrl } = useCustomerFormAvatar();
   const showAvatarField = Boolean(labels.avatar && restaurantId);
-  const avatarLabels = labels.avatar;
 
-  function clearAvatarPreview() {
-    if (avatarPreview.startsWith("blob:")) {
-      URL.revokeObjectURL(avatarPreview);
-    }
-  }
-
-  function resetForm() {
-    setForm(emptyForm);
-    setAvatarFile(null);
-    clearAvatarPreview();
-    setAvatarPreview("");
-    setValidationError("");
-  }
+  const formLabels: CustomerFormLabels = {
+    ...labels,
+    tags: {
+      label: "",
+      searchPlaceholder: "",
+      noResults: "",
+      createTag: "",
+      createTagDialog: {
+        title: "",
+        name: "",
+        namePlaceholder: "",
+        color: "",
+        create: "",
+        cancel: "",
+        nameRequired: "",
+      },
+    },
+  };
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
-      resetForm();
+      setForm(emptyCustomerFormValues);
+      resetAvatar();
+      setValidationError("");
     }
+
     onOpenChange(nextOpen);
-  }
-
-  function updateField<K extends keyof NewOrderNewCustomerInput>(
-    field: K,
-    value: NewOrderNewCustomerInput[K],
-  ) {
-    setForm((current) => ({ ...current, [field]: value }));
-    setValidationError("");
-  }
-
-  function handleAvatarFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-
-    if (!file || !avatarLabels) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      toast.error(avatarLabels.invalidImageType);
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(avatarLabels.imageTooLarge);
-      event.target.value = "";
-      return;
-    }
-
-    clearAvatarPreview();
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-    updateField("avatar", "");
-    event.target.value = "";
-  }
-
-  async function resolveAvatarUrl() {
-    const trimmedAvatar = form.avatar.trim();
-
-    if (avatarFile && restaurantId) {
-      const formData = new FormData();
-      formData.append("restaurantId", restaurantId);
-      formData.append("file", avatarFile);
-
-      try {
-        const result = await uploadCustomerAvatarAction(formData);
-        return result.url;
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "UPLOAD_FAILED";
-
-        if (message === "INVALID_IMAGE_TYPE") {
-          toast.error(avatarLabels?.invalidImageType);
-        } else if (message === "IMAGE_TOO_LARGE") {
-          toast.error(avatarLabels?.imageTooLarge);
-        } else {
-          toast.error(avatarLabels?.uploadError);
-        }
-
-        throw error;
-      }
-    }
-
-    return trimmedAvatar;
   }
 
   async function handleAddCustomer() {
@@ -153,7 +87,13 @@ export function NewCustomerDialog({
     setIsSubmitting(true);
 
     try {
-      const avatar = showAvatarField ? await resolveAvatarUrl() : "";
+      const avatar = showAvatarField
+        ? await resolveAvatarUrl(
+            restaurantId!,
+            form.avatar,
+            labels.avatar,
+          )
+        : "";
 
       await onAddCustomer({
         name,
@@ -164,15 +104,12 @@ export function NewCustomerDialog({
         notes: form.notes.trim(),
         avatar,
       });
-      resetForm();
-      onOpenChange(false);
+      handleOpenChange(false);
       toast.success(labels.customer.picker.addSuccess);
     } finally {
       setIsSubmitting(false);
     }
   }
-
-  const previewName = form.name.trim() || labels.customer.namePlaceholder;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -183,127 +120,22 @@ export function NewCustomerDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-5">
-            {validationError ? (
-              <div className="rounded-2xl bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                {validationError}
-              </div>
-            ) : null}
-
-            {showAvatarField && avatarLabels ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="group/avatar relative size-20 cursor-pointer overflow-hidden rounded-full shadow-sm ring-2 ring-primary/20 transition-all duration-300 hover:ring-primary/45">
-                  <Avatar className="size-full">
-                    {avatarPreview || form.avatar.trim() ? (
-                      <AvatarImage
-                        src={avatarPreview || form.avatar.trim()}
-                        alt={previewName}
-                      />
-                    ) : null}
-                    <AvatarFallback className="flex size-full items-center justify-center bg-gradient-to-br from-primary/10 to-emerald-500/10 text-2xl font-bold text-primary">
-                      {getCustomerInitials(previewName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <label
-                    htmlFor={avatarInputId}
-                    className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/50 text-white opacity-0 transition-opacity duration-200 group-hover/avatar:opacity-100"
-                  >
-                    <span className="text-[10px] font-semibold uppercase tracking-wide">
-                      {avatarLabels.changePhoto}
-                    </span>
-                  </label>
-                  <input
-                    id={avatarInputId}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarFileChange}
-                    className="hidden"
-                  />
-                </div>
-                <p className="text-[10px] font-medium text-muted-foreground/80">
-                  {avatarLabels.photoHint}
-                </p>
-                <Field className="w-full">
-                  <FieldLabel>{avatarLabels.photoUrl}</FieldLabel>
-                  <Input
-                    value={form.avatar}
-                    onChange={(event) => {
-                      clearAvatarPreview();
-                      setAvatarFile(null);
-                      setAvatarPreview(event.target.value);
-                      updateField("avatar", event.target.value);
-                    }}
-                    placeholder={avatarLabels.photoUrlPlaceholder}
-                    className="rounded-3xl"
-                  />
-                </Field>
-              </div>
-            ) : null}
-
-            <Field>
-              <FieldLabel className="required">{labels.customer.name}</FieldLabel>
-              <Input
-                value={form.name}
-                onChange={(event) => updateField("name", event.target.value)}
-                placeholder={labels.customer.namePlaceholder}
-                className="rounded-3xl"
-                autoFocus={!showAvatarField}
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>{labels.customer.documentId}</FieldLabel>
-              <Input
-                value={form.documentId}
-                onChange={(event) => updateField("documentId", event.target.value)}
-                placeholder={labels.customer.documentIdPlaceholder}
-                className="rounded-3xl"
-              />
-            </Field>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field>
-                <FieldLabel>{labels.customer.phone}</FieldLabel>
-                <Input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(event) => updateField("phone", event.target.value)}
-                  placeholder={labels.customer.phonePlaceholder}
-                  className="rounded-3xl"
-                />
-              </Field>
-              <Field>
-                <FieldLabel>{labels.customer.email}</FieldLabel>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(event) => updateField("email", event.target.value)}
-                  placeholder={labels.customer.emailPlaceholder}
-                  className="rounded-3xl"
-                />
-              </Field>
-            </div>
-
-            <Field>
-              <FieldLabel>{labels.customer.address}</FieldLabel>
-              <Input
-                value={form.address}
-                onChange={(event) => updateField("address", event.target.value)}
-                placeholder={labels.customer.addressPlaceholder}
-                className="rounded-3xl"
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel>{labels.customer.notes}</FieldLabel>
-              <Textarea
-                value={form.notes}
-                onChange={(event) => updateField("notes", event.target.value)}
-                placeholder={labels.customer.notesPlaceholder}
-                className="min-h-24 rounded-3xl"
-              />
-            </Field>
-          </div>
+          <CustomerForm
+            labels={formLabels}
+            tags={[]}
+            value={form}
+            onChange={(nextValue) => {
+              setForm(nextValue);
+              setValidationError("");
+            }}
+            onCreateTag={async () => {
+              throw new Error("Tags are not available in this context");
+            }}
+            validationError={validationError}
+            showAvatarField={showAvatarField}
+            showTags={false}
+            avatarState={avatarState}
+          />
         </div>
 
         <DialogFooter className="border-t border-border px-6 py-4">

@@ -216,8 +216,8 @@ export function CustomerDrawer({
                   <div className="mt-2 flex flex-wrap gap-2">
                     {customer.tags.length > 0 ? (
                       customer.tags.map((tag) => (
-                        <Badge key={tag} variant="outline">
-                          {tag}
+                        <Badge key={tag.id} variant="outline">
+                          {tag.name}
                         </Badge>
                       ))
                     ) : (

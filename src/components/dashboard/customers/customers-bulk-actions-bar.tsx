@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  TbArchive,
   TbBookmark,
-  TbSpeakerphone,
+  TbTag,
+  TbTagOff,
   TbTrash,
   TbX,
 } from "react-icons/tb";
@@ -15,9 +15,9 @@ type CustomersBulkActionsBarProps = {
   selectedCount: number;
   onClearSelection: () => void;
   onExport: () => void;
-  onCreateCampaign: () => void;
   onSaveToSegment: () => void;
-  onArchive: () => void;
+  onAddTag: () => void;
+  onRemoveTag: () => void;
   onDelete: () => void;
 };
 
@@ -26,9 +26,9 @@ export function CustomersBulkActionsBar({
   selectedCount,
   onClearSelection,
   onExport,
-  onCreateCampaign,
   onSaveToSegment,
-  onArchive,
+  onAddTag,
+  onRemoveTag,
   onDelete,
 }: CustomersBulkActionsBarProps) {
   if (selectedCount === 0) {
@@ -59,23 +59,23 @@ export function CustomersBulkActionsBar({
           type="button"
           variant="outline"
           size="sm"
-          onClick={onCreateCampaign}
-        >
-          <TbSpeakerphone className="size-4" aria-hidden />
-          {labels.createCampaign}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
           onClick={onSaveToSegment}
         >
           <TbBookmark className="size-4" aria-hidden />
           {labels.saveToSegment}
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onArchive}>
-          <TbArchive className="size-4" aria-hidden />
-          {labels.archive}
+        <Button type="button" variant="outline" size="sm" onClick={onAddTag}>
+          <TbTag className="size-4" aria-hidden />
+          {labels.addTag}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRemoveTag}
+        >
+          <TbTagOff className="size-4" aria-hidden />
+          {labels.removeTag}
         </Button>
         <Button
           type="button"

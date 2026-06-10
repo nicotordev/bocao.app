@@ -84,6 +84,31 @@ export function buildCustomersActivityFeed({
         occurredAtRelative: customer.lastVisitRelative,
       });
     }
+
+    for (const tag of detail?.tagHistory ?? []) {
+      events.push({
+        id: buildEventId(customer.id, "tag_added", tag.assignedAt),
+        customerId: customer.id,
+        customerName: customer.name,
+        type: "tag_added",
+        messageKey: "activity.tagAdded",
+        messageValues: { tag: tag.name },
+        occurredAt: tag.assignedAt,
+        occurredAtRelative: tag.assignedAtRelative,
+      });
+    }
+
+    if (customer.notes) {
+      events.push({
+        id: buildEventId(customer.id, "note", customer.createdAt),
+        customerId: customer.id,
+        customerName: customer.name,
+        type: "note",
+        messageKey: "activity.noteAdded",
+        occurredAt: customer.createdAt,
+        occurredAtRelative: customer.createdAtRelative,
+      });
+    }
   }
 
   return events

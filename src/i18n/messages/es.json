@@ -1153,7 +1153,80 @@
       },
       "feedback": {
         "createError": "No pudimos crear el cliente. Intenta nuevamente.",
+        "updateError": "No pudimos actualizar el cliente. Intenta nuevamente.",
         "deleteError": "No pudimos eliminar el cliente. Intenta nuevamente."
+      },
+      "customerDialog": {
+        "createTitle": "Nuevo cliente",
+        "createDescription": "Completa los datos del cliente. Solo el nombre es obligatorio.",
+        "createButton": "Crear cliente",
+        "editTitle": "Editar cliente",
+        "editDescription": "Actualiza el perfil del cliente y sus etiquetas.",
+        "editButton": "Guardar cambios",
+        "createSuccess": "Cliente creado correctamente",
+        "editSuccess": "Cliente actualizado correctamente"
+      },
+      "tags": {
+        "label": "Etiquetas",
+        "searchPlaceholder": "Buscar etiquetas...",
+        "noResults": "No se encontraron etiquetas",
+        "createTag": "Crear etiqueta",
+        "createTagDialog": {
+          "title": "Crear etiqueta",
+          "name": "Nombre de la etiqueta",
+          "namePlaceholder": "Ej. VIP",
+          "color": "Color",
+          "create": "Crear",
+          "cancel": "Cancelar",
+          "nameRequired": "Ingresa un nombre para la etiqueta"
+        },
+        "bulk": {
+          "addTitle": "Agregar etiqueta",
+          "removeTitle": "Quitar etiqueta",
+          "addDescription": "Agrega etiquetas a {count} clientes seleccionados.",
+          "removeDescription": "Quita etiquetas de {count} clientes seleccionados.",
+          "tags": "Etiquetas",
+          "searchPlaceholder": "Buscar etiquetas...",
+          "noResults": "No se encontraron etiquetas",
+          "confirmAdd": "Agregar etiquetas",
+          "confirmRemove": "Quitar etiquetas",
+          "cancel": "Cancelar",
+          "successAdd": "Etiquetas agregadas correctamente",
+          "successRemove": "Etiquetas quitadas correctamente",
+          "error": "No pudimos actualizar las etiquetas. Intenta nuevamente."
+        }
+      },
+      "profile": {
+        "title": "Perfil de cliente",
+        "description": "Historial completo, métricas y actividad del cliente.",
+        "basicInfo": "Información básica",
+        "metrics": "Métricas del cliente",
+        "segments": "Segmentos",
+        "tags": "Etiquetas",
+        "activityTimeline": "Línea de actividad",
+        "recentOrders": "Pedidos recientes",
+        "recentReservations": "Reservas recientes",
+        "name": "Nombre completo",
+        "email": "Email",
+        "phone": "Teléfono",
+        "birthday": "Cumpleaños",
+        "customerSince": "Cliente desde",
+        "lastVisit": "Última visita",
+        "preferredLanguage": "Idioma preferido",
+        "notes": "Notas",
+        "noNotes": "Sin notas registradas",
+        "noTags": "Sin etiquetas",
+        "noSegments": "Sin segmentos",
+        "notAvailable": "No disponible",
+        "totalOrders": "Pedidos totales",
+        "totalSpend": "Gasto total",
+        "averageOrderValue": "Ticket promedio",
+        "lifetimeValue": "Valor de vida",
+        "lastOrderDate": "Último pedido",
+        "reservations": "Reservas",
+        "loyaltyPoints": "Puntos de lealtad",
+        "primaryChannel": "Canal principal",
+        "guests": "comensales"
       },
       "deleteDialog": {
         "title": "Eliminar cliente",
@@ -1309,7 +1382,9 @@
         "order": "Cliente {name} hizo un pedido por {channel}",
         "reservation": "Cliente {name} reservó una mesa",
         "inactive": "Cliente {name} no compra hace {days} días",
-        "markedVip": "Cliente {name} fue marcado como VIP"
+        "markedVip": "Cliente {name} fue marcado como VIP",
+        "tagAdded": "Etiqueta {tag} agregada a {name}",
+        "noteAdded": "Nota agregada para {name}"
       },
       "empty": {
         "title": "Aún no tienes clientes registrados",
@@ -1321,7 +1396,9 @@
         "clearSelection": "Limpiar selección",
         "export": "Exportar seleccionados",
         "createCampaign": "Crear campaña",
-        "saveToSegment": "Guardar en segmento",
+        "saveToSegment": "Asignar segmento",
+        "addTag": "Agregar etiqueta",
+        "removeTag": "Quitar etiqueta",
         "archive": "Archivar",
         "delete": "Eliminar"
       },

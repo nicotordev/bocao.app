@@ -1,6 +1,10 @@
 import type { CustomerSavedSegmentSummary } from "@/lib/customers/saved-segments.types";
+import type {
+  CustomerTagAssignmentSummary,
+  CustomerTagSummary,
+} from "@/lib/customers/tags.types";
 
-export type { CustomerSavedSegmentSummary };
+export type { CustomerSavedSegmentSummary, CustomerTagSummary };
 
 export type CustomerOption = {
   id: string;
@@ -18,6 +22,18 @@ export type CreateCustomerInput = {
   address?: string;
   notes?: string;
   avatar?: string;
+  tagIds?: string[];
+};
+
+export type UpdateCustomerInput = {
+  name?: string;
+  phone?: string;
+  email?: string;
+  documentId?: string;
+  address?: string;
+  notes?: string;
+  avatar?: string;
+  tagIds?: string[];
 };
 
 export type CustomerSegment =
@@ -48,7 +64,9 @@ export type CustomerActivityType =
   | "reservation"
   | "inactive"
   | "segment_change"
-  | "note";
+  | "note"
+  | "tag_added"
+  | "tag_removed";
 
 export type CustomerOrderSummary = {
   id: string;
@@ -91,7 +109,8 @@ export type CustomerListItem = {
   initials: string;
   segment: CustomerSegment;
   segments: CustomerSegment[];
-  tags: string[];
+  tags: CustomerTagSummary[];
+  savedSegmentNames: string[];
   orderCount: number;
   reservationCount: number;
   totalSpendCents: number;
@@ -110,9 +129,16 @@ export type CustomerListItem = {
 };
 
 export type CustomerDetail = CustomerListItem & {
+  documentId: string | null;
+  address: string | null;
   orders: CustomerOrderSummary[];
   reservations: CustomerReservationSummary[];
   activity: CustomerActivityEvent[];
+  tagHistory: CustomerTagAssignmentSummary[];
+  lastOrderAt: string | null;
+  lastOrderAtRelative: string;
+  lifetimeValue: string;
+  loyaltyPoints: number | null;
 };
 
 export type CustomerSegmentCard = {

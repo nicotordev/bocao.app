@@ -1,10 +1,8 @@
 "use client";
 
 import {
-  TbArchive,
   TbPencil,
   TbEye,
-  TbSpeakerphone,
   TbDots,
   TbTag,
   TbTrash,
@@ -27,7 +25,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { toast } from "sonner";
 import type { CustomerListItem } from "@/lib/customers/types";
 import { CustomerChannelBadge } from "./customer-channel-badge";
 import { CustomerSegmentBadge } from "./customer-segment-badge";
@@ -41,6 +38,8 @@ type CustomersTableProps = {
   selectedCustomerIds: Set<string>;
   onSelectedCustomerIdsChange: (next: Set<string>) => void;
   onSelectCustomer: (customer: CustomerListItem) => void;
+  onEditCustomer: (customer: CustomerListItem) => void;
+  onAddTags: (customer: CustomerListItem) => void;
   onDeleteCustomer: (customer: CustomerListItem) => void;
 };
 
@@ -70,16 +69,16 @@ function getPageCheckState(
 function CustomerActions({
   labels,
   onViewProfile,
+  onEdit,
+  onAddTags,
   onDelete,
 }: {
   labels: CustomersLabels;
   onViewProfile: () => void;
+  onEdit: () => void;
+  onAddTags: () => void;
   onDelete: () => void;
 }) {
-  const showComingSoon = () => {
-    toast.message(labels.actions.comingSoon);
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -100,23 +99,15 @@ function CustomerActions({
           <TbEye className="size-4" aria-hidden />
           {labels.actions.viewProfile}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={showComingSoon}>
+        <DropdownMenuItem onClick={onEdit}>
           <TbPencil className="size-4" aria-hidden />
           {labels.actions.edit}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={showComingSoon}>
-          <TbSpeakerphone className="size-4" aria-hidden />
-          {labels.actions.createCampaign}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={showComingSoon}>
+        <DropdownMenuItem onClick={onAddTags}>
           <TbTag className="size-4" aria-hidden />
           {labels.actions.addTag}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={showComingSoon}>
-          <TbArchive className="size-4" aria-hidden />
-          {labels.actions.archive}
-        </DropdownMenuItem>
         <DropdownMenuItem variant="destructive" onClick={onDelete}>
           <TbTrash className="size-4" aria-hidden />
           {labels.actions.delete}
@@ -133,6 +124,8 @@ export function CustomersTable({
   selectedCustomerIds,
   onSelectedCustomerIdsChange,
   onSelectCustomer,
+  onEditCustomer,
+  onAddTags,
   onDeleteCustomer,
 }: CustomersTableProps) {
   const customerIds = customers.map((customer) => customer.id);
@@ -247,7 +240,10 @@ export function CustomersTable({
                       <p className="font-medium">{customer.name}</p>
                       {customer.tags.length > 0 ? (
                         <p className="text-xs text-muted-foreground">
-                          {customer.tags.slice(0, 2).join(" · ")}
+                          {customer.tags
+                            .slice(0, 2)
+                            .map((tag) => tag.name)
+                            .join(" · ")}
                         </p>
                       ) : null}
                     </div>
@@ -283,6 +279,8 @@ export function CustomersTable({
                   <CustomerActions
                     labels={labels}
                     onViewProfile={() => onSelectCustomer(customer)}
+                    onEdit={() => onEditCustomer(customer)}
+                    onAddTags={() => onAddTags(customer)}
                     onDelete={() => onDeleteCustomer(customer)}
                   />
                 </TableCell>

@@ -3,7 +3,12 @@ import {
   requireRestaurantCustomersAccess,
   requireRestaurantCustomersWriteAccess,
 } from "@/lib/customers/api-auth";
-import { deleteCustomers, getCustomerDetail } from "@/lib/customers/repository";
+import { updateCustomerBodySchema } from "@/lib/customers/tags.schemas";
+import {
+  deleteCustomers,
+  getCustomerDetail,
+  updateCustomer,
+} from "@/lib/customers/repository";
 import { getLocale } from "next-intl/server";
 
 type RouteContext = {
@@ -48,6 +53,52 @@ export async function GET(_request: Request, { params }: RouteContext) {
     console.error("Failed to fetch customer", error);
     return NextResponse.json(
       { error: "Could not fetch customer" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: Request, { params }: RouteContext) {
+  const { restaurantId, customerId } = await params;
+  const access = await requireRestaurantCustomersWriteAccess(restaurantId);
+
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
+  }
+
+  const body = await request.json().catch(() => null);
+  const parsed = updateCustomerBodySchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const customer = await updateCustomer(
+      restaurantId,
+      customerId,
+      parsed.data,
+    );
+
+    return NextResponse.json({ customer });
+  } catch (error) {
+    console.error("Failed to update customer", error);
+
+    if (error instanceof Error && error.message === "CUSTOMER_NOT_FOUND") {
+      return NextResponse.json(
+        { error: "Customer not found" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Could not update customer" },
       { status: 500 },
     );
   }

@@ -23,14 +23,18 @@ function formatActivityMessage(
   labels: CustomersLabels,
   event: CustomerActivityEvent,
 ) {
-  const key = event.messageKey.replace(
-    "activity.",
-    "",
-  ) as "order" | "reservation" | "inactive" | "markedVip";
+  const key = event.messageKey.replace("activity.", "") as
+    | "order"
+    | "reservation"
+    | "inactive"
+    | "markedVip"
+    | "tagAdded"
+    | "noteAdded";
 
   return t(`activity.${key}`, {
     name: event.customerName,
     days: event.messageValues?.days ?? 0,
+    tag: event.messageValues?.tag ?? "",
     channel: event.channel ? labels.channels[event.channel] : "",
   });
 }

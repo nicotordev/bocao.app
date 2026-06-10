@@ -1153,7 +1153,80 @@
       },
       "feedback": {
         "createError": "We could not create the customer. Please try again.",
+        "updateError": "We could not update the customer. Please try again.",
         "deleteError": "We could not delete the customer. Please try again."
+      },
+      "customerDialog": {
+        "createTitle": "New customer",
+        "createDescription": "Fill in the customer details. Only the name is required.",
+        "createButton": "Create customer",
+        "editTitle": "Edit customer",
+        "editDescription": "Update the customer profile and tags.",
+        "editButton": "Save changes",
+        "createSuccess": "Customer created successfully",
+        "editSuccess": "Customer updated successfully"
+      },
+      "tags": {
+        "label": "Tags",
+        "searchPlaceholder": "Search tags...",
+        "noResults": "No tags found",
+        "createTag": "Create tag",
+        "createTagDialog": {
+          "title": "Create tag",
+          "name": "Tag name",
+          "namePlaceholder": "e.g. VIP",
+          "color": "Color",
+          "create": "Create",
+          "cancel": "Cancel",
+          "nameRequired": "Enter a tag name"
+        },
+        "bulk": {
+          "addTitle": "Add tag",
+          "removeTitle": "Remove tag",
+          "addDescription": "Add tags to {count} selected customers.",
+          "removeDescription": "Remove tags from {count} selected customers.",
+          "tags": "Tags",
+          "searchPlaceholder": "Search tags...",
+          "noResults": "No tags found",
+          "confirmAdd": "Add tags",
+          "confirmRemove": "Remove tags",
+          "cancel": "Cancel",
+          "successAdd": "Tags added successfully",
+          "successRemove": "Tags removed successfully",
+          "error": "We could not update customer tags. Please try again."
+        }
+      },
+      "profile": {
+        "title": "Customer profile",
+        "description": "Complete customer history, metrics, and activity.",
+        "basicInfo": "Basic information",
+        "metrics": "Customer metrics",
+        "segments": "Segments",
+        "tags": "Tags",
+        "activityTimeline": "Activity timeline",
+        "recentOrders": "Recent orders",
+        "recentReservations": "Recent reservations",
+        "name": "Full name",
+        "email": "Email",
+        "phone": "Phone",
+        "birthday": "Birthday",
+        "customerSince": "Customer since",
+        "lastVisit": "Last visit",
+        "preferredLanguage": "Preferred language",
+        "notes": "Notes",
+        "noNotes": "No notes yet",
+        "noTags": "No tags",
+        "noSegments": "No segments",
+        "notAvailable": "Not available",
+        "totalOrders": "Total orders",
+        "totalSpend": "Total spent",
+        "averageOrderValue": "Average order value",
+        "lifetimeValue": "Lifetime value",
+        "lastOrderDate": "Last order date",
+        "reservations": "Reservations",
+        "loyaltyPoints": "Loyalty points",
+        "primaryChannel": "Primary channel",
+        "guests": "guests"
       },
       "deleteDialog": {
         "title": "Delete customer",
@@ -1309,7 +1382,9 @@
         "order": "Customer {name} placed an order via {channel}",
         "reservation": "Customer {name} booked a table",
         "inactive": "Customer {name} has not purchased in {days} days",
-        "markedVip": "Customer {name} was marked as VIP"
+        "markedVip": "Customer {name} was marked as VIP",
+        "tagAdded": "Tag {tag} added to {name}",
+        "noteAdded": "Note added for {name}"
       },
       "empty": {
         "title": "No customers registered yet",
@@ -1321,7 +1396,9 @@
         "clearSelection": "Clear selection",
         "export": "Export selected",
         "createCampaign": "Create campaign",
-        "saveToSegment": "Save to segment",
+        "saveToSegment": "Assign segment",
+        "addTag": "Add tag",
+        "removeTag": "Remove tag",
         "archive": "Archive",
         "delete": "Delete"
       },

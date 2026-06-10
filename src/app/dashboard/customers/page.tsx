@@ -24,6 +24,7 @@ export default async function CustomersPage({
   const tCommon = await getTranslations("common");
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
+  const organizationId = context?.organization.id ?? "";
   const queryClient = getQueryClient();
   const resolvedSearchParams = searchParamsToRecord(await searchParams);
   const filters = parseCustomersListSearchParams(resolvedSearchParams);
@@ -207,6 +208,12 @@ export default async function CustomersPage({
     activity: {
       title: t("activity.title"),
       subtitle: t("activity.subtitle"),
+      order: t.raw("activity.order"),
+      reservation: t.raw("activity.reservation"),
+      inactive: t.raw("activity.inactive"),
+      markedVip: t.raw("activity.markedVip"),
+      tagAdded: t.raw("activity.tagAdded"),
+      noteAdded: t.raw("activity.noteAdded"),
     },
     empty: {
       title: t("empty.title"),
@@ -219,8 +226,82 @@ export default async function CustomersPage({
       export: t("bulkActions.export"),
       createCampaign: t("bulkActions.createCampaign"),
       saveToSegment: t("bulkActions.saveToSegment"),
+      addTag: t("bulkActions.addTag"),
+      removeTag: t("bulkActions.removeTag"),
       archive: t("bulkActions.archive"),
       delete: t("bulkActions.delete"),
+    },
+    profile: {
+      title: t("profile.title"),
+      description: t("profile.description"),
+      basicInfo: t("profile.basicInfo"),
+      metrics: t("profile.metrics"),
+      segments: t("profile.segments"),
+      tags: t("profile.tags"),
+      activityTimeline: t("profile.activityTimeline"),
+      recentOrders: t("profile.recentOrders"),
+      recentReservations: t("profile.recentReservations"),
+      name: t("profile.name"),
+      email: t("profile.email"),
+      phone: t("profile.phone"),
+      birthday: t("profile.birthday"),
+      customerSince: t("profile.customerSince"),
+      lastVisit: t("profile.lastVisit"),
+      preferredLanguage: t("profile.preferredLanguage"),
+      notes: t("profile.notes"),
+      noNotes: t("profile.noNotes"),
+      noTags: t("profile.noTags"),
+      noSegments: t("profile.noSegments"),
+      notAvailable: t("profile.notAvailable"),
+      totalOrders: t("profile.totalOrders"),
+      totalSpend: t("profile.totalSpend"),
+      averageOrderValue: t("profile.averageOrderValue"),
+      lifetimeValue: t("profile.lifetimeValue"),
+      lastOrderDate: t("profile.lastOrderDate"),
+      reservations: t("profile.reservations"),
+      loyaltyPoints: t("profile.loyaltyPoints"),
+      primaryChannel: t("profile.primaryChannel"),
+      guests: t("profile.guests"),
+    },
+    tags: {
+      label: t("tags.label"),
+      searchPlaceholder: t("tags.searchPlaceholder"),
+      noResults: t("tags.noResults"),
+      createTag: t("tags.createTag"),
+      createTagDialog: {
+        title: t("tags.createTagDialog.title"),
+        name: t("tags.createTagDialog.name"),
+        namePlaceholder: t("tags.createTagDialog.namePlaceholder"),
+        color: t("tags.createTagDialog.color"),
+        create: t("tags.createTagDialog.create"),
+        cancel: t("tags.createTagDialog.cancel"),
+        nameRequired: t("tags.createTagDialog.nameRequired"),
+      },
+      bulk: {
+        addTitle: t("tags.bulk.addTitle"),
+        removeTitle: t("tags.bulk.removeTitle"),
+        addDescription: t.raw("tags.bulk.addDescription"),
+        removeDescription: t.raw("tags.bulk.removeDescription"),
+        tags: t("tags.bulk.tags"),
+        searchPlaceholder: t("tags.bulk.searchPlaceholder"),
+        noResults: t("tags.bulk.noResults"),
+        confirmAdd: t("tags.bulk.confirmAdd"),
+        confirmRemove: t("tags.bulk.confirmRemove"),
+        cancel: t("tags.bulk.cancel"),
+        successAdd: t("tags.bulk.successAdd"),
+        successRemove: t("tags.bulk.successRemove"),
+        error: t("tags.bulk.error"),
+      },
+    },
+    customerDialog: {
+      createTitle: t("customerDialog.createTitle"),
+      createDescription: t("customerDialog.createDescription"),
+      createButton: t("customerDialog.createButton"),
+      editTitle: t("customerDialog.editTitle"),
+      editDescription: t("customerDialog.editDescription"),
+      editButton: t("customerDialog.editButton"),
+      createSuccess: t("customerDialog.createSuccess"),
+      editSuccess: t("customerDialog.editSuccess"),
     },
     deleteDialog: {
       title: t("deleteDialog.title"),
@@ -331,6 +412,7 @@ export default async function CustomersPage({
     },
     feedback: {
       createError: t("feedback.createError"),
+      updateError: t("feedback.updateError"),
       deleteError: t("feedback.deleteError"),
     },
     importCustomers: {
@@ -393,6 +475,7 @@ export default async function CustomersPage({
         labels={labels}
         segmentLabels={segmentLabels}
         restaurantId={restaurantId}
+        organizationId={organizationId}
         customerOptions={customerOptions}
       />
     </HydrationBoundary>

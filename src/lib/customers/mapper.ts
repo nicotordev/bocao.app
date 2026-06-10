@@ -21,9 +21,9 @@ import {
 } from "@/lib/customers/segments";
 import {
   parseCustomerAllergies,
-  parseCustomerTags,
   stripCustomerTags,
 } from "@/lib/customers/tags";
+import type { CustomerTagAssignmentSummary } from "@/lib/customers/tags.types";
 import type {
   CustomerActivityEvent,
   CustomerChannel,
@@ -47,12 +47,23 @@ type OrderLink = {
   >;
 };
 
+type CustomerTagAssignmentRecord = {
+  createdAt: Date;
+  tag: {
+    id: string;
+    name: string;
+    color: string | null;
+  };
+};
+
 type CustomerRecord = Pick<
   Customer,
   | "id"
   | "name"
   | "email"
   | "phone"
+  | "documentId"
+  | "address"
   | "notes"
   | "avatar"
   | "createdAt"
@@ -63,6 +74,12 @@ type CustomerRecord = Pick<
     Reservation,
     "id" | "guestCount" | "status" | "scheduledAt" | "createdAt"
   >[];
+  tagAssignments: CustomerTagAssignmentRecord[];
+  savedSegmentMembers: Array<{
+    segment: {
+      name: string;
+    };
+  }>;
 };
 
 type OrderDetailsJson = {
@@ -236,6 +253,11 @@ export function mapCustomerRecord(
   const metrics = buildMetricsInput(record, channelCounts, primaryChannel, now);
   const segments = computeCustomerSegments(metrics, context, now);
   const lastActivityAt = metrics.lastOrderAt ?? metrics.lastReservationAt;
+  const tags = record.tagAssignments.map((assignment) => ({
+    id: assignment.tag.id,
+    name: assignment.tag.name,
+    color: assignment.tag.color,
+  }));
 
   return {
     id: record.id,
@@ -246,7 +268,10 @@ export function mapCustomerRecord(
     initials: getCustomerInitials(record.name),
     segment: getPrimarySegment(segments),
     segments,
-    tags: parseCustomerTags(record.notes),
+    tags,
+    savedSegmentNames: record.savedSegmentMembers.map(
+      (member) => member.segment.name,
+    ),
     orderCount: metrics.orderCount,
     reservationCount: metrics.reservationCount,
     totalSpendCents: metrics.totalSpendCents,
@@ -276,6 +301,24 @@ export function mapCustomerRecord(
   };
 }
 
+function mapTagHistory(
+  assignments: CustomerTagAssignmentRecord[],
+  locale: string,
+  neverLabel: string,
+): CustomerTagAssignmentSummary[] {
+  return assignments.map((assignment) => ({
+    id: assignment.tag.id,
+    name: assignment.tag.name,
+    color: assignment.tag.color,
+    assignedAt: assignment.createdAt.toISOString(),
+    assignedAtRelative: formatRelativeDate(
+      assignment.createdAt,
+      locale,
+      neverLabel,
+    ),
+  }));
+}
+
 export function mapCustomerDetail(
   record: CustomerRecord,
   context: SegmentContext,
@@ -289,24 +332,27 @@ export function mapCustomerDetail(
   },
 ): CustomerDetail {
   const base = mapCustomerRecord(record, context, options);
+  const orders = record.orderLinks
+    .map((link) =>
+      mapOrderSummary(
+        link.order,
+        options.currency,
+        options.timezone,
+        options.locale,
+        options.neverLabel,
+      ),
+    )
+    .sort(
+      (left, right) =>
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    );
+  const lastOrder = orders[0] ?? null;
 
   return {
     ...base,
-    orders: record.orderLinks
-      .map((link) =>
-        mapOrderSummary(
-          link.order,
-          options.currency,
-          options.timezone,
-          options.locale,
-          options.neverLabel,
-        ),
-      )
-      .sort(
-        (left, right) =>
-          new Date(right.createdAt).getTime() -
-          new Date(left.createdAt).getTime(),
-      ),
+    documentId: record.documentId,
+    address: record.address,
+    orders,
     reservations: record.reservations
       .map((reservation) =>
         mapReservationSummary(
@@ -322,6 +368,15 @@ export function mapCustomerDetail(
           new Date(left.scheduledAt).getTime(),
       ),
     activity: options.activity ?? [],
+    tagHistory: mapTagHistory(
+      record.tagAssignments,
+      options.locale,
+      options.neverLabel,
+    ),
+    lastOrderAt: lastOrder?.createdAt ?? null,
+    lastOrderAtRelative: lastOrder?.createdAtRelative ?? options.neverLabel,
+    lifetimeValue: base.totalSpend,
+    loyaltyPoints: null,
   };
 }
 

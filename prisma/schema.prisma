@@ -34,9 +34,10 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  restaurants Restaurant[]
-  memberships Membership[]
-  roles       Role[]
+  restaurants  Restaurant[]
+  memberships  Membership[]
+  roles        Role[]
+  customerTags CustomerTag[]
 }
 
 /// Staff user. Email is unique across the app.
@@ -340,6 +341,7 @@ model Customer {
   orderLinks           OrderCustomer[]
   reservations         Reservation[]
   savedSegmentMembers  CustomerSavedSegmentMember[]
+  tagAssignments       CustomerTagAssignment[]
 
   @@index([restaurantId])
   @@index([email])
@@ -374,6 +376,35 @@ model CustomerSavedSegmentMember {
   @@unique([segmentId, customerId])
   @@index([customerId])
   @@index([segmentId])
+}
+
+/// Account-wide customer tags shared across all workspaces/locations.
+model CustomerTag {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  color          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments  CustomerTagAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model CustomerTagAssignment {
+  customerId String
+  tagId      String
+  createdAt  DateTime @default(now())
+
+  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tag      CustomerTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, tagId])
+  @@index([customerId])
+  @@index([tagId])
 }
 
 model MenuCategory {

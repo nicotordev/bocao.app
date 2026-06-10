@@ -130,6 +130,12 @@ export type CustomersLabels = {
   activity: {
     title: string;
     subtitle: string;
+    order: string;
+    reservation: string;
+    inactive: string;
+    markedVip: string;
+    tagAdded: string;
+    noteAdded: string;
   };
   empty: {
     title: string;
@@ -142,8 +148,82 @@ export type CustomersLabels = {
     export: string;
     createCampaign: string;
     saveToSegment: string;
+    addTag: string;
+    removeTag: string;
     archive: string;
     delete: string;
+  };
+  profile: {
+    title: string;
+    description: string;
+    basicInfo: string;
+    metrics: string;
+    segments: string;
+    tags: string;
+    activityTimeline: string;
+    recentOrders: string;
+    recentReservations: string;
+    name: string;
+    email: string;
+    phone: string;
+    birthday: string;
+    customerSince: string;
+    lastVisit: string;
+    preferredLanguage: string;
+    notes: string;
+    noNotes: string;
+    noTags: string;
+    noSegments: string;
+    notAvailable: string;
+    totalOrders: string;
+    totalSpend: string;
+    averageOrderValue: string;
+    lifetimeValue: string;
+    lastOrderDate: string;
+    reservations: string;
+    loyaltyPoints: string;
+    primaryChannel: string;
+    guests: string;
+  };
+  tags: {
+    label: string;
+    searchPlaceholder: string;
+    noResults: string;
+    createTag: string;
+    createTagDialog: {
+      title: string;
+      name: string;
+      namePlaceholder: string;
+      color: string;
+      create: string;
+      cancel: string;
+      nameRequired: string;
+    };
+    bulk: {
+      addTitle: string;
+      removeTitle: string;
+      addDescription: string;
+      removeDescription: string;
+      tags: string;
+      searchPlaceholder: string;
+      noResults: string;
+      confirmAdd: string;
+      confirmRemove: string;
+      cancel: string;
+      successAdd: string;
+      successRemove: string;
+      error: string;
+    };
+  };
+  customerDialog: {
+    createTitle: string;
+    createDescription: string;
+    createButton: string;
+    editTitle: string;
+    editDescription: string;
+    editButton: string;
+    createSuccess: string;
+    editSuccess: string;
   };
   deleteDialog: {
     title: string;
@@ -210,6 +290,7 @@ export type CustomersLabels = {
   formDialog: CustomerFormDialogLabels;
   feedback: {
     createError: string;
+    updateError: string;
     deleteError: string;
   };
   importCustomers: {
