@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,28 +57,28 @@ export function SaveCustomersSegmentDialog({
     useAddSavedCustomerSegmentMembersMutation(restaurantId);
   const isPending = createMutation.isPending || addMembersMutation.isPending;
 
-  useEffect(() => {
-    if (!open) {
-      setMode("new");
-      setName("");
-      setDescription("");
-      setExistingSegmentId("");
+  const resolvedExistingSegmentId =
+    mode === "existing"
+      ? existingSegmentId &&
+        savedSegments.some((segment) => segment.id === existingSegmentId)
+        ? existingSegmentId
+        : (savedSegments[0]?.id ?? "")
+      : "";
+
+  function resetForm() {
+    setMode("new");
+    setName("");
+    setDescription("");
+    setExistingSegmentId("");
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      resetForm();
     }
-  }, [open]);
 
-  useEffect(() => {
-    if (mode !== "existing" || savedSegments.length === 0) {
-      return;
-    }
-
-    setExistingSegmentId((current) => {
-      if (current && savedSegments.some((segment) => segment.id === current)) {
-        return current;
-      }
-
-      return savedSegments[0]?.id ?? "";
-    });
-  }, [mode, savedSegments]);
+    onOpenChange(nextOpen);
+  }
 
   async function handleSubmit() {
     if (customerIds.length === 0) {
@@ -88,13 +88,13 @@ export function SaveCustomersSegmentDialog({
 
     try {
       if (mode === "existing") {
-        if (!existingSegmentId) {
+        if (!resolvedExistingSegmentId) {
           toast.error(labels.selectSegment);
           return;
         }
 
         await addMembersMutation.mutateAsync({
-          segmentId: existingSegmentId,
+          segmentId: resolvedExistingSegmentId,
           customerIds,
         });
         toast.success(labels.addedToExisting);
@@ -114,7 +114,7 @@ export function SaveCustomersSegmentDialog({
         toast.success(labels.created);
       }
 
-      onOpenChange(false);
+      handleOpenChange(false);
       onSuccess();
     } catch {
       toast.error(labels.saveError);
@@ -122,7 +122,7 @@ export function SaveCustomersSegmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{labels.saveTitle}</DialogTitle>
@@ -193,7 +193,7 @@ export function SaveCustomersSegmentDialog({
             <div className="space-y-2">
               <Label>{labels.segment}</Label>
               <Select
-                value={existingSegmentId}
+                value={resolvedExistingSegmentId}
                 onValueChange={setExistingSegmentId}
               >
                 <SelectTrigger className="w-full">
@@ -215,7 +215,7 @@ export function SaveCustomersSegmentDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isPending}
           >
             {labels.cancel}

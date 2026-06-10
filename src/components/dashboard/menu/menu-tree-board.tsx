@@ -79,7 +79,29 @@ type MenuTreeBoardProps = {
   ) => void;
 };
 
-export function MenuTreeBoard({
+function buildMenuTreeLayoutKey(
+  categories: MenuCategoryRecord[],
+  items: MenuItemRecord[],
+) {
+  return (
+    categories.map((category) => `${category.id}:${category.sortOrder}`).join("|") +
+    ";" +
+    items
+      .map((item) => `${item.id}:${item.categoryId}:${item.sortOrder}`)
+      .join("|")
+  );
+}
+
+export function MenuTreeBoard(props: MenuTreeBoardProps) {
+  const layoutKey = useMemo(
+    () => buildMenuTreeLayoutKey(props.categories, props.items),
+    [props.categories, props.items],
+  );
+
+  return <MenuTreeBoardInner key={layoutKey} {...props} />;
+}
+
+function MenuTreeBoardInner({
   labels,
   currency,
   restaurantId,
@@ -120,11 +142,6 @@ export function MenuTreeBoard({
   useEffect(() => {
     layoutRef.current = layout;
   }, [layout]);
-
-  useEffect(() => {
-    setDragLayoutState(null);
-    setActiveId(null);
-  }, [categories, items]);
 
   const isFiltered = search.trim().length > 0 || !showUnavailable;
   const dndEnabled = canEdit && !isFiltered;

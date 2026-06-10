@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -65,12 +65,18 @@ export function AddCustomersToSegmentDialog({
   );
   const addMembersMutation = useAddSavedCustomerSegmentMembersMutation(restaurantId);
 
-  useEffect(() => {
-    if (!open) {
-      setSearch("");
-      setSelectedCustomerIds(new Set());
+  function resetForm() {
+    setSearch("");
+    setSelectedCustomerIds(new Set());
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      resetForm();
     }
-  }, [open]);
+
+    onOpenChange(nextOpen);
+  }
 
   const filteredCustomers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -139,7 +145,7 @@ export function AddCustomersToSegmentDialog({
         customerIds,
       });
       toast.success(labels.addedToExisting);
-      onOpenChange(false);
+      handleOpenChange(false);
       onSuccess();
     } catch {
       toast.error(labels.saveError);
@@ -147,7 +153,7 @@ export function AddCustomersToSegmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[min(90vh,720px)] flex-col sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{labels.addCustomersTitle}</DialogTitle>
@@ -220,7 +226,7 @@ export function AddCustomersToSegmentDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={addMembersMutation.isPending}
           >
             {labels.cancel}

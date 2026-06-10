@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,12 +37,18 @@ export function CreateSavedSegmentDialog({
   const [description, setDescription] = useState("");
   const createMutation = useCreateSavedCustomerSegmentMutation(restaurantId);
 
-  useEffect(() => {
-    if (!open) {
-      setName("");
-      setDescription("");
+  function resetForm() {
+    setName("");
+    setDescription("");
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      resetForm();
     }
-  }, [open]);
+
+    onOpenChange(nextOpen);
+  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -58,7 +64,7 @@ export function CreateSavedSegmentDialog({
         description: description.trim() || undefined,
       });
       toast.success(labels.created);
-      onOpenChange(false);
+      handleOpenChange(false);
       onSuccess(segment);
     } catch {
       toast.error(labels.saveError);
@@ -66,7 +72,7 @@ export function CreateSavedSegmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{labels.createTitle}</DialogTitle>
@@ -101,7 +107,7 @@ export function CreateSavedSegmentDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={createMutation.isPending}
           >
             {labels.cancel}

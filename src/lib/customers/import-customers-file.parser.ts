@@ -191,7 +191,6 @@ function rowsFromWorkbook(
 
 function parseSpreadsheetBuffer(
   buffer: ArrayBuffer,
-  kind: "csv" | "xlsx",
 ): Array<Record<string, unknown>> {
   const workbook = XLSX.read(Buffer.from(buffer), { type: "buffer" });
   return rowsFromWorkbook(workbook);
@@ -273,7 +272,7 @@ export async function parseCustomerImportFile(
     rows =
       kind === "json"
         ? parseJsonBuffer(buffer)
-        : parseSpreadsheetBuffer(buffer, kind);
+        : parseSpreadsheetBuffer(buffer);
   } catch {
     return { ok: false, error: "INVALID_FILE_FORMAT" };
   }

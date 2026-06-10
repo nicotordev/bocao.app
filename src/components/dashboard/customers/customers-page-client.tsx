@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { NewCustomerDialog } from "@/components/dashboard/orders/new/new-customer-dialog";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
@@ -111,6 +111,8 @@ function mapSegmentCardToFilter(
   return segmentId;
 }
 
+const EMPTY_CUSTOMERS: CustomerListItem[] = [];
+
 function buildCustomersHref(filters: CustomersListFilters) {
   const segment = filters.segment ?? "all";
   const channel = filters.channel ?? "all";
@@ -175,20 +177,27 @@ export function CustomersPageClient({
   );
 
   const pageData = customersQuery.data;
-  const customers = pageData?.customers ?? [];
+  const customers = pageData?.customers ?? EMPTY_CUSTOMERS;
 
-  useEffect(() => {
-    setSelectedCustomerIds(new Set());
-  }, [
+  const selectionScopeKey = [
+    restaurantId,
     filters.page,
     filters.pageSize,
-    filters.search,
-    filters.segment,
-    filters.channel,
-    filters.sort,
-    filters.savedSegmentId,
-    restaurantId,
-  ]);
+    filters.search ?? "",
+    filters.segment ?? "all",
+    filters.channel ?? "all",
+    filters.sort ?? "last_visit",
+    filters.savedSegmentId ?? "",
+  ].join("\0");
+
+  const [prevSelectionScopeKey, setPrevSelectionScopeKey] =
+    useState(selectionScopeKey);
+
+  if (selectionScopeKey !== prevSelectionScopeKey) {
+    setPrevSelectionScopeKey(selectionScopeKey);
+    setSelectedCustomerIds(new Set());
+  }
+
   const pagination = pageData?.pagination ?? {
     page: filters.page,
     pageSize: filters.pageSize,

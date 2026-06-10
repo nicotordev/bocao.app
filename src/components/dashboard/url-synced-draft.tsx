@@ -8,7 +8,7 @@ type DebouncedSearchDraftProps = {
   children: (draft: string, setDraft: (value: string) => void) => ReactNode;
 };
 
-export function DebouncedSearchDraft({
+function DebouncedSearchDraftInner({
   urlSearch,
   onDebouncedChange,
   children,
@@ -19,10 +19,6 @@ export function DebouncedSearchDraft({
   useEffect(() => {
     onDebouncedChangeRef.current = onDebouncedChange;
   }, [onDebouncedChange]);
-
-  useEffect(() => {
-    setDraft(urlSearch);
-  }, [urlSearch]);
 
   useEffect(() => {
     if (urlSearch === draft) {
@@ -41,4 +37,8 @@ export function DebouncedSearchDraft({
   }, [draft, urlSearch]);
 
   return children(draft, setDraft);
+}
+
+export function DebouncedSearchDraft(props: DebouncedSearchDraftProps) {
+  return <DebouncedSearchDraftInner key={props.urlSearch} {...props} />;
 }
