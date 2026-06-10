@@ -40,6 +40,7 @@ function DashboardShellInner({ context, children }: DashboardShellProps) {
           user={context.user}
           navigation={context.navigation}
           organization={context.organization}
+          organizations={context.organizations}
           restaurants={context.restaurants}
           activeRestaurant={context.activeRestaurant}
           membership={context.membership}

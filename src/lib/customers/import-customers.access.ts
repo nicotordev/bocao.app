@@ -1,45 +1,14 @@
 import "server-only";
 
 import { requireDashboardSession } from "@/lib/dashboard/context";
+import {
+  loadUserMembershipsWithRestaurants,
+  type UserMembershipWithRestaurants,
+} from "@/lib/dashboard/memberships";
 import { membershipHasPermission } from "@/lib/rbac/can";
-import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
-type MembershipWithOrg = Awaited<
-  ReturnType<typeof loadUserMembershipsWithRestaurants>
->[number];
-
-async function loadUserMembershipsWithRestaurants(userId: string) {
-  return prisma.membership.findMany({
-    where: { userId },
-    include: {
-      organization: {
-        include: {
-          restaurants: {
-            orderBy: { createdAt: "asc" },
-            select: {
-              id: true,
-              name: true,
-              organizationId: true,
-            },
-          },
-        },
-      },
-      role: {
-        include: {
-          rolePermissions: {
-            include: {
-              permission: {
-                select: { key: true },
-              },
-            },
-          },
-        },
-      },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-}
+type MembershipWithOrg = UserMembershipWithRestaurants;
 
 function membershipHasCustomersRead(membership: MembershipWithOrg) {
   return (

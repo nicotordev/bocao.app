@@ -28,6 +28,7 @@ type AppSidebarProps = Pick<
   | "user"
   | "navigation"
   | "organization"
+  | "organizations"
   | "restaurants"
   | "activeRestaurant"
   | "membership"
@@ -37,6 +38,7 @@ export function AppSidebar({
   user,
   navigation,
   organization,
+  organizations,
   restaurants,
   activeRestaurant,
   membership,
@@ -51,6 +53,7 @@ export function AppSidebar({
         <MobileSidebar
           navigation={navigation}
           organization={organization}
+          organizations={organizations}
           restaurants={restaurants}
           activeRestaurant={activeRestaurant}
         />
@@ -98,6 +101,7 @@ export function AppSidebar({
         <div className="group-data-[collapsible=icon]:hidden">
           <TenantSwitcher
             organizationName={organization.name}
+            organizations={organizations}
             restaurants={restaurants}
             activeRestaurant={activeRestaurant}
           />

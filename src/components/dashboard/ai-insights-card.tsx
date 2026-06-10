@@ -29,7 +29,7 @@ export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
     <Card className="border-border/60 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <span className="flex shrink-0 size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
             <TbSparkles className="size-4" aria-hidden />
           </span>
           <div>

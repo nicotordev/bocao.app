@@ -256,7 +256,30 @@
       },
       "tenantSwitcher": {
         "restaurants": "Restaurants",
-        "noRestaurants": "No restaurants configured"
+        "noRestaurants": "No restaurants configured",
+        "allOrganizations": "All locations",
+        "allOrganizationsHint": "Organizations overview"
+      }
+    },
+    "organizations": {
+      "title": "All locations",
+      "subtitle": "Summary of every organization and restaurant you can access.",
+      "role": "Your role: {role}",
+      "restaurantsTitle": "Restaurants",
+      "noRestaurants": "No restaurants configured in this organization.",
+      "backToDashboard": "Back to dashboard",
+      "kpis": {
+        "organizations": "Organizations",
+        "restaurants": "Restaurants",
+        "customers": "Customers",
+        "activeOrders": "Active orders"
+      },
+      "metrics": {
+        "restaurants": "Restaurants",
+        "customers": "Customers",
+        "todayRevenue": "Today's revenue",
+        "activeOrders": "{count} active orders",
+        "customersShort": "{count} customers"
       }
     },
     "home": {

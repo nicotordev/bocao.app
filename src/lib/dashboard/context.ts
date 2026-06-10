@@ -1,18 +1,40 @@
 import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { ACTIVE_RESTAURANT_COOKIE } from "@/lib/dashboard/constants";
+import { loadUserMembershipsWithRestaurants } from "@/lib/dashboard/memberships";
 import type { DashboardContext } from "@/lib/dashboard/types";
 import {
   extractPermissionKeys,
   getNavigationForMembership,
 } from "@/lib/permissions";
 import { ensureDemoAdminMembershipForUser } from "@/lib/demo/ensure-admin-membership";
-import { prisma } from "@/lib/prisma";
 import type { SystemRoleSlug } from "@/lib/rbac/permissions";
-import { headers } from "next/headers";
 
 const restaurantCookieSchema = z.string().cuid();
+
+function mapRestaurant(
+  restaurant: {
+    id: string;
+    name: string;
+    timezone: string;
+    currency: string;
+    organizationId: string;
+    contentLocales: string[];
+  },
+  organizationName: string,
+) {
+  return {
+    id: restaurant.id,
+    name: restaurant.name,
+    timezone: restaurant.timezone,
+    currency: restaurant.currency,
+    organizationId: restaurant.organizationId,
+    contentLocales: restaurant.contentLocales,
+    organizationName,
+  };
+}
 
 function resolveActiveRestaurant(
   restaurants: DashboardContext["restaurants"],
@@ -38,12 +60,9 @@ export async function requireDashboardSession() {
 }
 
 export async function hasUserMembership(userId: string): Promise<boolean> {
-  const membership = await prisma.membership.findFirst({
-    where: { userId },
-    select: { id: true },
-  });
+  const memberships = await loadUserMembershipsWithRestaurants(userId);
 
-  return membership !== null;
+  return memberships.length > 0;
 }
 
 export async function getDashboardContext(): Promise<DashboardContext | null> {
@@ -53,32 +72,9 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
     return null;
   }
 
-  let membership = await prisma.membership.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "asc" },
-    include: {
-      organization: {
-        include: {
-          restaurants: {
-            orderBy: { createdAt: "asc" },
-          },
-        },
-      },
-      role: {
-        include: {
-          rolePermissions: {
-            include: {
-              permission: {
-                select: { key: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  let memberships = await loadUserMembershipsWithRestaurants(session.user.id);
 
-  if (!membership) {
+  if (memberships.length === 0) {
     const attached = await ensureDemoAdminMembershipForUser(
       session.user.id,
       session.user.email,
@@ -88,44 +84,24 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
       return null;
     }
 
-    membership = await prisma.membership.findFirst({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "asc" },
-      include: {
-        organization: {
-          include: {
-            restaurants: {
-              orderBy: { createdAt: "asc" },
-            },
-          },
-        },
-        role: {
-          include: {
-            rolePermissions: {
-              include: {
-                permission: {
-                  select: { key: true },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    memberships = await loadUserMembershipsWithRestaurants(session.user.id);
   }
 
-  if (!membership) {
+  if (memberships.length === 0) {
     return null;
   }
 
-  const restaurants = membership.organization.restaurants.map((restaurant) => ({
-    id: restaurant.id,
-    name: restaurant.name,
-    timezone: restaurant.timezone,
-    currency: restaurant.currency,
-    organizationId: restaurant.organizationId,
-    contentLocales: restaurant.contentLocales,
+  const organizations = memberships.map((membership) => ({
+    id: membership.organization.id,
+    name: membership.organization.name,
+    restaurants: membership.organization.restaurants.map((restaurant) =>
+      mapRestaurant(restaurant, membership.organization.name),
+    ),
   }));
+
+  const restaurants = organizations.flatMap(
+    (organization) => organization.restaurants,
+  );
 
   const cookieStore = await cookies();
   const activeRestaurant = resolveActiveRestaurant(
@@ -133,9 +109,15 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
     cookieStore.get(ACTIVE_RESTAURANT_COOKIE)?.value,
   );
 
+  const activeMembership =
+    memberships.find(
+      (membership) =>
+        membership.organizationId === activeRestaurant?.organizationId,
+    ) ?? memberships[0]!;
+
   const membershipWithPermissions = {
-    ...membership,
-    role: membership.role,
+    ...activeMembership,
+    role: activeMembership.role,
   };
 
   const permissions = extractPermissionKeys(membershipWithPermissions);
@@ -148,16 +130,17 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
       image: session.user.image ?? null,
     },
     organization: {
-      id: membership.organization.id,
-      name: membership.organization.name,
-      slug: membership.organization.slug,
+      id: activeMembership.organization.id,
+      name: activeMembership.organization.name,
+      slug: activeMembership.organization.slug,
     },
+    organizations,
     restaurants,
     activeRestaurant,
     membership: {
-      id: membership.id,
-      roleSlug: membership.role.slug as SystemRoleSlug,
-      roleName: membership.role.name,
+      id: activeMembership.id,
+      roleSlug: activeMembership.role.slug as SystemRoleSlug,
+      roleName: activeMembership.role.name,
       permissions: Array.from(permissions),
     },
     navigation: getNavigationForMembership(membershipWithPermissions),

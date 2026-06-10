@@ -16,12 +16,17 @@ import {
 
 type MobileSidebarProps = Pick<
   DashboardContext,
-  "navigation" | "organization" | "restaurants" | "activeRestaurant"
+  | "navigation"
+  | "organization"
+  | "organizations"
+  | "restaurants"
+  | "activeRestaurant"
 >;
 
 export function MobileSidebar({
   navigation,
   organization,
+  organizations,
   restaurants,
   activeRestaurant,
 }: MobileSidebarProps) {
@@ -51,6 +56,7 @@ export function MobileSidebar({
       <div className="border-b border-sidebar-border p-4">
         <TenantSwitcher
           organizationName={organization.name}
+          organizations={organizations}
           restaurants={restaurants}
           activeRestaurant={activeRestaurant}
         />

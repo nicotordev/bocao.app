@@ -14,6 +14,7 @@ export type DashboardRestaurant = {
   timezone: string;
   currency: string;
   organizationId: string;
+  organizationName: string;
   contentLocales: string[];
 };
 
@@ -21,6 +22,12 @@ export type DashboardOrganization = {
   id: string;
   name: string;
   slug: string;
+};
+
+export type DashboardOrganizationGroup = {
+  id: string;
+  name: string;
+  restaurants: DashboardRestaurant[];
 };
 
 export type DashboardMembership = {
@@ -33,6 +40,7 @@ export type DashboardMembership = {
 export type DashboardContext = {
   user: DashboardUser;
   organization: DashboardOrganization;
+  organizations: DashboardOrganizationGroup[];
   restaurants: DashboardRestaurant[];
   activeRestaurant: DashboardRestaurant | null;
   membership: DashboardMembership;
