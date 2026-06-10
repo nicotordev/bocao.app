@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  TbPencil,
-  TbEye,
-  TbDots,
-  TbTag,
-  TbTrash,
-} from "react-icons/tb";
+import { TbPencil, TbEye, TbDots, TbTag, TbTrash } from "react-icons/tb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,6 +35,7 @@ type CustomersTableProps = {
   onEditCustomer: (customer: CustomerListItem) => void;
   onAddTags: (customer: CustomerListItem) => void;
   onDeleteCustomer: (customer: CustomerListItem) => void;
+  onImportCustomers: () => void;
 };
 
 function stopRowActivation(event: React.SyntheticEvent) {
@@ -127,6 +122,7 @@ export function CustomersTable({
   onEditCustomer,
   onAddTags,
   onDeleteCustomer,
+  onImportCustomers,
 }: CustomersTableProps) {
   const customerIds = customers.map((customer) => customer.id);
   const pageCheckState = getPageCheckState(customerIds, selectedCustomerIds);
@@ -162,7 +158,7 @@ export function CustomersTable({
     return (
       <CustomersEmptyState
         labels={labels.empty}
-        comingSoonLabel={labels.actions.comingSoon}
+        onImportCustomers={onImportCustomers}
       />
     );
   }

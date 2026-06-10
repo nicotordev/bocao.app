@@ -73,7 +73,9 @@ function buildCustomersCsv(customers: CustomerListItem[]) {
     "channel",
   ];
 
-  const rows = customers.map((customer) => [
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+
+  const rows = safeCustomers.map((customer) => [
     customer.name,
     customer.email ?? "",
     customer.phone ?? "",
@@ -161,7 +163,9 @@ export function CustomersPageClient({
   const [bulkTagOperation, setBulkTagOperation] = useState<
     "add" | "remove" | null
   >(null);
-  const [singleTagCustomerIds, setSingleTagCustomerIds] = useState<string[]>([]);
+  const [singleTagCustomerIds, setSingleTagCustomerIds] = useState<string[]>(
+    [],
+  );
   const [importCustomersDialogOpen, setImportCustomersDialogOpen] =
     useState(false);
   const [saveSegmentDialogOpen, setSaveSegmentDialogOpen] = useState(false);
@@ -271,14 +275,21 @@ export function CustomersPageClient({
   );
 
   const handleExport = (rows: CustomerListItem[] = customers) => {
-    if (rows.length === 0) {
+    if (!rows || rows.length === 0) {
+      toast.error(labels.actions.exportEmpty);
+      return;
+    }
+
+    const csv = buildCustomersCsv(rows);
+    // Only export if CSV is not empty or just a header row (i.e., no real data)
+    if (!csv || csv.trim().split("\n").length <= 1) {
       toast.error(labels.actions.exportEmpty);
       return;
     }
 
     downloadCsvFile(
       `customers-${new Date().toISOString().slice(0, 10)}.csv`,
-      buildCustomersCsv(rows),
+      csv,
     );
     toast.success(labels.actions.exportSuccess);
   };
@@ -559,6 +570,9 @@ export function CustomersPageClient({
                         openDeleteDialog([
                           { id: customer.id, name: customer.name },
                         ])
+                      }
+                      onImportCustomers={() =>
+                        setImportCustomersDialogOpen(true)
                       }
                     />
                     <ListPagination

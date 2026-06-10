@@ -1,7 +1,4 @@
-import {
-  TbUpload,
-  TbUsers,
-} from "react-icons/tb";
+import { TbUpload, TbUsers } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -11,17 +8,16 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { toast } from "sonner";
 import type { CustomersLabels } from "./types";
 
 type CustomersEmptyStateProps = {
   labels: CustomersLabels["empty"];
-  comingSoonLabel: string;
+  onImportCustomers: () => void;
 };
 
 export function CustomersEmptyState({
   labels,
-  comingSoonLabel,
+  onImportCustomers,
 }: CustomersEmptyStateProps) {
   return (
     <Empty className="rounded-3xl border border-border/70 bg-card/80 py-16">
@@ -35,9 +31,7 @@ export function CustomersEmptyState({
       <EmptyContent>
         <Button
           className="gap-2"
-          onClick={() => {
-            toast.message(comingSoonLabel);
-          }}
+          onClick={onImportCustomers}
         >
           <TbUpload className="size-4" aria-hidden />
           {labels.cta}
