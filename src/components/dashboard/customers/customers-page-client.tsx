@@ -474,167 +474,159 @@ export function CustomersPageClient({
       />
       <CustomersKpis labels={labels.kpis} values={kpis} />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <DebouncedSearchDraft
-            urlSearch={urlSearch}
-            onDebouncedChange={handleDebouncedSearch}
-          >
-            {(searchDraft, setSearchDraft) => (
-              <CustomersToolbar
-                labels={labels}
-                value={{ ...toolbarValue, search: searchDraft }}
-                onSearchChange={setSearchDraft}
-                onFiltersChange={(value) => navigateFilters(value)}
-                onClear={() => {
-                  setSearchDraft("");
-                  navigateFilters({
-                    search: "",
-                    segment: "all",
-                    channel: "all",
-                    sort: "last_visit",
-                    tab: "customers",
-                    customerId: undefined,
-                    savedSegmentId: undefined,
-                  });
-                }}
-              />
-            )}
-          </DebouncedSearchDraft>
+      <CustomerInsightsCard
+        labels={labels}
+        insights={pageData?.insights ?? []}
+      />
 
-          <Tabs
-            value={activeTab}
-            onValueChange={(tab) => {
-              const nextTab = tab as CustomersListFilters["tab"];
-              if (nextTab === activeTab) {
-                return;
-              }
+      <div className="space-y-4">
+        <DebouncedSearchDraft
+          urlSearch={urlSearch}
+          onDebouncedChange={handleDebouncedSearch}
+        >
+          {(searchDraft, setSearchDraft) => (
+            <CustomersToolbar
+              labels={labels}
+              value={{ ...toolbarValue, search: searchDraft }}
+              onSearchChange={setSearchDraft}
+              onFiltersChange={(value) => navigateFilters(value)}
+              onClear={() => {
+                setSearchDraft("");
+                navigateFilters({
+                  search: "",
+                  segment: "all",
+                  channel: "all",
+                  sort: "last_visit",
+                  tab: "customers",
+                  customerId: undefined,
+                  savedSegmentId: undefined,
+                });
+              }}
+            />
+          )}
+        </DebouncedSearchDraft>
 
-              navigateFilters({ tab: nextTab });
-            }}
-          >
-            <TabsList>
-              <TabsTrigger value="customers">
-                {labels.tabs.customers}
-              </TabsTrigger>
-              <TabsTrigger value="segments">{labels.tabs.segments}</TabsTrigger>
-              <TabsTrigger value="activity">{labels.tabs.activity}</TabsTrigger>
-            </TabsList>
+        <Tabs
+          value={activeTab}
+          onValueChange={(tab) => {
+            const nextTab = tab as CustomersListFilters["tab"];
+            if (nextTab === activeTab) {
+              return;
+            }
 
-            <TabsContent value="customers" className="mt-4 space-y-4">
-              <QueryResultState query={customersQuery}>
-                {() => (
-                  <>
-                    <CustomersBulkActionsBar
-                      labels={labels.bulkActions}
-                      selectedCount={selectedCustomerIds.size}
-                      onClearSelection={() => setSelectedCustomerIds(new Set())}
-                      onExport={() => handleExport(selectedCustomers)}
-                      onSaveToSegment={() => setSaveSegmentDialogOpen(true)}
-                      onAddTag={() => {
-                        setSingleTagCustomerIds([]);
-                        setBulkTagOperation("add");
-                      }}
-                      onRemoveTag={() => {
-                        setSingleTagCustomerIds([]);
-                        setBulkTagOperation("remove");
-                      }}
-                      onDelete={() =>
-                        openDeleteDialog(
-                          selectedCustomers.map((customer) => ({
-                            id: customer.id,
-                            name: customer.name,
-                          })),
-                        )
+            navigateFilters({ tab: nextTab });
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="customers">{labels.tabs.customers}</TabsTrigger>
+            <TabsTrigger value="segments">{labels.tabs.segments}</TabsTrigger>
+            <TabsTrigger value="activity">{labels.tabs.activity}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="customers" className="mt-4 space-y-4">
+            <QueryResultState query={customersQuery}>
+              {() => (
+                <>
+                  <CustomersBulkActionsBar
+                    labels={labels.bulkActions}
+                    selectedCount={selectedCustomerIds.size}
+                    onClearSelection={() => setSelectedCustomerIds(new Set())}
+                    onExport={() => handleExport(selectedCustomers)}
+                    onSaveToSegment={() => setSaveSegmentDialogOpen(true)}
+                    onAddTag={() => {
+                      setSingleTagCustomerIds([]);
+                      setBulkTagOperation("add");
+                    }}
+                    onRemoveTag={() => {
+                      setSingleTagCustomerIds([]);
+                      setBulkTagOperation("remove");
+                    }}
+                    onDelete={() =>
+                      openDeleteDialog(
+                        selectedCustomers.map((customer) => ({
+                          id: customer.id,
+                          name: customer.name,
+                        })),
+                      )
+                    }
+                  />
+                  <CustomersTable
+                    labels={labels}
+                    segmentLabels={segmentLabels}
+                    customers={customers}
+                    selectedCustomerIds={selectedCustomerIds}
+                    onSelectedCustomerIdsChange={setSelectedCustomerIds}
+                    onSelectCustomer={handleSelectCustomer}
+                    onEditCustomer={(customer) => {
+                      if (selectedCustomerId) {
+                        navigateFilters({ customerId: undefined });
                       }
-                    />
-                    <CustomersTable
-                      labels={labels}
-                      segmentLabels={segmentLabels}
-                      customers={customers}
-                      selectedCustomerIds={selectedCustomerIds}
-                      onSelectedCustomerIdsChange={setSelectedCustomerIds}
-                      onSelectCustomer={handleSelectCustomer}
-                      onEditCustomer={(customer) => {
-                        if (selectedCustomerId) {
-                          navigateFilters({ customerId: undefined });
-                        }
-                        setEditingCustomerId(customer.id);
-                        setCustomerDialogMode("edit");
-                      }}
-                      onAddTags={(customer) => {
-                        setSingleTagCustomerIds([customer.id]);
-                        setBulkTagOperation("add");
-                      }}
-                      onDeleteCustomer={(customer) =>
-                        openDeleteDialog([
-                          { id: customer.id, name: customer.name },
-                        ])
-                      }
-                      onImportCustomers={() =>
-                        setImportCustomersDialogOpen(true)
-                      }
-                    />
-                    <ListPagination
-                      basePath="/dashboard/customers"
-                      labels={labels.pagination}
-                      meta={pagination}
-                      params={{
-                        search: toolbarValue.search || undefined,
-                        segment:
-                          toolbarValue.segment === "all"
-                            ? undefined
-                            : toolbarValue.segment,
-                        channel:
-                          toolbarValue.channel === "all"
-                            ? undefined
-                            : toolbarValue.channel,
-                        sort:
-                          toolbarValue.sort === "last_visit"
-                            ? undefined
-                            : toolbarValue.sort,
-                        tab: activeTab === "customers" ? undefined : activeTab,
-                        customerId: selectedCustomerId ?? undefined,
-                        savedSegmentId: filters.savedSegmentId,
-                      }}
-                    />
-                  </>
-                )}
-              </QueryResultState>
-            </TabsContent>
+                      setEditingCustomerId(customer.id);
+                      setCustomerDialogMode("edit");
+                    }}
+                    onAddTags={(customer) => {
+                      setSingleTagCustomerIds([customer.id]);
+                      setBulkTagOperation("add");
+                    }}
+                    onDeleteCustomer={(customer) =>
+                      openDeleteDialog([
+                        { id: customer.id, name: customer.name },
+                      ])
+                    }
+                    onImportCustomers={() => setImportCustomersDialogOpen(true)}
+                  />
+                  <ListPagination
+                    basePath="/dashboard/customers"
+                    labels={labels.pagination}
+                    meta={pagination}
+                    params={{
+                      search: toolbarValue.search || undefined,
+                      segment:
+                        toolbarValue.segment === "all"
+                          ? undefined
+                          : toolbarValue.segment,
+                      channel:
+                        toolbarValue.channel === "all"
+                          ? undefined
+                          : toolbarValue.channel,
+                      sort:
+                        toolbarValue.sort === "last_visit"
+                          ? undefined
+                          : toolbarValue.sort,
+                      tab: activeTab === "customers" ? undefined : activeTab,
+                      customerId: selectedCustomerId ?? undefined,
+                      savedSegmentId: filters.savedSegmentId,
+                    }}
+                  />
+                </>
+              )}
+            </QueryResultState>
+          </TabsContent>
 
-            <TabsContent value="segments" className="mt-4">
-              <CustomersSegments
-                labels={labels}
-                segments={pageData?.segments ?? []}
-                savedSegments={pageData?.savedSegments ?? []}
-                customerOptions={customerOptions}
-                restaurantId={restaurantId}
-                onViewCustomers={handleViewSegmentCustomers}
-                onViewSavedSegment={handleViewSavedSegmentCustomers}
-                onImportCustomers={() => setImportCustomersDialogOpen(true)}
-                onSegmentsChanged={refreshCustomersPage}
-              />
-            </TabsContent>
+          <TabsContent value="segments" className="mt-4">
+            <CustomersSegments
+              labels={labels}
+              segments={pageData?.segments ?? []}
+              savedSegments={pageData?.savedSegments ?? []}
+              customerOptions={customerOptions}
+              restaurantId={restaurantId}
+              onViewCustomers={handleViewSegmentCustomers}
+              onViewSavedSegment={handleViewSavedSegmentCustomers}
+              onImportCustomers={() => setImportCustomersDialogOpen(true)}
+              onSegmentsChanged={refreshCustomersPage}
+            />
+          </TabsContent>
 
-            <TabsContent value="activity" className="mt-4">
-              <CustomersActivityFeed
-                labels={labels}
-                events={pageData?.activity ?? []}
-                onSelectCustomer={(customerId) => {
-                  navigateFilters({ customerId });
-                }}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        <aside className="space-y-4">
-          <CustomerInsightsCard
-            labels={labels}
-            insights={pageData?.insights ?? []}
-          />
-        </aside>
+          <TabsContent value="activity" className="mt-4">
+            <CustomersActivityFeed
+              labels={labels}
+              events={pageData?.activity ?? []}
+              onSelectCustomer={(customerId) => {
+                navigateFilters({ customerId });
+              }}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <CustomerProfileDialog

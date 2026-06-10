@@ -258,6 +258,8 @@ function ReservationFormFields({
   };
 
   const customerLabels = {
+    optional: labels.optional,
+    required: labels.required,
     customer: labels.form.customer,
     validation: labels.validation,
     actions: labels.actions,

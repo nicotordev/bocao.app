@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import type { CustomerDetail } from "@/lib/customers/types";
 import { CustomerChannelBadge } from "./customer-channel-badge";
@@ -61,7 +60,11 @@ function MetricCard({
   );
 }
 
-function ActivityIcon({ type }: { type: CustomerDetail["activity"][number]["type"] }) {
+function ActivityIcon({
+  type,
+}: {
+  type: CustomerDetail["activity"][number]["type"];
+}) {
   if (type === "order") {
     return <TbShoppingCart className="size-4" aria-hidden />;
   }
@@ -88,9 +91,9 @@ export function CustomerProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[min(92vh,860px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
+      <DialogContent className="grid max-h-[min(92vh,860px)] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-3xl">
         {customer ? (
-          <DialogHeader className="border-b border-border px-6 py-5">
+          <DialogHeader className="shrink-0 border-b border-border px-6 py-5">
             <div className="flex items-center gap-4">
               <Avatar size="lg">
                 {customer.avatar ? (
@@ -100,7 +103,9 @@ export function CustomerProfileDialog({
               </Avatar>
               <div className="min-w-0 text-left">
                 <DialogTitle className="truncate">{customer.name}</DialogTitle>
-                <DialogDescription>{profileLabels.description}</DialogDescription>
+                <DialogDescription>
+                  {profileLabels.description}
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -112,7 +117,7 @@ export function CustomerProfileDialog({
         )}
 
         {customer ? (
-          <ScrollArea className="flex-1">
+          <div className="min-h-0 overflow-y-auto">
             <div className="space-y-6 px-6 py-6">
               <section className="rounded-3xl border border-border bg-card p-4">
                 <h3 className="font-heading font-medium">
@@ -322,8 +327,7 @@ export function CustomerProfileDialog({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-medium">
-                            {reservation.guestCount}{" "}
-                            {profileLabels.guests}
+                            {reservation.guestCount} {profileLabels.guests}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {reservation.status}
@@ -351,7 +355,7 @@ export function CustomerProfileDialog({
                 />
               </div>
             </div>
-          </ScrollArea>
+          </div>
         ) : null}
       </DialogContent>
     </Dialog>

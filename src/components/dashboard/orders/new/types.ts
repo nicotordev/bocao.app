@@ -1,5 +1,8 @@
 import type { CustomerOption } from "@/lib/customers/types";
-import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
+import type {
+  DiningSurfaceRecord,
+  TableOccupancy,
+} from "@/lib/floor-plan/types";
 import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
 import type { OrderLineCustomization } from "@/lib/product-flow/types";
 import type { ProductFlowWizardLabels } from "./product-purchase-wizard";
@@ -47,6 +50,8 @@ export type NewOrderFormValues = {
 };
 
 export type NewOrderLabels = {
+  optional: string;
+  required: string;
   header: {
     title: string;
     subtitle: string;
@@ -82,20 +87,25 @@ export type NewOrderLabels = {
     searchPlaceholder: string;
     noResults: string;
     selectedHint: string;
-    tableNumber: string;
-    tableNumberPlaceholder: string;
+    selectedTitle: string;
     emptySelection: string;
-    tablePickerHint: string;
-    tablePickerFree: string;
-    tablePickerOccupied: string;
-    tablePickerSelected: string;
-    configureFloorPlan: string;
     picker: {
       title: string;
       description: string;
       addCustomer: string;
       addSuccess: string;
     };
+  };
+  table: {
+    title: string;
+    description: string;
+    number: string;
+    numberPlaceholder: string;
+    pickerHint: string;
+    pickerFree: string;
+    pickerOccupied: string;
+    pickerSelected: string;
+    configureFloorPlan: string;
   };
   channel: {
     title: string;

@@ -24,6 +24,7 @@ import {
 
 export type CustomerTagsMultiSelectLabels = {
   label: string;
+  optionalLabel?: string;
   searchPlaceholder: string;
   noResults: string;
   createTag: string;
@@ -77,7 +78,15 @@ export function CustomerTagsMultiSelect({
   return (
     <Field>
       <div className="flex items-center justify-between gap-3">
-        <FieldLabel>{labels.label}</FieldLabel>
+        <FieldLabel>
+          {labels.label}
+          {labels.optionalLabel ? (
+            <span className="text-xs font-normal text-muted-foreground">
+              {" "}
+              ({labels.optionalLabel})
+            </span>
+          ) : null}
+        </FieldLabel>
         {!disabled ? (
           <Button
             type="button"

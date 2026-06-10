@@ -11,6 +11,8 @@ export default async function KitchenPage() {
 
   const labels: KitchenLabels = {
     actions: {
+      newOrder: t("actions.newOrder"),
+      viewOrders: t("actions.viewOrders"),
       refresh: t("actions.refresh"),
       configureStations: t("actions.configureStations"),
       fullscreen: t("actions.fullscreen"),
@@ -25,6 +27,7 @@ export default async function KitchenPage() {
       reassignStation: t("actions.reassignStation"),
       markDelayed: t("actions.markDelayed"),
       printTicket: t("actions.printTicket"),
+      cancelOrder: t("actions.cancelOrder"),
       viewSuggestions: t("actions.viewSuggestions"),
       clearFilters: t("actions.clearFilters"),
       toggleFilters: t("actions.toggleFilters"),
@@ -152,10 +155,22 @@ export default async function KitchenPage() {
       emptyDescription: t("copilot.emptyDescription"),
       footerHint: t("copilot.footerHint"),
     },
+    cancelDialog: {
+      title: t("cancelDialog.title"),
+      description: t.raw("cancelDialog.description"),
+      confirm: t("cancelDialog.confirm"),
+      cancel: t("cancelDialog.cancel"),
+    },
+    feedback: {
+      cancelSuccess: t("feedback.cancelSuccess"),
+      cancelError: t("feedback.cancelError"),
+      printError: t("feedback.printError"),
+    },
     empty: {
       title: t("empty.title"),
       description: t("empty.description"),
-      cta: t("empty.cta"),
+      ctaNewOrder: t("empty.ctaNewOrder"),
+      ctaViewOrders: t("empty.ctaViewOrders"),
     },
     loading: {
       tickets: t("loading.tickets"),

@@ -13,6 +13,7 @@ export type ReservationsPageLabels = Awaited<
 
 export async function getReservationsPageLabels() {
   const t = await getTranslations("dashboard.reservations");
+  const tCommon = await getTranslations("common");
 
   return {
     header: {
@@ -110,6 +111,8 @@ export async function getReservationsPageLabels() {
       customers: t("validation.customers"),
       draftCustomerName: t("validation.draftCustomerName"),
     },
+    optional: tCommon("optional"),
+    required: tCommon("required"),
     empty: {
       title: t("empty.title"),
       description: t("empty.description"),

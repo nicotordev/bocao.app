@@ -368,6 +368,8 @@ export default async function CustomersPage({
       of: tCommon("pagination.of"),
     },
     formDialog: {
+      optional: tCommon("optional"),
+      required: tCommon("required"),
       customer: {
         name: t("form.name"),
         namePlaceholder: t("form.namePlaceholder"),

@@ -11,6 +11,8 @@ import type {
 
 export type KitchenLabels = {
   actions: {
+    newOrder: string;
+    viewOrders: string;
     refresh: string;
     configureStations: string;
     fullscreen: string;
@@ -25,9 +27,21 @@ export type KitchenLabels = {
     reassignStation: string;
     markDelayed: string;
     printTicket: string;
+    cancelOrder: string;
     viewSuggestions: string;
     clearFilters: string;
     toggleFilters: string;
+  };
+  cancelDialog: {
+    title: string;
+    description: string;
+    confirm: string;
+    cancel: string;
+  };
+  feedback: {
+    cancelSuccess: string;
+    cancelError: string;
+    printError: string;
   };
   header: {
     title: string;
@@ -124,7 +138,8 @@ export type KitchenLabels = {
   empty: {
     title: string;
     description: string;
-    cta: string;
+    ctaNewOrder: string;
+    ctaViewOrders: string;
   };
   loading: {
     tickets: string;

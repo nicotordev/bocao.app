@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import {
-  TbPlus,
-  TbX,
-} from "react-icons/tb";
+import { TbPlus, TbX } from "react-icons/tb";
 import { useMemo, useState } from "react";
 import { FloorPlanTablePicker } from "@/components/dashboard/floor-plan/floor-plan-table-picker";
 import type { CustomerOption } from "@/lib/customers/types";
-import type { DiningSurfaceRecord, TableOccupancy } from "@/lib/floor-plan/types";
+import type {
+  DiningSurfaceRecord,
+  TableOccupancy,
+} from "@/lib/floor-plan/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -128,64 +128,6 @@ export function NewOrderCustomerSection({
         </CardHeader>
         <CardContent>
           <FieldGroup>
-            {isDineIn ? (
-              <Field data-invalid={Boolean(errors.tableNumber)}>
-                <FieldLabel htmlFor="table-number">
-                  {labels.customer.tableNumber}
-                </FieldLabel>
-                {floorPlanSurface ? (
-                  <>
-                    <FloorPlanTablePicker
-                      surface={floorPlanSurface}
-                      occupiedTableNumbers={occupiedTableNumbers}
-                      selectedTableNumber={values.tableNumber}
-                      onSelectTable={onTableNumberChange}
-                      labels={{
-                        legendFree: labels.customer.tablePickerFree,
-                        legendOccupied: labels.customer.tablePickerOccupied,
-                        legendSelected: labels.customer.tablePickerSelected,
-                        pickHint: labels.customer.tablePickerHint,
-                      }}
-                    />
-                    <TableNumberSelect
-                      id="table-number"
-                      className="mt-3"
-                      value={values.tableNumber}
-                      tableNumbers={tableNumbers}
-                      occupiedTableNumbers={occupiedTableNumbers}
-                      placeholder={labels.customer.tableNumberPlaceholder}
-                      occupiedLabel={labels.customer.tablePickerOccupied}
-                      invalid={Boolean(errors.tableNumber)}
-                      onChange={onTableNumberChange}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <TableNumberSelect
-                      id="table-number"
-                      value={values.tableNumber}
-                      tableNumbers={tableNumbers}
-                      occupiedTableNumbers={occupiedTableNumbers}
-                      placeholder={labels.customer.tableNumberPlaceholder}
-                      occupiedLabel={labels.customer.tablePickerOccupied}
-                      invalid={Boolean(errors.tableNumber)}
-                      disabled
-                      onChange={onTableNumberChange}
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      {labels.customer.configureFloorPlan}{" "}
-                      <Link href="/dashboard/floor-plan" className="underline">
-                        /dashboard/floor-plan
-                      </Link>
-                    </p>
-                  </>
-                )}
-                {errors.tableNumber ? (
-                  <p className="text-sm text-destructive">{errors.tableNumber}</p>
-                ) : null}
-              </Field>
-            ) : null}
-
             {customers.length > 0 ? (
               <ExistingCustomerPicker
                 labels={labels}
@@ -213,6 +155,72 @@ export function NewOrderCustomerSection({
           </FieldGroup>
         </CardContent>
       </Card>
+
+      {isDineIn ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{labels.table.title}</CardTitle>
+            <CardDescription>{labels.table.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Field data-invalid={Boolean(errors.tableNumber)}>
+              <FieldLabel htmlFor="table-number">
+                {labels.table.number}
+              </FieldLabel>
+              {floorPlanSurface ? (
+                <>
+                  <FloorPlanTablePicker
+                    surface={floorPlanSurface}
+                    occupiedTableNumbers={occupiedTableNumbers}
+                    selectedTableNumber={values.tableNumber}
+                    onSelectTable={onTableNumberChange}
+                    labels={{
+                      legendFree: labels.table.pickerFree,
+                      legendOccupied: labels.table.pickerOccupied,
+                      legendSelected: labels.table.pickerSelected,
+                      pickHint: labels.table.pickerHint,
+                    }}
+                  />
+                  <TableNumberSelect
+                    id="table-number"
+                    className="mt-3"
+                    value={values.tableNumber}
+                    tableNumbers={tableNumbers}
+                    occupiedTableNumbers={occupiedTableNumbers}
+                    placeholder={labels.table.numberPlaceholder}
+                    occupiedLabel={labels.table.pickerOccupied}
+                    invalid={Boolean(errors.tableNumber)}
+                    onChange={onTableNumberChange}
+                  />
+                </>
+              ) : (
+                <>
+                  <TableNumberSelect
+                    id="table-number"
+                    value={values.tableNumber}
+                    tableNumbers={tableNumbers}
+                    occupiedTableNumbers={occupiedTableNumbers}
+                    placeholder={labels.table.numberPlaceholder}
+                    occupiedLabel={labels.table.pickerOccupied}
+                    invalid={Boolean(errors.tableNumber)}
+                    disabled
+                    onChange={onTableNumberChange}
+                  />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {labels.table.configureFloorPlan}{" "}
+                    <Link href="/dashboard/floor-plan" className="underline">
+                      /dashboard/floor-plan
+                    </Link>
+                  </p>
+                </>
+              )}
+              {errors.tableNumber ? (
+                <p className="text-sm text-destructive">{errors.tableNumber}</p>
+              ) : null}
+            </Field>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <NewCustomerDialog
         open={customerDialogOpen}
@@ -297,7 +305,9 @@ function ExistingCustomerPicker({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">{labels.customer.selectedHint}</p>
+      <p className="text-sm text-muted-foreground">
+        {labels.customer.selectedHint}
+      </p>
       <Combobox
         multiple
         items={customers}
@@ -351,7 +361,7 @@ function SelectedCustomersList({
 }) {
   return (
     <div className="space-y-2">
-      <FieldLabel>{labels.customer.title}</FieldLabel>
+      <FieldLabel>{labels.customer.selectedTitle}</FieldLabel>
       <div className="flex flex-wrap gap-2">
         {customers.map((customer) => (
           <div

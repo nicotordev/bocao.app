@@ -1,29 +1,20 @@
 "use client";
 
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { isKitchenOrderCompletedLate } from "@/lib/kitchen/filters";
 import type { KitchenKanbanStatus, KitchenStation } from "@/lib/kitchen/types";
+import { KitchenDetailActions } from "./kitchen-detail-actions";
 import { KitchenPriorityBadge } from "./kitchen-priority-badge";
 import { KitchenStatusBadge } from "./kitchen-status-badge";
 import type { KitchenLabels, KitchenOrder } from "./types";
 
-type KitchenDetailDrawerProps = {
+type KitchenDetailDialogProps = {
   labels: KitchenLabels;
   order: KitchenOrder | null;
   open: boolean;
@@ -32,24 +23,9 @@ type KitchenDetailDrawerProps = {
   onStationChange?: (orderId: string, station: KitchenStation) => void;
   onMarkDelayed?: (orderId: string) => void;
   onMarkReady?: (orderId: string) => void;
+  onMarkDelivered?: (orderId: string) => void;
+  onCancelOrder?: (order: KitchenOrder) => void;
 };
-
-const statusOptions: KitchenKanbanStatus[] = [
-  "received",
-  "in_preparation",
-  "waiting",
-  "ready",
-  "delivered",
-];
-
-const stationOptions: KitchenStation[] = [
-  "grill",
-  "fryer",
-  "sushi",
-  "bar",
-  "desserts",
-  "delivery_station",
-];
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -68,7 +44,7 @@ function resolveDestination(order: KitchenOrder, labels: KitchenLabels) {
   return order.customerName ?? "—";
 }
 
-export function KitchenDetailDrawer({
+export function KitchenDetailDialog({
   labels,
   order,
   open,
@@ -77,25 +53,29 @@ export function KitchenDetailDrawer({
   onStationChange,
   onMarkDelayed,
   onMarkReady,
-}: KitchenDetailDrawerProps) {
-  const isMobile = useIsMobile();
-
+  onMarkDelivered,
+  onCancelOrder,
+}: KitchenDetailDialogProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side={isMobile ? "bottom" : "right"}
-        className="w-full overflow-y-auto sm:max-w-xl"
-      >
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="grid max-h-[min(92vh,860px)] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-3xl">
         {order ? (
-          <>
-            <SheetHeader className="pr-14">
-              <SheetTitle>
-                {labels.drawer.title} {order.number}
-              </SheetTitle>
-              <SheetDescription>{labels.drawer.description}</SheetDescription>
-            </SheetHeader>
+          <DialogHeader className="shrink-0 border-b border-border px-6 py-5 text-left">
+            <DialogTitle>
+              {labels.drawer.title} {order.number}
+            </DialogTitle>
+            <DialogDescription>{labels.drawer.description}</DialogDescription>
+          </DialogHeader>
+        ) : (
+          <DialogHeader className="sr-only">
+            <DialogTitle>{labels.drawer.title}</DialogTitle>
+            <DialogDescription>{labels.drawer.description}</DialogDescription>
+          </DialogHeader>
+        )}
 
-            <div className="space-y-6 px-6 pb-8">
+        {order ? (
+          <div className="min-h-0 overflow-y-auto">
+            <div className="space-y-6 px-6 py-6">
               <section className="rounded-3xl border border-border bg-card p-4">
                 <h3 className="font-heading font-medium">
                   {labels.drawer.order}
@@ -222,83 +202,20 @@ export function KitchenDetailDrawer({
                 </ol>
               </section>
 
-              <section className="rounded-3xl border border-border bg-card p-4">
-                <h3 className="font-heading font-medium">
-                  {labels.drawer.actions}
-                </h3>
-                <div className="mt-4 space-y-3">
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground">
-                      {labels.actions.changeStatus}
-                    </label>
-                    <Select
-                      value={
-                        order.status === "delayed"
-                          ? "in_preparation"
-                          : order.status
-                      }
-                      onValueChange={(value) =>
-                        onStatusChange?.(order.id, value as KitchenKanbanStatus)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {labels.statuses[status]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground">
-                      {labels.actions.reassignStation}
-                    </label>
-                    <Select
-                      value={order.station}
-                      onValueChange={(value) =>
-                        onStationChange?.(order.id, value as KitchenStation)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stationOptions.map((station) => (
-                          <SelectItem key={station} value={station}>
-                            {labels.stations[station]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Separator />
-
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => onMarkDelayed?.(order.id)}
-                    >
-                      {labels.actions.markDelayed}
-                    </Button>
-                    <Button onClick={() => onMarkReady?.(order.id)}>
-                      {labels.actions.markReady}
-                    </Button>
-                    <Button variant="secondary" className="sm:col-span-2">
-                      {labels.actions.printTicket}
-                    </Button>
-                  </div>
-                </div>
-              </section>
+              <KitchenDetailActions
+                labels={labels}
+                order={order}
+                onStatusChange={onStatusChange}
+                onStationChange={onStationChange}
+                onMarkDelayed={onMarkDelayed}
+                onMarkReady={onMarkReady}
+                onMarkDelivered={onMarkDelivered}
+                onCancelOrder={onCancelOrder}
+              />
             </div>
-          </>
+          </div>
         ) : null}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

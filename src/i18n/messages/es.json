@@ -14,6 +14,8 @@
     "confirm": "Confirmar",
     "saving": "Guardando...",
     "notAvailable": "—",
+    "optional": "Opcional",
+    "required": "Obligatorio",
     "pagination": {
       "previous": "Anterior",
       "next": "Siguiente",
@@ -534,7 +536,7 @@
         },
         "customer": {
           "title": "Clientes",
-          "description": "Selecciona uno o varios clientes y, si es presencial, indica la mesa.",
+          "description": "Busca clientes registrados o agrega uno nuevo al pedido.",
           "name": "Nombre del cliente",
           "namePlaceholder": "ej. Valentina Rojas",
           "phone": "Teléfono",
@@ -550,20 +552,25 @@
           "searchPlaceholder": "Buscar clientes",
           "noResults": "No se encontraron clientes",
           "selectedHint": "Selecciona clientes existentes desde el buscador.",
-          "tableNumber": "Número de mesa",
-          "tableNumberPlaceholder": "ej. 12",
+          "selectedTitle": "En este pedido",
           "emptySelection": "Aún no hay clientes en este pedido.",
-          "tablePickerHint": "Haz clic en una mesa libre para asignarla al pedido.",
-          "tablePickerFree": "Libre",
-          "tablePickerOccupied": "Ocupada",
-          "tablePickerSelected": "Seleccionada",
-          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente.",
           "picker": {
             "title": "Agregar cliente",
             "description": "Completa los datos del cliente. Solo el nombre es obligatorio.",
             "addCustomer": "Agregar al pedido",
             "addSuccess": "Cliente agregado correctamente"
           }
+        },
+        "table": {
+          "title": "Mesa",
+          "description": "Selecciona la mesa para este pedido presencial.",
+          "number": "Número de mesa",
+          "numberPlaceholder": "ej. 12",
+          "pickerHint": "Haz clic en una mesa libre para asignarla al pedido.",
+          "pickerFree": "Libre",
+          "pickerOccupied": "Ocupada",
+          "pickerSelected": "Seleccionada",
+          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente."
         },
         "channel": {
           "title": "Canal",
@@ -665,6 +672,8 @@
         "subtitle": "Monitorea preparación, estaciones y tiempos de pedidos en tiempo real."
       },
       "actions": {
+        "newOrder": "Nuevo pedido",
+        "viewOrders": "Ver pedidos",
         "refresh": "Actualizar",
         "configureStations": "Configurar estaciones",
         "fullscreen": "Pantalla completa",
@@ -679,6 +688,7 @@
         "reassignStation": "Reasignar estación",
         "markDelayed": "Marcar atrasado",
         "printTicket": "Imprimir comanda",
+        "cancelOrder": "Cancelar pedido",
         "viewSuggestions": "Ver sugerencias",
         "clearFilters": "Limpiar",
         "toggleFilters": "Filtros"
@@ -807,10 +817,22 @@
           "busiestStation": "La estación {station} concentra {count} pedidos activos."
         }
       },
+      "cancelDialog": {
+        "title": "¿Cancelar pedido?",
+        "description": "El pedido {number} se cancelará y saldrá de la cola de cocina. Esta acción no se puede deshacer.",
+        "confirm": "Cancelar pedido",
+        "cancel": "Mantener pedido"
+      },
+      "feedback": {
+        "cancelSuccess": "Pedido cancelado",
+        "cancelError": "No se pudo cancelar el pedido",
+        "printError": "No se pudo abrir el diálogo de impresión"
+      },
       "empty": {
         "title": "La cocina está al día",
         "description": "Cuando entren nuevos pedidos, aparecerán aquí listos para preparación.",
-        "cta": "Ver pedidos"
+        "ctaNewOrder": "Nuevo pedido",
+        "ctaViewOrders": "Ver pedidos"
       },
       "loading": {
         "tickets": "Cargando tickets de cocina..."

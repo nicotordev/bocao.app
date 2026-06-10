@@ -7,6 +7,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { toast } from "sonner";
 import { QueryErrorState } from "@/components/query/query-result-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyKitchenFilters, sortKitchenOrders } from "@/lib/kitchen/filters";
@@ -22,8 +23,10 @@ import type {
 } from "@/lib/kitchen/types";
 import { useUpdateKitchenOrderMutation } from "@/lib/query/kitchen/kitchen.mutations";
 import { useKitchenOrdersQuery } from "@/lib/query/kitchen/kitchen.queries";
+import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
+import { CancelKitchenOrderDialog } from "./cancel-kitchen-order-dialog";
 import { KitchenCopilotDialog } from "./kitchen-copilot-dialog";
-import { KitchenDetailDrawer } from "./kitchen-detail-drawer";
+import { KitchenDetailDialog } from "./kitchen-detail-dialog";
 import { KitchenEmptyState } from "./kitchen-empty-state";
 import { KitchenHeader } from "./kitchen-header";
 import { KitchenKanban } from "./kitchen-kanban";
@@ -61,6 +64,7 @@ export function KitchenPageClient({
   const { refetch, isError, isLoading } = kitchenQuery;
   const updateKitchenOrderMutation =
     useUpdateKitchenOrderMutation(restaurantId);
+  const cancelOrderMutation = useUpdateOrderStatusMutation(restaurantId);
 
   useEffect(() => {
     if (!restaurantId || isError) {
@@ -77,6 +81,7 @@ export function KitchenPageClient({
   const [filters, setFilters] = useState<KitchenFiltersState>(defaultFilters);
   const [view, setView] = useState<KitchenViewMode>("cards");
   const [selectedOrder, setSelectedOrder] = useState<KitchenOrder | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<KitchenOrder | null>(null);
   const [isMoving, startMoving] = useTransition();
 
   const insights = useMemo(
@@ -153,6 +158,30 @@ export function KitchenPageClient({
 
   const handleStationChange = (orderId: string, station: KitchenStation) => {
     persistOrderUpdate(orderId, { station });
+  };
+
+  const handleRequestCancelOrder = (order: KitchenOrder) => {
+    setOrderToCancel(order);
+  };
+
+  const handleConfirmCancelOrder = async () => {
+    if (!orderToCancel) {
+      return;
+    }
+
+    try {
+      await cancelOrderMutation.mutateAsync({
+        orderId: orderToCancel.id,
+        status: "cancelled",
+      });
+      toast.success(labels.feedback.cancelSuccess);
+      if (selectedOrder?.id === orderToCancel.id) {
+        setSelectedOrder(null);
+      }
+      setOrderToCancel(null);
+    } catch {
+      toast.error(labels.feedback.cancelError);
+    }
   };
 
   const clearFilters = () => {
@@ -251,7 +280,7 @@ export function KitchenPageClient({
         <div className="min-h-0 flex-1">{renderMainContent()}</div>
       </div>
 
-      <KitchenDetailDrawer
+      <KitchenDetailDialog
         labels={labels}
         order={selectedOrder}
         open={selectedOrder !== null}
@@ -264,6 +293,23 @@ export function KitchenPageClient({
         onStationChange={handleStationChange}
         onMarkDelayed={handleMarkDelayed}
         onMarkReady={handleMarkReady}
+        onMarkDelivered={handleMarkDelivered}
+        onCancelOrder={handleRequestCancelOrder}
+      />
+
+      <CancelKitchenOrderDialog
+        open={orderToCancel !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setOrderToCancel(null);
+          }
+        }}
+        labels={labels.cancelDialog}
+        orderNumber={orderToCancel?.number ?? null}
+        isPending={cancelOrderMutation.isPending}
+        onConfirm={() => {
+          void handleConfirmCancelOrder();
+        }}
       />
     </main>
   );

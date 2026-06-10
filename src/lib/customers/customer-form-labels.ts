@@ -34,6 +34,8 @@ export type CustomerAvatarFieldLabels = {
 };
 
 export type CustomerFormDialogLabels = {
+  optional: string;
+  required: string;
   customer: CustomerFormLabels;
   avatar?: CustomerAvatarFieldLabels;
   validation: {

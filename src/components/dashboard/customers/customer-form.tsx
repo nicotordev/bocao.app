@@ -43,6 +43,28 @@ type CustomerFormProps = {
   avatarState?: CustomerFormAvatarState;
 };
 
+function FormFieldLabel({
+  children,
+  required,
+  optionalLabel,
+  requiredLabel,
+}: {
+  children: React.ReactNode;
+  required: boolean;
+  optionalLabel: string;
+  requiredLabel: string;
+}) {
+  return (
+    <FieldLabel className={required ? "required" : undefined}>
+      {children}
+      <span className="text-xs font-normal text-muted-foreground">
+        {" "}
+        ({required ? requiredLabel : optionalLabel})
+      </span>
+    </FieldLabel>
+  );
+}
+
 export function CustomerForm({
   labels,
   tags,
@@ -136,7 +158,13 @@ export function CustomerForm({
             {avatarLabels.photoHint}
           </p>
           <Field className="w-full">
-            <FieldLabel>{avatarLabels.photoUrl}</FieldLabel>
+            <FormFieldLabel
+              required={false}
+              optionalLabel={labels.optional}
+              requiredLabel={labels.required}
+            >
+              {avatarLabels.photoUrl}
+            </FormFieldLabel>
             <Input
               value={value.avatar}
               onChange={(event) => {
@@ -153,7 +181,13 @@ export function CustomerForm({
       ) : null}
 
       <Field>
-        <FieldLabel className="required">{labels.customer.name}</FieldLabel>
+        <FormFieldLabel
+          required
+          optionalLabel={labels.optional}
+          requiredLabel={labels.required}
+        >
+          {labels.customer.name}
+        </FormFieldLabel>
         <Input
           value={value.name}
           onChange={(event) => updateField("name", event.target.value)}
@@ -164,7 +198,13 @@ export function CustomerForm({
       </Field>
 
       <Field>
-        <FieldLabel>{labels.customer.documentId}</FieldLabel>
+        <FormFieldLabel
+          required={false}
+          optionalLabel={labels.optional}
+          requiredLabel={labels.required}
+        >
+          {labels.customer.documentId}
+        </FormFieldLabel>
         <Input
           value={value.documentId}
           onChange={(event) => updateField("documentId", event.target.value)}
@@ -175,7 +215,13 @@ export function CustomerForm({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field>
-          <FieldLabel>{labels.customer.phone}</FieldLabel>
+          <FormFieldLabel
+            required={false}
+            optionalLabel={labels.optional}
+            requiredLabel={labels.required}
+          >
+            {labels.customer.phone}
+          </FormFieldLabel>
           <Input
             type="tel"
             value={value.phone}
@@ -185,7 +231,13 @@ export function CustomerForm({
           />
         </Field>
         <Field>
-          <FieldLabel>{labels.customer.email}</FieldLabel>
+          <FormFieldLabel
+            required={false}
+            optionalLabel={labels.optional}
+            requiredLabel={labels.required}
+          >
+            {labels.customer.email}
+          </FormFieldLabel>
           <Input
             type="email"
             value={value.email}
@@ -197,7 +249,13 @@ export function CustomerForm({
       </div>
 
       <Field>
-        <FieldLabel>{labels.customer.address}</FieldLabel>
+        <FormFieldLabel
+          required={false}
+          optionalLabel={labels.optional}
+          requiredLabel={labels.required}
+        >
+          {labels.customer.address}
+        </FormFieldLabel>
         <Input
           value={value.address}
           onChange={(event) => updateField("address", event.target.value)}
@@ -208,7 +266,10 @@ export function CustomerForm({
 
       {showTags ? (
         <CustomerTagsMultiSelect
-          labels={labels.tags}
+          labels={{
+            ...labels.tags,
+            optionalLabel: labels.optional,
+          }}
           tags={tags}
           value={value.tagIds}
           onChange={(tagIds) => updateField("tagIds", tagIds)}
@@ -218,7 +279,13 @@ export function CustomerForm({
       ) : null}
 
       <Field>
-        <FieldLabel>{labels.customer.notes}</FieldLabel>
+        <FormFieldLabel
+          required={false}
+          optionalLabel={labels.optional}
+          requiredLabel={labels.required}
+        >
+          {labels.customer.notes}
+        </FormFieldLabel>
         <Textarea
           value={value.notes}
           onChange={(event) => updateField("notes", event.target.value)}

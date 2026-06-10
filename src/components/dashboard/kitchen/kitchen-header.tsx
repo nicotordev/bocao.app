@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import {
   TbMaximize,
   TbMinimize,
+  TbPlus,
   TbRefresh,
   TbSettings,
 } from "react-icons/tb";
@@ -38,6 +39,12 @@ export function KitchenHeader({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/dashboard/orders/new">
+            <TbPlus className="size-4" aria-hidden />
+            {labels.actions.newOrder}
+          </Link>
+        </Button>
         {copilot}
         <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3 lg:flex">
           <Button

@@ -14,6 +14,8 @@
     "confirm": "Confirm",
     "saving": "Saving...",
     "notAvailable": "—",
+    "optional": "Optional",
+    "required": "Required",
     "pagination": {
       "previous": "Previous",
       "next": "Next",
@@ -534,7 +536,7 @@
         },
         "customer": {
           "title": "Customers",
-          "description": "Select one or more customers and, for dine-in, specify the table.",
+          "description": "Search registered customers or add someone new to the order.",
           "name": "Customer name",
           "namePlaceholder": "e.g. Valentina Rojas",
           "phone": "Phone",
@@ -550,20 +552,25 @@
           "searchPlaceholder": "Search customers",
           "noResults": "No customers found",
           "selectedHint": "Select existing customers from the search field.",
-          "tableNumber": "Table number",
-          "tableNumberPlaceholder": "e.g. 12",
+          "selectedTitle": "On this order",
           "emptySelection": "No customers added to this order yet.",
-          "tablePickerHint": "Click an available table to assign it to this order.",
-          "tablePickerFree": "Available",
-          "tablePickerOccupied": "Occupied",
-          "tablePickerSelected": "Selected",
-          "configureFloorPlan": "Configure the table floor plan to pick tables visually.",
           "picker": {
             "title": "Add customer",
             "description": "Fill in customer details. Only the name is required.",
             "addCustomer": "Add to order",
             "addSuccess": "Customer added successfully"
           }
+        },
+        "table": {
+          "title": "Table",
+          "description": "Choose the table for this dine-in order.",
+          "number": "Table number",
+          "numberPlaceholder": "e.g. 12",
+          "pickerHint": "Click an available table to assign it to this order.",
+          "pickerFree": "Available",
+          "pickerOccupied": "Occupied",
+          "pickerSelected": "Selected",
+          "configureFloorPlan": "Configure the table floor plan to pick tables visually."
         },
         "channel": {
           "title": "Channel",
@@ -665,6 +672,8 @@
         "subtitle": "Monitor prep stations and order timing in real time."
       },
       "actions": {
+        "newOrder": "New order",
+        "viewOrders": "View orders",
         "refresh": "Refresh",
         "configureStations": "Configure stations",
         "fullscreen": "Fullscreen",
@@ -679,6 +688,7 @@
         "reassignStation": "Reassign station",
         "markDelayed": "Mark delayed",
         "printTicket": "Print ticket",
+        "cancelOrder": "Cancel order",
         "viewSuggestions": "View suggestions",
         "clearFilters": "Clear",
         "toggleFilters": "Filters"
@@ -807,10 +817,22 @@
           "busiestStation": "The {station} station has {count} active orders."
         }
       },
+      "cancelDialog": {
+        "title": "Cancel order?",
+        "description": "Order {number} will be cancelled and removed from the kitchen queue. This action cannot be undone.",
+        "confirm": "Cancel order",
+        "cancel": "Keep order"
+      },
+      "feedback": {
+        "cancelSuccess": "Order cancelled",
+        "cancelError": "Could not cancel order",
+        "printError": "Could not open the print dialog"
+      },
       "empty": {
         "title": "Kitchen is caught up",
         "description": "When new orders arrive, they will appear here ready for prep.",
-        "cta": "View orders"
+        "ctaNewOrder": "New order",
+        "ctaViewOrders": "View orders"
       },
       "loading": {
         "tickets": "Loading kitchen tickets..."

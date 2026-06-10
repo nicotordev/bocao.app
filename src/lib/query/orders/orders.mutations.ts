@@ -51,6 +51,7 @@ export function useUpdateOrderStatusMutation(restaurantId: string) {
     },
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
       queryClient.invalidateQueries({
         queryKey: queryKeys.orders.detail(restaurantId, variables.orderId),
       });
@@ -65,6 +66,7 @@ export function useCreateOrderMutation(restaurantId: string) {
     mutationFn: (input: CreateOrderInput) => postOrder(restaurantId, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
     },
   });
 }

@@ -26,6 +26,7 @@ export default async function NewOrderPage({
 }: NewOrderPageProps) {
   const params = await searchParams;
   const t = await getTranslations("dashboard.orders.new");
+  const tCommon = await getTranslations("common");
   const tChannels = await getTranslations("dashboard.orders.channels");
   const uiLocale = await getLocale();
   const context = await getDashboardContext();
@@ -48,6 +49,8 @@ export default async function NewOrderPage({
     : {};
 
   const labels: NewOrderLabels = {
+    optional: tCommon("optional"),
+    required: tCommon("required"),
     header: {
       title: t("header.title"),
       subtitle: t("header.subtitle"),
@@ -83,20 +86,25 @@ export default async function NewOrderPage({
       searchPlaceholder: t("customer.searchPlaceholder"),
       noResults: t("customer.noResults"),
       selectedHint: t("customer.selectedHint"),
-      tableNumber: t("customer.tableNumber"),
-      tableNumberPlaceholder: t("customer.tableNumberPlaceholder"),
+      selectedTitle: t("customer.selectedTitle"),
       emptySelection: t("customer.emptySelection"),
-      tablePickerHint: t("customer.tablePickerHint"),
-      tablePickerFree: t("customer.tablePickerFree"),
-      tablePickerOccupied: t("customer.tablePickerOccupied"),
-      tablePickerSelected: t("customer.tablePickerSelected"),
-      configureFloorPlan: t("customer.configureFloorPlan"),
       picker: {
         title: t("customer.picker.title"),
         description: t("customer.picker.description"),
         addCustomer: t("customer.picker.addCustomer"),
         addSuccess: t("customer.picker.addSuccess"),
       },
+    },
+    table: {
+      title: t("table.title"),
+      description: t("table.description"),
+      number: t("table.number"),
+      numberPlaceholder: t("table.numberPlaceholder"),
+      pickerHint: t("table.pickerHint"),
+      pickerFree: t("table.pickerFree"),
+      pickerOccupied: t("table.pickerOccupied"),
+      pickerSelected: t("table.pickerSelected"),
+      configureFloorPlan: t("table.configureFloorPlan"),
     },
     channel: {
       title: t("channel.title"),

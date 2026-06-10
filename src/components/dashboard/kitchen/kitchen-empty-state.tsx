@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  TbChefHat,
-} from "react-icons/tb";
+import { TbChefHat } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -27,11 +25,16 @@ export function KitchenEmptyState({ labels }: KitchenEmptyStateProps) {
           <TbChefHat aria-hidden />
         </EmptyMedia>
         <EmptyTitle>{labels.title}</EmptyTitle>
-        <EmptyDescription className="max-w-md">{labels.description}</EmptyDescription>
+        <EmptyDescription className="max-w-md">
+          {labels.description}
+        </EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
+      <EmptyContent className="flex flex-wrap justify-center gap-2">
         <Button asChild>
-          <Link href="/dashboard/orders">{labels.cta}</Link>
+          <Link href="/dashboard/orders/new">{labels.ctaNewOrder}</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/dashboard/orders">{labels.ctaViewOrders}</Link>
         </Button>
       </EmptyContent>
     </Empty>
