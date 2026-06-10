@@ -13,6 +13,7 @@ import {
   updateFlowTemplateAction,
 } from "@/app/actions/product-flow";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,6 +59,8 @@ export function FlowTemplatesPanel({
 }: FlowTemplatesPanelProps) {
   const [editor, setEditor] = useState<TemplateEditorMode>({ kind: "none" });
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleSave() {
     if (editor.kind === "none" || !editor.name.trim()) {
@@ -113,20 +116,27 @@ export function FlowTemplatesPanel({
   }
 
   async function handleDelete(templateId: string) {
-    if (!window.confirm(labels.library.confirmDeleteTemplate)) {
-      return;
-    }
-
     try {
+      setIsDeleting(true);
       await deleteFlowTemplateAction({ restaurantId, templateId });
-      onTemplatesChange(templates.filter((template) => template.id !== templateId));
+      onTemplatesChange(
+        templates.filter((template) => template.id !== templateId),
+      );
       toast.success(labels.library.successDeleteTemplate);
+
+      if (editor.kind === "edit" && editor.templateId === templateId) {
+        setEditor({ kind: "none" });
+      }
     } catch {
       toast.error(labels.feedback.error);
+    } finally {
+      setIsDeleting(false);
+      setPendingDeleteId(null);
     }
   }
 
   return (
+    <>
     <div
       className={`grid min-h-0 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] ${className ?? "h-full"}`}
     >
@@ -210,7 +220,7 @@ export function FlowTemplatesPanel({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  onClick={() => void handleDelete(editor.templateId)}
+                  onClick={() => setPendingDeleteId(editor.templateId)}
                   aria-label={labels.library.deleteTemplate}
                 >
                   <TbTrash className="size-4" aria-hidden />
@@ -268,5 +278,25 @@ export function FlowTemplatesPanel({
         )}
       </div>
     </div>
+
+    <ConfirmDialog
+      open={pendingDeleteId !== null}
+      onOpenChange={(open) => {
+        if (!open && !isDeleting) {
+          setPendingDeleteId(null);
+        }
+      }}
+      title={labels.library.deleteTemplate}
+      description={labels.library.confirmDeleteTemplate}
+      confirmLabel={labels.library.deleteTemplate}
+      cancelLabel={labels.actions.cancel}
+      onConfirm={() => {
+        if (pendingDeleteId) {
+          void handleDelete(pendingDeleteId);
+        }
+      }}
+      isPending={isDeleting}
+    />
+    </>
   );
 }

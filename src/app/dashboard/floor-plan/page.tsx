@@ -45,6 +45,9 @@ export default async function FloorPlanPage() {
       expandCanvas: t("manager.expandCanvas"),
       collapseCanvas: t("manager.collapseCanvas"),
       openSettingsPanel: t("manager.openSettingsPanel"),
+      switchFloor: t("manager.switchFloor"),
+      selectSurface: t("manager.selectSurface"),
+      unconfiguredFloor: t.raw("manager.unconfiguredFloor"),
     },
     builder: {
       title: t("builder.title"),

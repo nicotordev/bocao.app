@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { KitchenListFilters } from "@/lib/kitchen/list-filters";
 import type { KitchenListResponse } from "@/lib/kitchen/repository";
 import type { z } from "zod";
 import type { updateKitchenOrderBodySchema } from "@/lib/kitchen/schemas";
@@ -15,9 +16,12 @@ type UpdateKitchenOrderContext = {
   previous?: KitchenListResponse;
 };
 
-export function useUpdateKitchenOrderMutation(restaurantId: string) {
+export function useUpdateKitchenOrderMutation(
+  restaurantId: string,
+  filters?: KitchenListFilters,
+) {
   const queryClient = useQueryClient();
-  const listQueryKey = queryKeys.kitchen.list(restaurantId);
+  const listQueryKey = queryKeys.kitchen.list(restaurantId, filters);
 
   return useMutation({
     mutationFn: ({ orderId, ...input }: UpdateKitchenOrderVariables) =>

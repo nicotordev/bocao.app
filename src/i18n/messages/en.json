@@ -671,6 +671,11 @@
         "title": "Kitchen",
         "subtitle": "Monitor prep stations and order timing in real time."
       },
+      "realtime": {
+        "connected": "Live",
+        "connecting": "Connecting",
+        "disconnected": "Offline"
+      },
       "actions": {
         "newOrder": "New order",
         "viewOrders": "View orders",
@@ -708,6 +713,7 @@
         "station": "Station",
         "priority": "Priority",
         "channel": "Channel",
+        "date": "Date",
         "view": "View",
         "all": "All"
       },
@@ -794,6 +800,7 @@
         "status": "Status",
         "channel": "Channel",
         "destination": "Table / customer",
+        "date": "Date",
         "receivedAt": "Received at",
         "totalTime": "Total time",
         "station": "Station",
@@ -964,7 +971,10 @@
         "newOrderForTable": "New order for this table",
         "expandCanvas": "Expand canvas",
         "collapseCanvas": "Exit fullscreen",
-        "openSettingsPanel": "Surface & tables"
+        "openSettingsPanel": "Surface & tables",
+        "switchFloor": "Switch floor",
+        "selectSurface": "Select surface",
+        "unconfiguredFloor": "Floor {floor} not configured"
       },
       "builder": {
         "title": "Surface builder",
@@ -1723,7 +1733,8 @@
           "openLibrary": "Purchase flows",
           "close": "Close",
           "save": "Save",
-          "saving": "Saving..."
+          "saving": "Saving...",
+          "cancel": "Cancel"
         },
         "feedback": {
           "error": "We couldn't save the flow. Please try again."
@@ -1817,10 +1828,14 @@
           "description": "Define what to ask and which add-ons to offer before adding this product to an order.",
           "enabled": "Enable flow",
           "library": "Available blocks",
-          "emptyLibrary": "Create blocks in the library to build this flow.",
+          "emptyLibrary": "No saved blocks yet. You can create steps directly.",
           "steps": "Flow steps",
           "stepCount": "{count} visible steps",
-          "emptySteps": "Add blocks to build this product's purchase flow.",
+          "emptySteps": "Add steps to build this product's purchase flow.",
+          "addStep": "Add step",
+          "editStep": "Step configuration",
+          "selectStep": "Select a step to configure it.",
+          "fromLibrary": "Saved blocks",
           "preview": "Preview",
           "applyTemplate": "Apply template",
           "templatePlaceholder": "Choose template",
@@ -1831,7 +1846,7 @@
           "tab": "Purchase flow",
           "saved": "Flow saved successfully.",
           "saveError": "We couldn't save the flow.",
-          "inactiveHint": "Enable the flow to add steps, blocks, and preview. Then save the product to apply changes."
+          "inactiveHint": "Enable the flow to add steps and preview. Then save the product to apply changes."
         },
         "wizard": {
           "title": "Customize your product",

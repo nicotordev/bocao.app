@@ -13,6 +13,7 @@ import type {
   KitchenStation,
   KitchenTimelineEvent,
 } from "@/lib/kitchen/types";
+import { formatDateInputValue } from "@/lib/orders/date";
 
 const DEFAULT_SLA_MINUTES = 20;
 
@@ -87,6 +88,17 @@ function formatReceivedAt(
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    timeZone: timezone,
+  }).format(date);
+}
+
+function formatReceivedDate(
+  date: Date,
+  timezone: string,
+  locale?: string,
+): string {
+  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
+    dateStyle: "medium",
     timeZone: timezone,
   }).format(date);
 }
@@ -237,6 +249,12 @@ export function mapDbOrderToKitchen(
     elapsedMinutes,
     slaMinutes,
     receivedAt: formatReceivedAt(order.createdAt, timezone, options.locale),
+    receivedAtDate: formatReceivedDate(
+      order.createdAt,
+      timezone,
+      options.locale,
+    ),
+    orderDate: formatDateInputValue(order.createdAt, timezone),
     items,
     kitchenNotes: order.notes ?? undefined,
     importantNote: kitchen.importantNote,

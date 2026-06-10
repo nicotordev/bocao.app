@@ -261,6 +261,7 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
         close: t("flow.actions.close"),
         save: t("flow.actions.save"),
         saving: t("flow.actions.saving"),
+        cancel: t("flow.actions.cancel"),
       },
       feedback: {
         error: t("flow.feedback.error"),
@@ -371,6 +372,10 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
         saved: t("flow.builder.saved"),
         saveError: t("flow.builder.saveError"),
         inactiveHint: t("flow.builder.inactiveHint"),
+        addStep: t("flow.builder.addStep"),
+        editStep: t("flow.builder.editStep"),
+        selectStep: t("flow.builder.selectStep"),
+        fromLibrary: t("flow.builder.fromLibrary"),
       },
       wizard: {
         title: t("flow.wizard.title"),

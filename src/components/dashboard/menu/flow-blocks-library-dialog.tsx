@@ -13,6 +13,7 @@ import {
   updateFlowBlockAction,
 } from "@/app/actions/product-flow";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -93,6 +94,8 @@ export function FlowBlocksLibraryDialog({
 }: FlowBlocksLibraryDialogProps) {
   const [editor, setEditor] = useState<EditorMode>({ kind: "none" });
   const [isSaving, setIsSaving] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [scopeType, setScopeType] = useState<FlowLibraryScope>("category");
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [menuItemId, setMenuItemId] = useState(menuItems[0]?.id ?? "");
@@ -211,20 +214,25 @@ export function FlowBlocksLibraryDialog({
   }
 
   async function handleDelete(blockId: string) {
-    if (!window.confirm(labels.library.confirmDelete)) {
-      return;
-    }
-
     try {
+      setIsDeleting(true);
       await deleteFlowBlockAction({ restaurantId, blockId });
       onBlocksChange(blocks.filter((block) => block.id !== blockId));
       toast.success(labels.library.successDelete);
+
+      if (editor.kind === "edit" && editor.blockId === blockId) {
+        setEditor({ kind: "none" });
+      }
     } catch {
       toast.error(labels.feedback.error);
+    } finally {
+      setIsDeleting(false);
+      setPendingDeleteId(null);
     }
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-[min(94vh,980px)] w-[min(98vw,88rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(98vw,88rem)]">
         <DialogHeader className="border-b border-border px-6 py-5">
@@ -338,7 +346,7 @@ export function FlowBlocksLibraryDialog({
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      onClick={() => void handleDelete(editor.blockId)}
+                      onClick={() => setPendingDeleteId(editor.blockId)}
                       aria-label={labels.library.deleteBlock}
                     >
                       <TbTrash className="size-4" aria-hidden />
@@ -430,5 +438,25 @@ export function FlowBlocksLibraryDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={pendingDeleteId !== null}
+      onOpenChange={(open) => {
+        if (!open && !isDeleting) {
+          setPendingDeleteId(null);
+        }
+      }}
+      title={labels.library.deleteBlock}
+      description={labels.library.confirmDelete}
+      confirmLabel={labels.library.deleteBlock}
+      cancelLabel={labels.actions.cancel}
+      onConfirm={() => {
+        if (pendingDeleteId) {
+          void handleDelete(pendingDeleteId);
+        }
+      }}
+      isPending={isDeleting}
+    />
+    </>
   );
 }

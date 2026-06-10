@@ -47,6 +47,11 @@ export type KitchenLabels = {
     title: string;
     subtitle: string;
   };
+  realtime: {
+    connected: string;
+    connecting: string;
+    disconnected: string;
+  };
   kpis: {
     active: string;
     averageTime: string;
@@ -62,6 +67,7 @@ export type KitchenLabels = {
     station: string;
     priority: string;
     channel: string;
+    date: string;
     view: string;
     all: string;
   };
@@ -117,6 +123,7 @@ export type KitchenLabels = {
     status: string;
     channel: string;
     destination: string;
+    date: string;
     receivedAt: string;
     totalTime: string;
     station: string;

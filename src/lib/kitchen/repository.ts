@@ -1,4 +1,8 @@
-import { startOfDay } from "date-fns";
+import {
+  buildKitchenPrismaWhere,
+  filterKitchenOrdersByDate,
+  type KitchenListFilters,
+} from "@/lib/kitchen/list-filters";
 import type { OrderFormatOptions } from "@/lib/orders/format-options";
 import { orderCustomerInclude } from "@/lib/orders/order-customers";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +15,12 @@ import {
   parseOrderDetails,
   shouldMarkKitchenCompletedLate,
 } from "@/lib/kitchen/kitchen-mapper";
+import {
+  buildKitchenRealtimeEvent,
+  publishKitchenEventAfterCommit,
+  recordKitchenEventInTx,
+} from "@/lib/realtime/event-log";
+import type { RecordKitchenEventInput } from "@/lib/kitchen/events";
 import type { KitchenOrder, KitchenStation } from "@/lib/kitchen/types";
 import type { z } from "zod";
 import type { updateKitchenOrderBodySchema } from "@/lib/kitchen/schemas";
@@ -33,6 +43,7 @@ async function getRestaurantContext(restaurantId: string) {
     select: {
       currency: true,
       timezone: true,
+      organizationId: true,
     },
   });
 }
@@ -40,6 +51,8 @@ async function getRestaurantContext(restaurantId: string) {
 export async function listKitchenOrders(
   restaurantId: string,
   formatOptions?: OrderFormatOptions,
+  filters?: KitchenListFilters,
+  timezone?: string,
 ): Promise<KitchenListResponse> {
   const restaurant = await getRestaurantContext(restaurantId);
 
@@ -51,33 +64,35 @@ export async function listKitchenOrders(
     };
   }
 
-  const todayStart = startOfDay(new Date());
+  const resolvedTimezone = timezone ?? restaurant.timezone;
+  const resolvedFilters = filters ?? {
+    date: new Intl.DateTimeFormat("en-CA", {
+      timeZone: resolvedTimezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date()),
+  };
 
   const dbOrders = await prisma.order.findMany({
-    where: {
+    where: buildKitchenPrismaWhere(
       restaurantId,
-      OR: [
-        {
-          status: {
-            in: ["PENDING", "CONFIRMED", "PREPARING", "READY"],
-          },
-        },
-        {
-          status: "COMPLETED",
-          updatedAt: { gte: todayStart },
-        },
-      ],
-    },
+      resolvedFilters,
+      resolvedTimezone,
+    ),
     include: orderCustomerInclude,
     orderBy: { createdAt: "desc" },
   });
 
-  const orders = dbOrders.map((order) =>
-    mapDbOrderToKitchen(order, {
-      timezone: restaurant.timezone,
-      locale: formatOptions?.locale,
-      customerLabels: formatOptions?.customerLabels,
-    }),
+  const orders = filterKitchenOrdersByDate(
+    dbOrders.map((order) =>
+      mapDbOrderToKitchen(order, {
+        timezone: restaurant.timezone,
+        locale: formatOptions?.locale,
+        customerLabels: formatOptions?.customerLabels,
+      }),
+    ),
+    resolvedFilters.date,
   );
 
   return {
@@ -85,6 +100,47 @@ export async function listKitchenOrders(
     restaurantId,
     updatedAt: new Date().toISOString(),
   };
+}
+
+function buildKitchenUpdateEvents(
+  existingOrder: Parameters<typeof mapDbOrderToKitchen>[0],
+  input: UpdateKitchenOrderInput,
+  restaurant: NonNullable<Awaited<ReturnType<typeof getRestaurantContext>>>,
+  formatOptions?: OrderFormatOptions,
+): RecordKitchenEventInput[] {
+  const tenantId = restaurant.organizationId;
+  const restaurantId = existingOrder.restaurantId;
+  const orderId = existingOrder.orderNumber;
+  const events: RecordKitchenEventInput[] = [];
+
+  const previousKitchenOrder = mapDbOrderToKitchen(existingOrder, {
+    timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+  });
+
+  if (input.status) {
+    events.push({
+      tenantId,
+      restaurantId,
+      payload: {
+        type: "order.status.changed",
+        orderId,
+        fromStatus: previousKitchenOrder.status,
+        toStatus: input.status,
+      },
+    });
+  } else if (input.station || input.priority || input.assignedTo) {
+    events.push({
+      tenantId,
+      restaurantId,
+      payload: {
+        type: "order.updated",
+        orderId,
+      },
+    });
+  }
+
+  return events;
 }
 
 export async function updateKitchenOrder(
@@ -169,20 +225,42 @@ export async function updateKitchenOrder(
 
   nextDetails.kitchen = nextKitchen;
 
-  const order = await prisma.order.update({
-    where: {
-      restaurantId_orderNumber: {
-        restaurantId,
-        orderNumber: orderId,
+  const pendingEvents = buildKitchenUpdateEvents(
+    existing,
+    input,
+    restaurant,
+    formatOptions,
+  );
+
+  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.order.update({
+      where: {
+        restaurantId_orderNumber: {
+          restaurantId,
+          orderNumber: orderId,
+        },
       },
-    },
-    data: {
-      status: nextStatus,
-      assignedTo: nextAssignedTo,
-      details: nextDetails,
-    },
-    include: orderCustomerInclude,
+      data: {
+        status: nextStatus,
+        assignedTo: nextAssignedTo,
+        details: nextDetails,
+      },
+      include: orderCustomerInclude,
+    });
+
+    const logs = await Promise.all(
+      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
+    );
+
+    return { order: updatedOrder, eventLogs: logs };
   });
+
+  await Promise.all(
+    eventLogs.map((log, index) => {
+      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
+      return publishKitchenEventAfterCommit(event, log.id);
+    }),
+  );
 
   return mapDbOrderToKitchen(order, {
     timezone: restaurant.timezone,

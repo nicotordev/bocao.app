@@ -1,4 +1,5 @@
 import type { CustomersListFilters } from "@/lib/customers/filters";
+import type { KitchenListFilters } from "@/lib/kitchen/list-filters";
 import type { OrdersKpiFilters, OrdersListFilters } from "@/lib/orders/filters";
 
 export const queryKeys = {
@@ -46,8 +47,8 @@ export const queryKeys = {
   kitchen: {
     all: ["kitchen"] as const,
     lists: () => [...queryKeys.kitchen.all, "list"] as const,
-    list: (restaurantId: string) =>
-      [...queryKeys.kitchen.lists(), restaurantId] as const,
+    list: (restaurantId: string, filters?: KitchenListFilters) =>
+      [...queryKeys.kitchen.lists(), restaurantId, filters ?? {}] as const,
     stations: () => [...queryKeys.kitchen.all, "stations"] as const,
     stationsList: (restaurantId: string) =>
       [...queryKeys.kitchen.stations(), restaurantId] as const,

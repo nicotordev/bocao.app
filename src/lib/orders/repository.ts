@@ -20,6 +20,17 @@ import type {
   OrderStatus,
   OrdersListResponse,
 } from "@/lib/orders/types";
+import {
+  buildKitchenRealtimeEvent,
+  publishKitchenEventAfterCommit,
+  recordKitchenEventInTx,
+} from "@/lib/realtime/event-log";
+import type { RecordKitchenEventInput } from "@/lib/kitchen/events";
+import {
+  isKitchenQueueStatus,
+  resolveKitchenRemovalReason,
+  shouldEmitKitchenOrderCreated,
+} from "@/lib/kitchen/kitchen-queue";
 import { prisma } from "@/lib/prisma";
 
 async function getRestaurantContext(restaurantId: string) {
@@ -28,6 +39,7 @@ async function getRestaurantContext(restaurantId: string) {
     select: {
       currency: true,
       timezone: true,
+      organizationId: true,
     },
   });
 }
@@ -117,6 +129,76 @@ async function resolveOrderCustomers(
 }
 
 const ORDERS_BOARD_LIMIT = 500;
+
+function buildOrderStatusChangeEvents(
+  restaurant: NonNullable<Awaited<ReturnType<typeof getRestaurantContext>>>,
+  restaurantId: string,
+  orderNumber: string,
+  previousStatus: ReturnType<typeof mapUiStatusToDb>,
+  nextStatus: ReturnType<typeof mapUiStatusToDb>,
+): RecordKitchenEventInput[] {
+  const base = {
+    tenantId: restaurant.organizationId,
+    restaurantId,
+  };
+
+  const removalReason = resolveKitchenRemovalReason(nextStatus);
+  const wasInKitchen = isKitchenQueueStatus(previousStatus);
+  const isInKitchen = isKitchenQueueStatus(nextStatus);
+
+  if (removalReason && wasInKitchen) {
+    return [
+      {
+        ...base,
+        payload: {
+          type: "order.removed",
+          orderId: orderNumber,
+          reason: removalReason,
+        },
+      },
+    ];
+  }
+
+  if (!wasInKitchen && isInKitchen) {
+    return [
+      {
+        ...base,
+        payload: {
+          type: "order.created",
+          orderId: orderNumber,
+        },
+      },
+    ];
+  }
+
+  if (wasInKitchen && isInKitchen && previousStatus !== nextStatus) {
+    return [
+      {
+        ...base,
+        payload: {
+          type: "order.status.changed",
+          orderId: orderNumber,
+          fromStatus: previousStatus,
+          toStatus: nextStatus,
+        },
+      },
+    ];
+  }
+
+  if (wasInKitchen && isInKitchen) {
+    return [
+      {
+        ...base,
+        payload: {
+          type: "order.updated",
+          orderId: orderNumber,
+        },
+      },
+    ];
+  }
+
+  return [];
+}
 
 export async function listOrders(
   restaurantId: string,
@@ -257,18 +339,58 @@ export async function updateOrderStatus(
     throw new Error("Restaurant not found");
   }
 
-  const order = await prisma.order.update({
+  const existing = await prisma.order.findUnique({
     where: {
       restaurantId_orderNumber: {
         restaurantId,
         orderNumber: orderId,
       },
     },
-    data: {
-      status: mapUiStatusToDb(status),
+    select: {
+      status: true,
     },
-    include: orderCustomerInclude,
   });
+
+  if (!existing) {
+    throw new Error("Order not found");
+  }
+
+  const nextStatus = mapUiStatusToDb(status);
+  const pendingEvents = buildOrderStatusChangeEvents(
+    restaurant,
+    restaurantId,
+    orderId,
+    existing.status,
+    nextStatus,
+  );
+
+  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.order.update({
+      where: {
+        restaurantId_orderNumber: {
+          restaurantId,
+          orderNumber: orderId,
+        },
+      },
+      data: {
+        status: nextStatus,
+      },
+      include: orderCustomerInclude,
+    });
+
+    const logs = await Promise.all(
+      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
+    );
+
+    return { order: updatedOrder, eventLogs: logs };
+  });
+
+  await Promise.all(
+    eventLogs.map((log, index) => {
+      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
+      return publishKitchenEventAfterCommit(event, log.id);
+    }),
+  );
 
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,
@@ -313,35 +435,64 @@ export async function createOrder(
     total: formatCurrency(totals.totalCents, currency),
   };
 
-  const order = await prisma.order.create({
-    data: {
-      restaurantId,
-      orderNumber,
-      tableNumber: input.tableNumber?.trim() || null,
-      status: "PENDING",
-      channel: input.channel,
-      assignedTo,
-      totalCents: totals.totalCents,
-      notes: input.notes?.trim() || null,
-      details: {
-        history: labels?.manualOrderHistory ?? "Manual order",
-        items,
-        summary,
-        timeline: [
+  const pendingEvents: RecordKitchenEventInput[] =
+    shouldEmitKitchenOrderCreated("PENDING")
+      ? [
           {
-            time: labels?.timelineNow ?? "Now",
-            titleKey: "eventReceived",
+            tenantId: restaurant.organizationId,
+            restaurantId,
+            payload: {
+              type: "order.created",
+              orderId: orderNumber,
+            },
           },
-        ],
+        ]
+      : [];
+
+  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
+    const createdOrder = await tx.order.create({
+      data: {
+        restaurantId,
+        orderNumber,
+        tableNumber: input.tableNumber?.trim() || null,
+        status: "PENDING",
+        channel: input.channel,
+        assignedTo,
+        totalCents: totals.totalCents,
+        notes: input.notes?.trim() || null,
+        details: {
+          history: labels?.manualOrderHistory ?? "Manual order",
+          items,
+          summary,
+          timeline: [
+            {
+              time: labels?.timelineNow ?? "Now",
+              titleKey: "eventReceived",
+            },
+          ],
+        },
+        customers: {
+          create: linkedCustomers.map((customer) => ({
+            customerId: customer.id,
+          })),
+        },
       },
-      customers: {
-        create: linkedCustomers.map((customer) => ({
-          customerId: customer.id,
-        })),
-      },
-    },
-    include: orderCustomerInclude,
+      include: orderCustomerInclude,
+    });
+
+    const logs = await Promise.all(
+      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
+    );
+
+    return { order: createdOrder, eventLogs: logs };
   });
+
+  await Promise.all(
+    eventLogs.map((log, index) => {
+      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
+      return publishKitchenEventAfterCommit(event, log.id);
+    }),
+  );
 
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,

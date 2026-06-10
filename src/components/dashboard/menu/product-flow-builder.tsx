@@ -38,19 +38,39 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
+import { createEmptyLocalizedLabel } from "@/i18n/iso-languages";
 import {
+  createFlowOptionId,
   createFlowStepId,
+  resolveAllSteps,
   resolveLocalizedLabel,
   resolveVisibleSteps,
 } from "@/lib/product-flow/engine";
 import type {
+  FlowBlockConfig,
+  FlowBlockType,
   FlowStep,
   ProductFlowBlockRecord,
   ProductFlowTemplateRecord,
   ProductPurchaseFlowRecord,
 } from "@/lib/product-flow/types";
 import { ProductPurchaseWizard } from "@/components/dashboard/orders/new/product-purchase-wizard";
+import { PromptDialog } from "@/components/ui/prompt-dialog";
+import {
+  createEmptyFlowBlockConfig,
+  FlowBlockEditor,
+} from "./flow-block-editor";
 import type { MenuLocaleOption, ProductFlowLabels } from "./types";
+import { cn } from "@/lib/utils";
+
+const BLOCK_TYPES: FlowBlockType[] = [
+  "choice",
+  "multi_choice",
+  "quantity",
+  "text",
+  "info",
+  "upsell",
+];
 
 type ProductFlowBuilderProps = {
   labels: ProductFlowLabels;
@@ -78,21 +98,15 @@ function getStepLabel(
   locale: MenuLocaleOption["value"],
   labels: ProductFlowLabels["builder"],
 ) {
-  if (step.kind === "block") {
-    const block = blocks.find((entry) => entry.id === step.blockId);
-    return block
-      ? resolveLocalizedLabel(block.config.label, locale)
-      : labelsFallback(step, labels);
+  const resolved = resolveAllSteps([step], blocks)[0];
+
+  if (resolved) {
+    const label = resolveLocalizedLabel(resolved.config.label, locale);
+    if (label) {
+      return label;
+    }
   }
 
-  if (step.kind === "inline") {
-    return resolveLocalizedLabel(step.config.label, locale);
-  }
-
-  return labelsFallback(step, labels);
-}
-
-function labelsFallback(step: FlowStep, labels: ProductFlowLabels["builder"]) {
   if (step.kind === "conditional") {
     return labels.conditional;
   }
@@ -100,19 +114,43 @@ function labelsFallback(step: FlowStep, labels: ProductFlowLabels["builder"]) {
   return labels.step;
 }
 
+function resolveStepEditorState(
+  step: FlowStep,
+  blocks: ProductFlowBlockRecord[],
+) {
+  if (step.kind === "conditional") {
+    return null;
+  }
+
+  const resolved = resolveAllSteps([step], blocks)[0];
+
+  if (!resolved) {
+    return null;
+  }
+
+  return {
+    type: resolved.type,
+    config: resolved.config,
+  };
+}
+
 function SortableFlowStepRow({
   id,
   label,
   typeLabel,
+  selected,
   reorderAriaLabel,
   removeAriaLabel,
+  onSelect,
   onRemove,
 }: {
   id: string;
   label: string;
   typeLabel: string;
+  selected: boolean;
   reorderAriaLabel: string;
   removeAriaLabel: string;
+  onSelect: () => void;
   onRemove: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -125,7 +163,12 @@ function SortableFlowStepRow({
         transform: CSS.Transform.toString(transform),
         transition,
       }}
-      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"
+      className={cn(
+        "flex items-center gap-3 rounded-2xl border bg-card p-3 transition-colors",
+        selected
+          ? "border-primary/40 ring-2 ring-primary/15"
+          : "border-border",
+      )}
     >
       <button
         type="button"
@@ -136,12 +179,16 @@ function SortableFlowStepRow({
       >
         <TbGripVertical className="size-4" aria-hidden />
       </button>
-      <div className="min-w-0 flex-1">
+      <button
+        type="button"
+        className="min-w-0 flex-1 text-left"
+        onClick={onSelect}
+      >
         <p className="truncate text-sm font-medium">{label}</p>
         <Badge variant="secondary" className="mt-1">
           {typeLabel}
         </Badge>
-      </div>
+      </button>
       <Button
         type="button"
         variant="ghost"
@@ -174,6 +221,9 @@ export function ProductFlowBuilder({
   const locale = localeOptions[0]?.value ?? "es";
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -183,6 +233,11 @@ export function ProductFlowBuilder({
   );
 
   const stepIds = value.steps.map((step) => step.id);
+  const selectedStep =
+    value.steps.find((step) => step.id === selectedStepId) ?? null;
+  const selectedEditorState = selectedStep
+    ? resolveStepEditorState(selectedStep, blocks)
+    : null;
 
   const previewFlow: ProductPurchaseFlowRecord | null = useMemo(() => {
     if (!value.isActive || value.steps.length === 0) {
@@ -198,12 +253,45 @@ export function ProductFlowBuilder({
     };
   }, [value.isActive, value.steps]);
 
+  function addInlineStep(type: FlowBlockType) {
+    const config = createEmptyFlowBlockConfig(locale);
+
+    if (type === "choice" || type === "multi_choice") {
+      config.options = [
+        {
+          id: createFlowOptionId(),
+          label: createEmptyLocalizedLabel(locale),
+          isAvailable: true,
+        },
+      ];
+    }
+
+    const stepId = createFlowStepId();
+
+    onChange({
+      ...value,
+      isActive: true,
+      steps: [
+        ...value.steps,
+        {
+          kind: "inline",
+          id: stepId,
+          type,
+          config,
+        },
+      ],
+    });
+    setSelectedStepId(stepId);
+  }
+
   function addBlockStep(blockId: string) {
     const block = blocks.find((entry) => entry.id === blockId);
 
     if (!block) {
       return;
     }
+
+    const stepId = createFlowStepId();
 
     onChange({
       ...value,
@@ -212,25 +300,61 @@ export function ProductFlowBuilder({
         ...value.steps,
         {
           kind: "block",
-          id: createFlowStepId(),
+          id: stepId,
           blockId,
         },
       ],
     });
+    setSelectedStepId(stepId);
   }
 
-  async function saveAsTemplate() {
+  function updateSelectedStep(type: FlowBlockType, config: FlowBlockConfig) {
+    if (!selectedStepId) {
+      return;
+    }
+
+    const nextConfig = { ...config };
+
+    if (
+      (type === "choice" || type === "multi_choice") &&
+      (nextConfig.options?.length ?? 0) === 0
+    ) {
+      nextConfig.options = [
+        {
+          id: createFlowOptionId(),
+          label: createEmptyLocalizedLabel(locale),
+          isAvailable: true,
+        },
+      ];
+    }
+
+    onChange({
+      ...value,
+      steps: value.steps.map((step) =>
+        step.id === selectedStepId
+          ? {
+              kind: "inline",
+              id: step.id,
+              type,
+              config: nextConfig,
+            }
+          : step,
+      ),
+    });
+  }
+
+  function openSaveTemplateDialog() {
     if (value.steps.length === 0) {
       return;
     }
 
-    const name = window.prompt(labels.builder.applyTemplate, menuItemName);
+    setSaveTemplateOpen(true);
+  }
 
-    if (!name?.trim()) {
-      return;
-    }
-
+  async function handleSaveTemplate(name: string) {
     try {
+      setIsSavingTemplate(true);
+
       const scope = menuItemId
         ? {
             scopeType: "menu_item" as const,
@@ -244,13 +368,16 @@ export function ProductFlowBuilder({
       const result = await createFlowTemplateAction({
         restaurantId,
         ...scope,
-        name: name.trim(),
+        name,
         steps: value.steps,
       });
       onTemplateCreated?.(result.template);
       toast.success(labels.builder.saved);
+      setSaveTemplateOpen(false);
     } catch {
       toast.error(labels.builder.saveError);
+    } finally {
+      setIsSavingTemplate(false);
     }
   }
 
@@ -266,6 +393,7 @@ export function ProductFlowBuilder({
       steps: template.steps,
     });
     setSelectedTemplateId("");
+    setSelectedStepId(template.steps[0]?.id ?? null);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -293,6 +421,10 @@ export function ProductFlowBuilder({
       ...value,
       steps: value.steps.filter((step) => step.id !== stepId),
     });
+
+    if (selectedStepId === stepId) {
+      setSelectedStepId(null);
+    }
   }
 
   const visibleStepCount = resolveVisibleSteps(value.steps, blocks, {}).length;
@@ -377,22 +509,35 @@ export function ProductFlowBuilder({
               variant="outline"
               size="sm"
               className="rounded-2xl"
-              onClick={() => void saveAsTemplate()}
+              onClick={openSaveTemplateDialog}
             >
               {labels.library.newTemplate}
             </Button>
           ) : null}
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_minmax(0,1.35fr)]">
           <aside className="space-y-3 rounded-3xl border border-border p-4">
-            <p className="text-sm font-medium">{labels.builder.library}</p>
-            {blocks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {labels.builder.emptyLibrary}
-              </p>
-            ) : (
-              <div className="space-y-2">
+            <p className="text-sm font-medium">{labels.builder.addStep}</p>
+            <div className="space-y-2">
+              {BLOCK_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => addInlineStep(type)}
+                  className="flex w-full items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-2 text-left text-sm transition-colors hover:border-primary/30"
+                >
+                  <span>{labels.blockTypes[type]}</span>
+                  <TbPlus className="size-4 shrink-0" aria-hidden />
+                </button>
+              ))}
+            </div>
+
+            {blocks.length > 0 ? (
+              <div className="space-y-2 border-t border-border pt-4">
+                <p className="text-xs font-medium text-muted-foreground">
+                  {labels.builder.fromLibrary}
+                </p>
                 {blocks.map((block) => (
                   <button
                     key={block.id}
@@ -407,7 +552,7 @@ export function ProductFlowBuilder({
                   </button>
                 ))}
               </div>
-            )}
+            ) : null}
           </aside>
 
           <div className="space-y-3 rounded-3xl border border-border p-4">
@@ -451,15 +596,12 @@ export function ProductFlowBuilder({
                 >
                   <div className="space-y-2">
                     {value.steps.map((step) => {
-                      const block =
-                        step.kind === "block"
-                          ? blocks.find((entry) => entry.id === step.blockId)
-                          : null;
-                      const typeLabel = block
-                        ? labels.blockTypes[block.type]
-                        : step.kind === "inline"
-                          ? labels.blockTypes[step.type]
-                          : labels.builder.conditional;
+                      const resolved = resolveAllSteps([step], blocks)[0];
+                      const typeLabel = resolved
+                        ? labels.blockTypes[resolved.type]
+                        : step.kind === "conditional"
+                          ? labels.builder.conditional
+                          : labels.builder.step;
 
                       return (
                         <SortableFlowStepRow
@@ -472,8 +614,10 @@ export function ProductFlowBuilder({
                             labels.builder,
                           )}
                           typeLabel={typeLabel}
+                          selected={selectedStepId === step.id}
                           reorderAriaLabel={labels.builder.ariaReorder}
                           removeAriaLabel={labels.builder.ariaRemoveStep}
+                          onSelect={() => setSelectedStepId(step.id)}
                           onRemove={() => removeStep(step.id)}
                         />
                       );
@@ -483,7 +627,44 @@ export function ProductFlowBuilder({
               </DndContext>
             )}
           </div>
+
+          <div className="space-y-3 rounded-3xl border border-border p-4">
+            <p className="text-sm font-medium">{labels.builder.editStep}</p>
+            {selectedEditorState ? (
+              <FlowBlockEditor
+                labels={labels}
+                localeOptions={localeOptions}
+                currency={currency}
+                blockType={selectedEditorState.type}
+                config={selectedEditorState.config}
+                menuItems={menuItems}
+                onBlockTypeChange={(type) =>
+                  updateSelectedStep(type, selectedEditorState.config)
+                }
+                onConfigChange={(config) =>
+                  updateSelectedStep(selectedEditorState.type, config)
+                }
+              />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                {labels.builder.selectStep}
+              </div>
+            )}
+          </div>
         </div>
+
+        <PromptDialog
+          open={saveTemplateOpen}
+          onOpenChange={setSaveTemplateOpen}
+          title={labels.library.createTemplateTitle}
+          description={labels.library.templateDescription}
+          label={labels.library.templateName}
+          defaultValue={menuItemName}
+          confirmLabel={labels.library.newTemplate}
+          cancelLabel={labels.actions.cancel}
+          onConfirm={(name) => void handleSaveTemplate(name)}
+          isPending={isSavingTemplate}
+        />
 
         {previewFlow ? (
           <ProductPurchaseWizard

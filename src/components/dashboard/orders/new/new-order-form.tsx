@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { createOrderBodySchema } from "@/lib/orders/schemas";
 import { useCreateOrderMutation } from "@/lib/query/orders/orders.mutations";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { NewOrderChannelSection } from "./new-order-channel-section";
 import { NewOrderCustomerSection } from "./new-order-customer-section";
 import { NewOrderItemsSection } from "./new-order-items-section";
@@ -44,7 +45,10 @@ type NewOrderFormProps = Pick<
   | "occupiedTableNumbers"
   | "initialTableNumber"
   | "localeOptions"
->;
+> & {
+  onSuccess?: (orderId: string) => void;
+  formClassName?: string;
+};
 
 export function NewOrderForm({
   labels,
@@ -56,6 +60,8 @@ export function NewOrderForm({
   occupiedTableNumbers,
   initialTableNumber,
   localeOptions,
+  onSuccess,
+  formClassName,
 }: NewOrderFormProps) {
   const router = useRouter();
   const createOrderMutation = useCreateOrderMutation(restaurantId);
@@ -332,6 +338,12 @@ export function NewOrderForm({
     try {
       const response = await createOrderMutation.mutateAsync(payload);
       toast.success(labels.feedback.success);
+
+      if (onSuccess) {
+        onSuccess(response.order.id);
+        return;
+      }
+
       router.push(
         `/dashboard/orders?created=${encodeURIComponent(response.order.id)}`,
       );
@@ -343,7 +355,10 @@ export function NewOrderForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]"
+      className={cn(
+        "grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]",
+        formClassName,
+      )}
     >
       <div className="space-y-6">
         <NewOrderChannelSection

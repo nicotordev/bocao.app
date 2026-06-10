@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { QueryErrorState } from "@/components/query/query-result-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +9,13 @@ import { applyKitchenFilters, sortKitchenOrders } from "@/lib/kitchen/filters";
 import { computeKitchenKpis } from "@/lib/kitchen/compute-kpis";
 import { computeKitchenInsights } from "@/lib/kitchen/compute-insights";
 import { computeKitchenKpiTrends } from "@/lib/kitchen/compute-kpi-trends";
+import {
+  createDefaultKitchenDate,
+  filterKitchenOrdersByDate,
+  isKitchenDefaultDate,
+  parseKitchenListSearchParams,
+} from "@/lib/kitchen/list-filters";
+import { buildListUrl } from "@/lib/list-url";
 import type {
   KitchenFiltersState,
   KitchenKanbanStatus,
@@ -23,6 +25,7 @@ import type {
 } from "@/lib/kitchen/types";
 import { useUpdateKitchenOrderMutation } from "@/lib/query/kitchen/kitchen.mutations";
 import { useKitchenOrdersQuery } from "@/lib/query/kitchen/kitchen.queries";
+import { useKitchenRealtime } from "@/lib/query/kitchen/use-kitchen-realtime";
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
 import { CancelKitchenOrderDialog } from "./cancel-kitchen-order-dialog";
 import { KitchenCopilotDialog } from "./kitchen-copilot-dialog";
@@ -31,10 +34,12 @@ import { KitchenEmptyState } from "./kitchen-empty-state";
 import { KitchenHeader } from "./kitchen-header";
 import { KitchenKanban } from "./kitchen-kanban";
 import { KitchenKpis } from "./kitchen-kpis";
+import { KitchenNewOrderDialog } from "./kitchen-new-order-dialog";
 import { KitchenTicketCard } from "./kitchen-ticket-card";
 import { KitchenTimeline } from "./kitchen-timeline";
 import { KitchenToolbar } from "./kitchen-toolbar";
 import type { KitchenLabels } from "./types";
+import type { NewOrderPageClientProps } from "@/components/dashboard/orders/new/types";
 
 type KitchenPageClientProps = {
   labels: KitchenLabels;
@@ -44,6 +49,8 @@ type KitchenPageClientProps = {
     busiestStation: string;
   };
   restaurantId: string;
+  timezone: string;
+  newOrder: NewOrderPageClientProps;
 };
 
 const defaultFilters: KitchenFiltersState = {
@@ -53,30 +60,38 @@ const defaultFilters: KitchenFiltersState = {
   channel: "all",
 };
 
-const KITCHEN_POLL_INTERVAL_MS = 30_000;
-
 export function KitchenPageClient({
   labels,
   insightLabels,
   restaurantId,
+  timezone,
+  newOrder,
 }: KitchenPageClientProps) {
-  const kitchenQuery = useKitchenOrdersQuery(restaurantId);
-  const { refetch, isError, isLoading } = kitchenQuery;
-  const updateKitchenOrderMutation =
-    useUpdateKitchenOrderMutation(restaurantId);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const listFilters = useMemo(
+    () =>
+      parseKitchenListSearchParams(
+        Object.fromEntries(searchParams.entries()),
+        timezone,
+      ),
+    [searchParams, timezone],
+  );
+
+  const kitchenQuery = useKitchenOrdersQuery(restaurantId, listFilters);
+  const { isError, isLoading } = kitchenQuery;
+  const isViewingToday = isKitchenDefaultDate(listFilters.date, timezone);
+  const { connectionState } = useKitchenRealtime({
+    restaurantId,
+    filters: listFilters,
+    enabled: restaurantId.length > 0 && !isError && isViewingToday,
+  });
+  const updateKitchenOrderMutation = useUpdateKitchenOrderMutation(
+    restaurantId,
+    listFilters,
+  );
   const cancelOrderMutation = useUpdateOrderStatusMutation(restaurantId);
-
-  useEffect(() => {
-    if (!restaurantId || isError) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      void refetch();
-    }, KITCHEN_POLL_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [restaurantId, isError, refetch]);
 
   const [filters, setFilters] = useState<KitchenFiltersState>(defaultFilters);
   const [view, setView] = useState<KitchenViewMode>("cards");
@@ -84,19 +99,26 @@ export function KitchenPageClient({
   const [orderToCancel, setOrderToCancel] = useState<KitchenOrder | null>(null);
   const [isMoving, startMoving] = useTransition();
 
-  const insights = useMemo(
+  const ordersForDate = useMemo(
     () =>
-      computeKitchenInsights(kitchenQuery.data?.orders ?? [], insightLabels),
-    [insightLabels, kitchenQuery.data?.orders],
+      filterKitchenOrdersByDate(
+        kitchenQuery.data?.orders ?? [],
+        listFilters.date,
+      ),
+    [kitchenQuery.data?.orders, listFilters.date],
+  );
+
+  const insights = useMemo(
+    () => computeKitchenInsights(ordersForDate, insightLabels),
+    [insightLabels, ordersForDate],
   );
 
   const filteredOrders = useMemo(() => {
-    const orders = kitchenQuery.data?.orders ?? [];
-    return sortKitchenOrders(applyKitchenFilters(orders, filters));
-  }, [filters, kitchenQuery.data?.orders]);
+    return sortKitchenOrders(applyKitchenFilters(ordersForDate, filters));
+  }, [filters, ordersForDate]);
 
   const kpiValues = useMemo(() => {
-    const orders = kitchenQuery.data?.orders ?? [];
+    const orders = ordersForDate;
     const values = computeKitchenKpis(orders);
     const trends = computeKitchenKpiTrends(orders, {
       notAvailable: labels.kpis.notAvailable,
@@ -105,7 +127,7 @@ export function KitchenPageClient({
     });
 
     return { ...values, trends };
-  }, [kitchenQuery.data?.orders, labels.kpis]);
+  }, [labels.kpis, ordersForDate]);
 
   const persistOrderUpdate = useCallback(
     (
@@ -184,8 +206,20 @@ export function KitchenPageClient({
     }
   };
 
+  const navigateDate = useCallback(
+    (nextDate: string) => {
+      router.push(
+        buildListUrl("/dashboard/kitchen", {
+          date: nextDate,
+        }),
+      );
+    },
+    [router],
+  );
+
   const clearFilters = () => {
     setFilters(defaultFilters);
+    navigateDate(createDefaultKitchenDate(timezone));
   };
 
   const renderMainContent = () => {
@@ -207,7 +241,14 @@ export function KitchenPageClient({
     }
 
     if (filteredOrders.length === 0) {
-      return <KitchenEmptyState labels={labels.empty} />;
+      return (
+        <KitchenEmptyState
+          labels={labels.empty}
+          onNewOrder={
+            newOrder.canCreate ? () => setIsNewOrderOpen(true) : undefined
+          }
+        />
+      );
     }
 
     if (view === "kanban") {
@@ -256,6 +297,10 @@ export function KitchenPageClient({
         labels={labels}
         onRefresh={handleRefresh}
         isRefreshing={isManualRefreshing}
+        connectionState={connectionState}
+        onNewOrder={
+          newOrder.canCreate ? () => setIsNewOrderOpen(true) : undefined
+        }
         copilot={
           <KitchenCopilotDialog
             labels={labels.copilot}
@@ -271,6 +316,8 @@ export function KitchenPageClient({
         <KitchenToolbar
           labels={labels}
           filters={filters}
+          date={listFilters.date}
+          onDateChange={navigateDate}
           view={view}
           onFiltersChange={setFilters}
           onViewChange={setView}
@@ -310,6 +357,23 @@ export function KitchenPageClient({
         onConfirm={() => {
           void handleConfirmCancelOrder();
         }}
+      />
+
+      <KitchenNewOrderDialog
+        open={isNewOrderOpen}
+        onOpenChange={setIsNewOrderOpen}
+        onCreated={() => {
+          void kitchenQuery.refetch();
+        }}
+        labels={newOrder.labels}
+        restaurantId={newOrder.restaurantId}
+        currency={newOrder.currency}
+        canCreate={newOrder.canCreate}
+        menuItems={newOrder.menuItems}
+        customers={newOrder.customers}
+        floorPlanSurface={newOrder.floorPlanSurface}
+        occupiedTableNumbers={newOrder.occupiedTableNumbers}
+        localeOptions={newOrder.localeOptions}
       />
     </main>
   );

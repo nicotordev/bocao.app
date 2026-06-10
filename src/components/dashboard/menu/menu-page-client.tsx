@@ -27,6 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import { ImportProductsDialog } from "./import-products-dialog";
 import { MenuCategoryDialog } from "./menu-category-dialog";
@@ -228,6 +229,9 @@ function MenuPageClientBody({
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [pendingDeleteItem, setPendingDeleteItem] =
+    useState<MenuItemRecord | null>(null);
+  const [isDeletingItem, setIsDeletingItem] = useState(false);
   const [flowBlocks] = useState<ProductFlowBlockRecord[]>(initialFlowBlocks);
   const [flowTemplates, setFlowTemplates] =
     useState<ProductFlowTemplateRecord[]>(initialFlowTemplates);
@@ -339,12 +343,13 @@ function MenuPageClientBody({
     );
   }
 
-  async function handleDeleteItem(item: MenuItemRecord) {
-    if (!window.confirm(labels.itemDialog.confirmDelete)) {
-      return;
-    }
+  function requestDeleteItem(item: MenuItemRecord) {
+    setPendingDeleteItem(item);
+  }
 
+  async function handleDeleteItem(item: MenuItemRecord) {
     try {
+      setIsDeletingItem(true);
       await deleteMenuItemAction({
         restaurantId,
         menuItemId: item.id,
@@ -362,8 +367,11 @@ function MenuPageClientBody({
         return nextItems;
       });
       toast.success(labels.itemDialog.successDelete);
+      setPendingDeleteItem(null);
     } catch {
       toast.error(labels.feedback.error);
+    } finally {
+      setIsDeletingItem(false);
     }
   }
 
@@ -437,7 +445,7 @@ function MenuPageClientBody({
             customTagLabels={customTagLabels}
             onEditCategory={handleEditCategory}
             onEditItem={handleEditItem}
-            onDeleteItem={(item) => void handleDeleteItem(item)}
+            onDeleteItem={requestDeleteItem}
             onLayoutChange={handleLayoutChange}
           />
           {!contentFiltersActive ? (
@@ -508,6 +516,24 @@ function MenuPageClientBody({
             restaurantId={restaurantId}
             currency={currency}
             onSuccess={handleRefresh}
+          />
+          <ConfirmDialog
+            open={pendingDeleteItem !== null}
+            onOpenChange={(open) => {
+              if (!open && !isDeletingItem) {
+                setPendingDeleteItem(null);
+              }
+            }}
+            title={labels.actions.delete}
+            description={labels.itemDialog.confirmDelete}
+            confirmLabel={labels.actions.delete}
+            cancelLabel={labels.actions.cancel}
+            onConfirm={() => {
+              if (pendingDeleteItem) {
+                void handleDeleteItem(pendingDeleteItem);
+              }
+            }}
+            isPending={isDeletingItem}
           />
         </>
       ) : null}

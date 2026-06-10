@@ -237,39 +237,39 @@ model Restaurant {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  customers            Customer[]
+  customers             Customer[]
   customerSavedSegments CustomerSavedSegment[]
-  menuCategories       MenuCategory[]
-  menuItems            MenuItem[]
-  orders               Order[]
-  reservations         Reservation[]
-  diningSurfaces       DiningSurface[]
-  menuCustomTags       MenuCustomTag[]
-  dbTranslations       DbTranslation[]
-  productFlowBlocks    ProductFlowBlock[]
-  productFlowTemplates ProductFlowTemplate[]
-  productPurchaseFlows ProductPurchaseFlow[]
-  kitchenStations      KitchenStation[]
+  menuCategories        MenuCategory[]
+  menuItems             MenuItem[]
+  orders                Order[]
+  reservations          Reservation[]
+  diningSurfaces        DiningSurface[]
+  menuCustomTags        MenuCustomTag[]
+  dbTranslations        DbTranslation[]
+  productFlowBlocks     ProductFlowBlock[]
+  productFlowTemplates  ProductFlowTemplate[]
+  productPurchaseFlows  ProductPurchaseFlow[]
+  kitchenStations       KitchenStation[]
 
   @@index([organizationId])
 }
 
 /// Operational kitchen prep station configured per restaurant.
 model KitchenStation {
-  id           String                 @id @default(cuid())
-  restaurantId String
-  name         String
-  description  String                 @default("")
+  id                  String                 @id @default(cuid())
+  restaurantId        String
+  name                String
+  description         String                 @default("")
   category            KitchenStationCategory
   /// User-defined label when category is OTHER.
   customCategoryLabel String?
   imageUrl            String?
   /// Menu tag icon key used when no custom image is set.
-  iconId       String?
-  isActive     Boolean                @default(true)
-  sortOrder    Int                    @default(0)
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
+  iconId              String?
+  isActive            Boolean                @default(true)
+  sortOrder           Int                    @default(0)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
@@ -337,11 +337,11 @@ model Customer {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant           Restaurant                    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  orderLinks           OrderCustomer[]
-  reservations         Reservation[]
-  savedSegmentMembers  CustomerSavedSegmentMember[]
-  tagAssignments       CustomerTagAssignment[]
+  restaurant          Restaurant                   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orderLinks          OrderCustomer[]
+  reservations        Reservation[]
+  savedSegmentMembers CustomerSavedSegmentMember[]
+  tagAssignments      CustomerTagAssignment[]
 
   @@index([restaurantId])
   @@index([email])
@@ -619,4 +619,20 @@ model Reservation {
   @@index([restaurantId])
   @@index([scheduledAt])
   @@index([status])
+}
+
+/// Domain events persisted after successful mutations for audit and realtime fan-out.
+model AppEventLog {
+  id           String    @id @default(cuid())
+  tenantId     String
+  restaurantId String?
+  domain       String
+  type         String
+  payload      Json
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([restaurantId, createdAt])
+  @@index([publishedAt])
 }

@@ -15,9 +15,13 @@ import type { KitchenLabels } from "./types";
 
 type KitchenEmptyStateProps = {
   labels: KitchenLabels["empty"];
+  onNewOrder?: () => void;
 };
 
-export function KitchenEmptyState({ labels }: KitchenEmptyStateProps) {
+export function KitchenEmptyState({
+  labels,
+  onNewOrder,
+}: KitchenEmptyStateProps) {
   return (
     <Empty className="border border-dashed border-border/70 bg-card/50">
       <EmptyHeader>
@@ -30,9 +34,13 @@ export function KitchenEmptyState({ labels }: KitchenEmptyStateProps) {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent className="flex flex-wrap justify-center gap-2">
-        <Button asChild>
-          <Link href="/dashboard/orders/new">{labels.ctaNewOrder}</Link>
-        </Button>
+        {onNewOrder ? (
+          <Button onClick={onNewOrder}>{labels.ctaNewOrder}</Button>
+        ) : (
+          <Button asChild>
+            <Link href="/dashboard/orders/new">{labels.ctaNewOrder}</Link>
+          </Button>
+        )}
         <Button variant="outline" asChild>
           <Link href="/dashboard/orders">{labels.ctaViewOrders}</Link>
         </Button>

@@ -8,6 +8,7 @@ import {
   updateMenuCategoryAction,
 } from "@/app/actions/menu";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -97,7 +98,16 @@ function MenuCategoryFormFields({
   const [name, setName] = useState(() => category?.name ?? "");
   const [validationError, setValidationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const isEditing = Boolean(category);
+
+  const deleteDescription =
+    category && category.itemCount > 0
+      ? labels.categoryDialog.itemCountWarning.replace(
+          "{count}",
+          String(category.itemCount),
+        )
+      : labels.categoryDialog.confirmDelete;
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -140,18 +150,6 @@ function MenuCategoryFormFields({
       return;
     }
 
-    const warning =
-      category.itemCount > 0
-        ? labels.categoryDialog.itemCountWarning.replace(
-            "{count}",
-            String(category.itemCount),
-          )
-        : labels.categoryDialog.confirmDelete;
-
-    if (!window.confirm(warning)) {
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -161,6 +159,7 @@ function MenuCategoryFormFields({
       });
       toast.success(labels.categoryDialog.successDelete);
       onDeleted(category.id);
+      setConfirmDeleteOpen(false);
       onOpenChange(false);
     } catch {
       toast.error(labels.feedback.error);
@@ -201,7 +200,7 @@ function MenuCategoryFormFields({
             type="button"
             variant="destructive"
             className="rounded-2xl"
-            onClick={() => void handleDelete()}
+            onClick={() => setConfirmDeleteOpen(true)}
             disabled={isSubmitting}
           >
             {labels.actions.delete}
@@ -229,6 +228,17 @@ function MenuCategoryFormFields({
               : labels.actions.create}
         </Button>
       </DialogFooter>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={labels.actions.delete}
+        description={deleteDescription}
+        confirmLabel={labels.actions.delete}
+        cancelLabel={labels.actions.cancel}
+        onConfirm={() => void handleDelete()}
+        isPending={isSubmitting}
+      />
     </>
   );
 }

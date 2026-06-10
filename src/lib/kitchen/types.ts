@@ -65,6 +65,8 @@ export type KitchenOrder = {
   elapsedMinutes: number;
   slaMinutes: number;
   receivedAt: string;
+  receivedAtDate: string;
+  orderDate: string;
   items: KitchenOrderItem[];
   kitchenNotes?: string;
   importantNote?: string;

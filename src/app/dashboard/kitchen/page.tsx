@@ -1,13 +1,41 @@
-import { getTranslations } from "next-intl/server";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getLocale, getTranslations } from "next-intl/server";
 import { KitchenPageClient } from "@/components/dashboard/kitchen/kitchen-page-client";
 import type { KitchenLabels } from "@/components/dashboard/kitchen/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
+import { parseKitchenListSearchParams } from "@/lib/kitchen/list-filters";
+import { searchParamsToRecord } from "@/lib/list-url";
+import { getNewOrderPageData } from "@/lib/orders/new-order-page-data";
+import { getQueryClient } from "@/lib/query/get-query-client";
+import { kitchenOrdersQueryOptions } from "@/lib/query/kitchen/kitchen.queries";
 
-export default async function KitchenPage() {
+type KitchenPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function KitchenPage({ searchParams }: KitchenPageProps) {
   const t = await getTranslations("dashboard.kitchen");
   const tCommon = await getTranslations("common");
+  const uiLocale = await getLocale();
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
+  const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
+  const queryClient = getQueryClient();
+  const resolvedSearchParams = searchParamsToRecord(await searchParams);
+  const filters = parseKitchenListSearchParams(resolvedSearchParams, timezone);
+
+  if (restaurantId) {
+    await queryClient.prefetchQuery(
+      kitchenOrdersQueryOptions(restaurantId, filters),
+    );
+  }
+
+  const newOrder = await getNewOrderPageData({
+    restaurantId,
+    currency: context?.activeRestaurant?.currency ?? "CLP",
+    permissions: context?.membership.permissions ?? [],
+    uiLocale,
+  });
 
   const labels: KitchenLabels = {
     actions: {
@@ -36,6 +64,11 @@ export default async function KitchenPage() {
       title: t("header.title"),
       subtitle: t("header.subtitle"),
     },
+    realtime: {
+      connected: t("realtime.connected"),
+      connecting: t("realtime.connecting"),
+      disconnected: t("realtime.disconnected"),
+    },
     kpis: {
       active: t("kpis.active"),
       averageTime: t("kpis.averageTime"),
@@ -51,6 +84,7 @@ export default async function KitchenPage() {
       station: t("toolbar.station"),
       priority: t("toolbar.priority"),
       channel: t("toolbar.channel"),
+      date: t("toolbar.date"),
       view: t("toolbar.view"),
       all: t("toolbar.all"),
     },
@@ -137,6 +171,7 @@ export default async function KitchenPage() {
       status: t("drawer.status"),
       channel: t("drawer.channel"),
       destination: t("drawer.destination"),
+      date: t("drawer.date"),
       receivedAt: t("drawer.receivedAt"),
       totalTime: t("drawer.totalTime"),
       station: t("drawer.station"),
@@ -182,14 +217,18 @@ export default async function KitchenPage() {
   };
 
   return (
-    <KitchenPageClient
-      labels={labels}
-      insightLabels={{
-        delayedSla: t.raw("copilot.insights.delayedSla"),
-        averagePrep: t.raw("copilot.insights.averagePrep"),
-        busiestStation: t.raw("copilot.insights.busiestStation"),
-      }}
-      restaurantId={restaurantId}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <KitchenPageClient
+        labels={labels}
+        insightLabels={{
+          delayedSla: t.raw("copilot.insights.delayedSla"),
+          averagePrep: t.raw("copilot.insights.averagePrep"),
+          busiestStation: t.raw("copilot.insights.busiestStation"),
+        }}
+        restaurantId={restaurantId}
+        timezone={timezone}
+        newOrder={newOrder}
+      />
+    </HydrationBoundary>
   );
 }

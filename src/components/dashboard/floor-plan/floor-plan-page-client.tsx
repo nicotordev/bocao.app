@@ -28,6 +28,7 @@ import { FloorPlanExpandButton } from "@/components/dashboard/floor-plan/floor-p
 import { FloorPlanTableQuickControls } from "@/components/dashboard/floor-plan/floor-plan-table-quick-controls";
 import { FloorPlanCanvasContextMenu } from "@/components/dashboard/floor-plan/floor-plan-canvas-context-menu";
 import { FloorPlanCanvas } from "@/components/dashboard/floor-plan/floor-plan-canvas-loader";
+import { FloorPlanFloorSwitcher } from "@/components/dashboard/floor-plan/floor-plan-floor-switcher";
 import {
   FLOOR_PLAN_TABLE_PALETTE_ID,
   FloorPlanTablePaletteOverlay,
@@ -80,10 +81,6 @@ type EditorDraft = {
 
 function createTableId() {
   return crypto.randomUUID();
-}
-
-function surfaceTabLabel(surface: DiningSurfaceRecord, floorLabel: string) {
-  return `${floorLabel} ${surface.floor} · ${surface.name}`;
 }
 
 function draftFromSurface(
@@ -507,6 +504,29 @@ export function FloorPlanPageClient({
 
   function navigateFloor(direction: "up" | "down") {
     const currentFloor = getCurrentFloor();
+
+    if (!canEdit) {
+      const configuredFloors = [
+        ...new Set(surfaces.map((surface) => surface.floor)),
+      ].sort((left, right) => left - right);
+      const currentIndex = configuredFloors.indexOf(currentFloor);
+      const targetIndex =
+        direction === "up" ? currentIndex + 1 : currentIndex - 1;
+      const targetFloor = configuredFloors[targetIndex];
+
+      if (targetFloor === undefined) {
+        return;
+      }
+
+      const existing = surfaces.find((surface) => surface.floor === targetFloor);
+
+      if (existing) {
+        selectSurface(existing.id);
+      }
+
+      return;
+    }
+
     const targetFloor =
       direction === "up" ? currentFloor + 1 : currentFloor - 1;
 
@@ -533,8 +553,54 @@ export function FloorPlanPageClient({
     startNewSurfaceAtFloor(targetFloor);
   }
 
-  const canFloorUp = getCurrentFloor() < FLOOR_PLAN_FLOOR_MAX;
-  const canFloorDown = getCurrentFloor() > FLOOR_PLAN_FLOOR_MIN;
+  const currentFloor = getCurrentFloor();
+  const configuredFloors = [
+    ...new Set(surfaces.map((surface) => surface.floor)),
+  ].sort((left, right) => left - right);
+  const configuredFloorIndex = configuredFloors.indexOf(currentFloor);
+
+  const canFloorUp = canEdit
+    ? currentFloor < FLOOR_PLAN_FLOOR_MAX
+    : configuredFloorIndex >= 0 &&
+      configuredFloorIndex < configuredFloors.length - 1;
+  const canFloorDown = canEdit
+    ? currentFloor > FLOOR_PLAN_FLOOR_MIN
+    : configuredFloorIndex > 0;
+  const isUnconfiguredFloor =
+    isEditing && !surfaces.some((surface) => surface.floor === currentFloor);
+
+  const floorSwitcherProps = {
+    surfaces,
+    currentFloor,
+    activeSurfaceId: isEditing
+      ? (draft.surfaceId ?? activeSurfaceId)
+      : (activeSurface?.id ?? null),
+    labels: {
+      floor: labels.manager.floor,
+      floorUp: labels.contextMenu.floorUp,
+      floorDown: labels.contextMenu.floorDown,
+      switchFloor: labels.manager.switchFloor,
+      selectSurface: labels.manager.selectSurface,
+      unconfiguredFloor: labels.manager.unconfiguredFloor,
+    },
+    floorNameLabels: {
+      surfaceNameBasement: labels.builder.surfaceNameBasement,
+      surfaceNameGround: labels.builder.surfaceNameGround,
+      surfaceNameFloor: labels.builder.surfaceNameFloor,
+    },
+    canFloorUp,
+    canFloorDown,
+    isUnconfiguredFloor,
+    onFloorUp: () => navigateFloor("up"),
+    onFloorDown: () => navigateFloor("down"),
+    onSelectSurface: (surfaceId: string) => {
+      selectSurface(surfaceId);
+
+      if (isEditing) {
+        setIsEditing(true);
+      }
+    },
+  };
 
   const contextMenuProps = {
     labels: labels.contextMenu,
@@ -887,15 +953,7 @@ export function FloorPlanPageClient({
             expandLabel={labels.manager.expandCanvas}
             collapseLabel={labels.manager.collapseCanvas}
           />
-          <SurfaceTabs
-            surfaces={surfaces}
-            activeSurfaceId={draft.surfaceId ?? activeSurfaceId}
-            floorLabel={labels.manager.floor}
-            onSelect={(surfaceId) => {
-              selectSurface(surfaceId);
-              setIsEditing(true);
-            }}
-          />
+          <FloorPlanFloorSwitcher {...floorSwitcherProps} />
           <Button
             type="button"
             size="sm"
@@ -979,17 +1037,7 @@ export function FloorPlanPageClient({
             ) : null}
           </div>
         </div>
-        {!isFocused ? (
-          <SurfaceTabs
-            surfaces={surfaces}
-            activeSurfaceId={draft.surfaceId ?? activeSurfaceId}
-            floorLabel={labels.manager.floor}
-            onSelect={(surfaceId) => {
-              selectSurface(surfaceId);
-              setIsEditing(true);
-            }}
-          />
-        ) : null}
+        {!isFocused ? <FloorPlanFloorSwitcher {...floorSwitcherProps} /> : null}
         {isDndReady ? (
           <DndContext
             sensors={tableDragSensors}
@@ -1041,11 +1089,12 @@ export function FloorPlanPageClient({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         {!isFocused ? <Header labels={labels} /> : null}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <FloorPlanExpandButton
             expandLabel={labels.manager.expandCanvas}
             collapseLabel={labels.manager.collapseCanvas}
           />
+          <FloorPlanFloorSwitcher {...floorSwitcherProps} />
           {canEdit ? (
             <Button
               type="button"
@@ -1057,13 +1106,6 @@ export function FloorPlanPageClient({
           ) : null}
         </div>
       </div>
-
-      <SurfaceTabs
-        surfaces={surfaces}
-        activeSurfaceId={activeSurface?.id ?? null}
-        floorLabel={labels.manager.floor}
-        onSelect={selectSurface}
-      />
 
       {activeSurface ? (
         isFocused ? (
@@ -1153,39 +1195,6 @@ export function FloorPlanPageClient({
         )
       ) : null}
     </main>
-  );
-}
-
-function SurfaceTabs({
-  surfaces,
-  activeSurfaceId,
-  floorLabel,
-  onSelect,
-}: {
-  surfaces: DiningSurfaceRecord[];
-  activeSurfaceId: string | null;
-  floorLabel: string;
-  onSelect: (surfaceId: string) => void;
-}) {
-  if (surfaces.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {surfaces.map((surface) => (
-        <Button
-          key={surface.id}
-          type="button"
-          size="sm"
-          variant={surface.id === activeSurfaceId ? "default" : "secondary"}
-          className={cn(surface.id === activeSurfaceId && "shadow-sm")}
-          onClick={() => onSelect(surface.id)}
-        >
-          {surfaceTabLabel(surface, floorLabel)}
-        </Button>
-      ))}
-    </div>
   );
 }
 

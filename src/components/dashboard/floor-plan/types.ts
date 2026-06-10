@@ -25,6 +25,9 @@ export type FloorPlanPageLabels = {
     expandCanvas: string;
     collapseCanvas: string;
     openSettingsPanel: string;
+    switchFloor: string;
+    selectSurface: string;
+    unconfiguredFloor: string;
   };
   builder: {
     title: string;

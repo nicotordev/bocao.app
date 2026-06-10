@@ -1,0 +1,16 @@
+# Example Caddy config for self-hosted Bocao with kitchen realtime.
+#
+# Next.js app:      localhost:3000
+# Kitchen WS gateway: localhost:3001
+
+:443 {
+	encode gzip
+
+	handle /kitchen-ws* {
+		reverse_proxy localhost:3001
+	}
+
+	handle {
+		reverse_proxy localhost:3000
+	}
+}

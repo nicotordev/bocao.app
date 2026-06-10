@@ -104,6 +104,10 @@ export function KitchenDetailDialog({
                     value={resolveDestination(order, labels)}
                   />
                   <DetailRow
+                    label={labels.drawer.date}
+                    value={order.receivedAtDate}
+                  />
+                  <DetailRow
                     label={labels.drawer.receivedAt}
                     value={order.receivedAt}
                   />

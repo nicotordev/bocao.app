@@ -1,11 +1,12 @@
 "use client";
 
 import {
+  TbAdjustmentsHorizontal,
+  TbCalendar,
   TbChevronDown,
   TbLayoutGrid,
   TbList,
   TbSearch,
-  TbAdjustmentsHorizontal,
 } from "react-icons/tb";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,8 @@ import type { KitchenLabels } from "./types";
 type KitchenToolbarProps = {
   labels: KitchenLabels;
   filters: KitchenFiltersState;
+  date: string;
+  onDateChange: (date: string) => void;
   view: KitchenViewMode;
   onFiltersChange: (filters: KitchenFiltersState) => void;
   onViewChange: (view: KitchenViewMode) => void;
@@ -54,6 +57,8 @@ const views: KitchenViewMode[] = ["cards", "kanban", "timeline"];
 export function KitchenToolbar({
   labels,
   filters,
+  date,
+  onDateChange,
   view,
   onFiltersChange,
   onViewChange,
@@ -163,6 +168,28 @@ export function KitchenToolbar({
           </SelectContent>
         </Select>
       </div>
+
+      <div className="space-y-1.5">
+        <label
+          htmlFor="kitchen-filter-date"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          {labels.toolbar.date}
+        </label>
+        <div className="relative">
+          <TbCalendar
+            className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-foreground/75"
+            aria-hidden
+          />
+          <Input
+            id="kitchen-filter-date"
+            type="date"
+            value={date}
+            onChange={(event) => onDateChange(event.target.value)}
+            className="w-full min-w-36 pl-9 dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-90 dark:[&::-webkit-calendar-picker-indicator]:invert"
+          />
+        </div>
+      </div>
     </>
   );
 
@@ -197,7 +224,7 @@ export function KitchenToolbar({
           </Collapsible>
         </div>
 
-        <div className="hidden items-end gap-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,0.7fr))]">
+        <div className="hidden items-end gap-3 lg:grid lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.7fr))_auto]">
           {filterFields}
           {hasActiveFilters ? (
             <Button variant="ghost" size="sm" onClick={onClearFilters}>

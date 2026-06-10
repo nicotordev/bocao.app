@@ -12,6 +12,7 @@ import { KitchenStationsHeader } from "./kitchen-stations-header";
 import { KitchenStationsList } from "./kitchen-stations-list";
 import type { KitchenStationsLabels } from "./types";
 import { KitchenStationsPageSkeleton } from "./kitchen-stations-page-skeleton";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 type KitchenStationsPageClientProps = {
   labels: KitchenStationsLabels;
   restaurantId: string;
@@ -25,6 +26,8 @@ export function KitchenStationsPageClient({
 }: KitchenStationsPageClientProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStation, setEditingStation] =
+    useState<KitchenStationWithStats | null>(null);
+  const [pendingDeleteStation, setPendingDeleteStation] =
     useState<KitchenStationWithStats | null>(null);
 
   const { data, isLoading } = useKitchenStationsQuery(restaurantId);
@@ -108,19 +111,20 @@ export function KitchenStationsPageClient({
     }
   }
 
-  async function handleDelete(station: KitchenStationWithStats) {
+  function requestDelete(station: KitchenStationWithStats) {
     if (station.activeOrderCount > 0) {
       toast.error(labels.feedback.deleteBlocked);
       return;
     }
 
-    if (!window.confirm(labels.form.confirmDelete)) {
-      return;
-    }
+    setPendingDeleteStation(station);
+  }
 
+  async function handleDelete(station: KitchenStationWithStats) {
     try {
       await deleteMutation.mutateAsync(station.id);
       toast.success(labels.feedback.deleteSuccess);
+      setPendingDeleteStation(null);
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         toast.error(labels.feedback.deleteBlocked);
@@ -153,11 +157,30 @@ export function KitchenStationsPageClient({
           canEdit={canEdit}
           onEdit={openEditDialog}
           onToggleActive={handleToggleActive}
-          onDelete={handleDelete}
+          onDelete={requestDelete}
           onMove={handleMove}
           isMutating={isMutating}
         />
       )}
+
+      <ConfirmDialog
+        open={pendingDeleteStation !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteMutation.isPending) {
+            setPendingDeleteStation(null);
+          }
+        }}
+        title={labels.form.delete}
+        description={labels.form.confirmDelete}
+        confirmLabel={labels.form.delete}
+        cancelLabel={labels.form.cancel}
+        onConfirm={() => {
+          if (pendingDeleteStation) {
+            void handleDelete(pendingDeleteStation);
+          }
+        }}
+        isPending={deleteMutation.isPending}
+      />
 
       {canEdit ? (
         <KitchenStationFormDialog

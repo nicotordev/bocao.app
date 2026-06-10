@@ -191,6 +191,7 @@ export type ProductFlowLabels = {
     close: string;
     save: string;
     saving: string;
+    cancel: string;
   };
   feedback: {
     error: string;
@@ -292,6 +293,10 @@ export type ProductFlowLabels = {
     saved: string;
     saveError: string;
     inactiveHint: string;
+    addStep: string;
+    editStep: string;
+    selectStep: string;
+    fromLibrary: string;
   };
   wizard: ProductFlowWizardLabels;
   item: {

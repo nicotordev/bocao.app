@@ -671,6 +671,11 @@
         "title": "Cocina",
         "subtitle": "Monitorea preparación, estaciones y tiempos de pedidos en tiempo real."
       },
+      "realtime": {
+        "connected": "En vivo",
+        "connecting": "Conectando",
+        "disconnected": "Sin conexión"
+      },
       "actions": {
         "newOrder": "Nuevo pedido",
         "viewOrders": "Ver pedidos",
@@ -708,6 +713,7 @@
         "station": "Estación",
         "priority": "Prioridad",
         "channel": "Canal",
+        "date": "Fecha",
         "view": "Vista",
         "all": "Todas"
       },
@@ -794,6 +800,7 @@
         "status": "Estado",
         "channel": "Canal",
         "destination": "Mesa / cliente",
+        "date": "Fecha",
         "receivedAt": "Hora de entrada",
         "totalTime": "Tiempo total",
         "station": "Estación",
@@ -964,7 +971,10 @@
         "newOrderForTable": "Nuevo pedido para esta mesa",
         "expandCanvas": "Agrandar lienzo",
         "collapseCanvas": "Salir de pantalla completa",
-        "openSettingsPanel": "Superficie y mesas"
+        "openSettingsPanel": "Superficie y mesas",
+        "switchFloor": "Cambiar piso",
+        "selectSurface": "Seleccionar superficie",
+        "unconfiguredFloor": "Piso {floor} sin configurar"
       },
       "builder": {
         "title": "Creador de superficie",
@@ -1723,7 +1733,8 @@
           "openLibrary": "Flujos de compra",
           "close": "Cerrar",
           "save": "Guardar",
-          "saving": "Guardando..."
+          "saving": "Guardando...",
+          "cancel": "Cancelar"
         },
         "feedback": {
           "error": "No pudimos guardar el flujo. Intenta nuevamente."
@@ -1817,10 +1828,14 @@
           "description": "Define qué preguntar y qué agregados ofrecer antes de agregar este producto al pedido.",
           "enabled": "Activar flujo",
           "library": "Bloques disponibles",
-          "emptyLibrary": "Crea bloques en la biblioteca para armar este flujo.",
+          "emptyLibrary": "No hay bloques guardados. Puedes crear pasos directamente.",
           "steps": "Pasos del flujo",
           "stepCount": "{count} pasos visibles",
-          "emptySteps": "Agrega bloques para construir el flujo de compra de este producto.",
+          "emptySteps": "Agrega pasos para construir el flujo de compra de este producto.",
+          "addStep": "Agregar paso",
+          "editStep": "Configuración del paso",
+          "selectStep": "Selecciona un paso para configurarlo.",
+          "fromLibrary": "Bloques guardados",
           "preview": "Vista previa",
           "applyTemplate": "Aplicar plantilla",
           "templatePlaceholder": "Elegir plantilla",
@@ -1831,7 +1846,7 @@
           "tab": "Flujo de compra",
           "saved": "Flujo guardado correctamente.",
           "saveError": "No pudimos guardar el flujo.",
-          "inactiveHint": "Activa el flujo para agregar pasos, bloques y vista previa. Luego guarda el producto para aplicar los cambios."
+          "inactiveHint": "Activa el flujo para agregar pasos y ver la vista previa. Luego guarda el producto para aplicar los cambios."
         },
         "wizard": {
           "title": "Personaliza tu producto",
