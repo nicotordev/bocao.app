@@ -44,6 +44,10 @@ type CustomersTableProps = {
   onDeleteCustomer: (customer: CustomerListItem) => void;
 };
 
+function stopRowActivation(event: React.SyntheticEvent) {
+  event.stopPropagation();
+}
+
 function getPageCheckState(
   customerIds: string[],
   selectedCustomerIds: Set<string>,
@@ -220,7 +224,8 @@ export function CustomersTable({
                     onCheckedChange={(checked) =>
                       toggleCustomer(customer.id, checked === true)
                     }
-                    onClick={(event) => event.stopPropagation()}
+                    onClick={stopRowActivation}
+                    onPointerDown={stopRowActivation}
                     aria-label={labels.accessibility.selectCustomer.replace(
                       "{name}",
                       customer.name,
@@ -291,7 +296,14 @@ export function CustomersTable({
         {customers.map((customer) => (
           <div
             key={customer.id}
-            className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm"
+            className="cursor-pointer rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition hover:bg-muted/30"
+            tabIndex={0}
+            onClick={() => onSelectCustomer(customer)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                onSelectCustomer(customer);
+              }
+            }}
           >
             <div className="flex items-start gap-3">
               <Checkbox
@@ -299,16 +311,14 @@ export function CustomersTable({
                 onCheckedChange={(checked) =>
                   toggleCustomer(customer.id, checked === true)
                 }
+                onClick={stopRowActivation}
+                onPointerDown={stopRowActivation}
                 aria-label={labels.accessibility.selectCustomer.replace(
                   "{name}",
                   customer.name,
                 )}
               />
-              <button
-                type="button"
-                onClick={() => onSelectCustomer(customer)}
-                className="min-w-0 flex-1 text-left transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
+              <div className="min-w-0 flex-1">
                 <div className="flex items-start gap-3">
                   <Avatar>
                     {customer.avatar ? (
@@ -346,7 +356,7 @@ export function CustomersTable({
                     </div>
                   </div>
                 </div>
-              </button>
+              </div>
             </div>
           </div>
         ))}
