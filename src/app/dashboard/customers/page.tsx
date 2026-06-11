@@ -6,11 +6,19 @@ import type {
   CustomersLabels,
 } from "@/components/dashboard/customers/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
-import { parseCustomersListSearchParams } from "@/lib/customers/filters";
-import { listCustomers } from "@/lib/customers/repository";
-import { loadCustomersPageData } from "@/lib/customers/server";
+import {
+  customersPageQueryFilters,
+  parseCustomersListSearchParams,
+} from "@/lib/customers/filters";
+import {
+  loadCustomerDetail,
+  loadCustomersPageData,
+} from "@/lib/customers/server";
 import { getQueryClient } from "@/lib/query/get-query-client";
-import { customersPageQueryOptions } from "@/lib/query/customers/customers.queries";
+import {
+  customerDetailQueryOptions,
+  customersPageQueryOptions,
+} from "@/lib/query/customers/customers.queries";
 import { searchParamsToRecord } from "@/lib/list-url";
 
 type CustomersPageProps = {
@@ -28,13 +36,22 @@ export default async function CustomersPage({
   const queryClient = getQueryClient();
   const resolvedSearchParams = searchParamsToRecord(await searchParams);
   const filters = parseCustomersListSearchParams(resolvedSearchParams);
-  const customerOptions = restaurantId ? await listCustomers(restaurantId) : [];
+  const dataFilters = customersPageQueryFilters(filters);
 
   if (restaurantId && context) {
-    await queryClient.prefetchQuery({
-      ...customersPageQueryOptions(restaurantId, filters),
-      queryFn: () => loadCustomersPageData(restaurantId, filters, context),
-    });
+    await Promise.all([
+      queryClient.prefetchQuery({
+        ...customersPageQueryOptions(restaurantId, dataFilters),
+        queryFn: () => loadCustomersPageData(restaurantId, filters, context),
+      }),
+      filters.customerId
+        ? queryClient.prefetchQuery({
+            ...customerDetailQueryOptions(restaurantId, filters.customerId),
+            queryFn: () =>
+              loadCustomerDetail(restaurantId, filters.customerId!, context),
+          })
+        : Promise.resolve(),
+    ]);
   }
 
   const segmentLabels: CustomerSegmentLabelMap = {
@@ -478,7 +495,6 @@ export default async function CustomersPage({
         segmentLabels={segmentLabels}
         restaurantId={restaurantId}
         organizationId={organizationId}
-        customerOptions={customerOptions}
       />
     </HydrationBoundary>
   );

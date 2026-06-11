@@ -41,7 +41,7 @@ type NewOrderFormProps = Pick<
   | "currency"
   | "menuItems"
   | "customers"
-  | "floorPlanSurface"
+  | "floorPlanSurfaces"
   | "occupiedTableNumbers"
   | "initialTableNumber"
   | "localeOptions"
@@ -56,7 +56,7 @@ export function NewOrderForm({
   currency,
   menuItems,
   customers,
-  floorPlanSurface,
+  floorPlanSurfaces,
   occupiedTableNumbers,
   initialTableNumber,
   localeOptions,
@@ -370,7 +370,7 @@ export function NewOrderForm({
           labels={labels}
           customers={customers}
           channel={values.channel}
-          floorPlanSurface={floorPlanSurface}
+          floorPlanSurfaces={floorPlanSurfaces}
           occupiedTableNumbers={occupiedTableNumbers}
           values={{
             selectedCustomers: values.selectedCustomers,

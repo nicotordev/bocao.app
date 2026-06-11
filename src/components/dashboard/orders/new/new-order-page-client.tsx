@@ -17,7 +17,7 @@ export function NewOrderPageClient({
   canCreate,
   menuItems,
   customers,
-  floorPlanSurface,
+  floorPlanSurfaces,
   occupiedTableNumbers,
   initialTableNumber,
   localeOptions,
@@ -33,7 +33,7 @@ export function NewOrderPageClient({
           currency={currency}
           menuItems={menuItems}
           customers={customers}
-          floorPlanSurface={floorPlanSurface}
+          floorPlanSurfaces={floorPlanSurfaces}
           occupiedTableNumbers={occupiedTableNumbers}
           initialTableNumber={initialTableNumber}
           localeOptions={localeOptions}
@@ -42,7 +42,9 @@ export function NewOrderPageClient({
         <Card>
           <CardHeader>
             <CardTitle>{labels.permissions.deniedTitle}</CardTitle>
-            <CardDescription>{labels.permissions.deniedDescription}</CardDescription>
+            <CardDescription>
+              {labels.permissions.deniedDescription}
+            </CardDescription>
           </CardHeader>
         </Card>
       )}

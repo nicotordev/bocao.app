@@ -36,6 +36,7 @@ type CustomersTableProps = {
   onAddTags: (customer: CustomerListItem) => void;
   onDeleteCustomer: (customer: CustomerListItem) => void;
   onImportCustomers: () => void;
+  onPrefetchCustomer?: (customerId: string) => void;
 };
 
 function stopRowActivation(event: React.SyntheticEvent) {
@@ -123,6 +124,7 @@ export function CustomersTable({
   onAddTags,
   onDeleteCustomer,
   onImportCustomers,
+  onPrefetchCustomer,
 }: CustomersTableProps) {
   const customerIds = customers.map((customer) => customer.id);
   const pageCheckState = getPageCheckState(customerIds, selectedCustomerIds);
@@ -201,6 +203,8 @@ export function CustomersTable({
                   selectedCustomerIds.has(customer.id) ? "selected" : undefined
                 }
                 onClick={() => onSelectCustomer(customer)}
+                onMouseEnter={() => onPrefetchCustomer?.(customer.id)}
+                onFocus={() => onPrefetchCustomer?.(customer.id)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     onSelectCustomer(customer);
@@ -293,6 +297,8 @@ export function CustomersTable({
             className="cursor-pointer rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition hover:bg-muted/30"
             tabIndex={0}
             onClick={() => onSelectCustomer(customer)}
+            onMouseEnter={() => onPrefetchCustomer?.(customer.id)}
+            onFocus={() => onPrefetchCustomer?.(customer.id)}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 onSelectCustomer(customer);

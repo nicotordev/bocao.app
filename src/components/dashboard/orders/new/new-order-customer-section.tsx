@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { TbPlus, TbX } from "react-icons/tb";
+import { TbArrowsMaximize, TbPlus, TbX } from "react-icons/tb";
 import { useMemo, useState } from "react";
+import { FloorPlanFloorSwitcher } from "@/components/dashboard/floor-plan/floor-plan-floor-switcher";
 import { FloorPlanTablePicker } from "@/components/dashboard/floor-plan/floor-plan-table-picker";
+import { FloorPlanTablePickerDialog } from "@/components/dashboard/floor-plan/floor-plan-table-picker-dialog";
 import type { CustomerOption } from "@/lib/customers/types";
 import type {
   DiningSurfaceRecord,
   TableOccupancy,
 } from "@/lib/floor-plan/types";
+import { useFloorPlanSurfaceSelection } from "@/hooks/use-floor-plan-surface-selection";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,7 +52,7 @@ type NewOrderCustomerSectionProps = {
   labels: NewOrderLabels;
   customers: CustomerOption[];
   channel: NewOrderFormValues["channel"];
-  floorPlanSurface: DiningSurfaceRecord | null;
+  floorPlanSurfaces: DiningSurfaceRecord[];
   occupiedTableNumbers: TableOccupancy;
   values: Pick<NewOrderFormValues, "selectedCustomers" | "tableNumber">;
   errors: {
@@ -66,7 +69,7 @@ export function NewOrderCustomerSection({
   labels,
   customers,
   channel,
-  floorPlanSurface,
+  floorPlanSurfaces,
   occupiedTableNumbers,
   values,
   errors,
@@ -76,7 +79,15 @@ export function NewOrderCustomerSection({
   onTableNumberChange,
 }: NewOrderCustomerSectionProps) {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
+  const [pickerDialogOpen, setPickerDialogOpen] = useState(false);
   const isDineIn = channel === "dineIn";
+  const hasFloorPlan = floorPlanSurfaces.length > 0;
+  const selection = useFloorPlanSurfaceSelection(
+    floorPlanSurfaces,
+    values.tableNumber,
+  );
+  const activeSurface = selection.activeSurface;
+
   const selectedExisting = useMemo(
     () =>
       values.selectedCustomers
@@ -90,12 +101,13 @@ export function NewOrderCustomerSection({
         })),
     [values.selectedCustomers],
   );
+
   const tableNumbers = useMemo(() => {
-    if (!floorPlanSurface) {
+    if (!activeSurface) {
       return [];
     }
 
-    return [...floorPlanSurface.tables]
+    return [...activeSurface.tables]
       .map((table) => table.number)
       .sort((left, right) => {
         const leftNumber = Number.parseInt(left, 10);
@@ -107,7 +119,34 @@ export function NewOrderCustomerSection({
 
         return left.localeCompare(right, undefined, { numeric: true });
       });
-  }, [floorPlanSurface]);
+  }, [activeSurface]);
+
+  const pickerLabels = {
+    legendFree: labels.table.pickerFree,
+    legendOccupied: labels.table.pickerOccupied,
+    legendSelected: labels.table.pickerSelected,
+    pickHint: labels.table.pickerHint,
+  };
+
+  const floorSwitcherLabels = {
+    floor: labels.table.floor,
+    floorUp: labels.table.floorUp,
+    floorDown: labels.table.floorDown,
+    switchFloor: labels.table.switchFloor,
+    selectSurface: labels.table.selectSurface,
+    unconfiguredFloor: labels.table.selectSurface,
+  };
+
+  const floorNameLabels = {
+    surfaceNameBasement: labels.table.surfaceNameBasement,
+    surfaceNameGround: labels.table.surfaceNameGround,
+    surfaceNameFloor: labels.table.surfaceNameFloor,
+  };
+
+  function handleSelectTable(tableNumber: string) {
+    selection.clearManualSurface();
+    onTableNumberChange(tableNumber);
+  }
 
   return (
     <>
@@ -158,28 +197,49 @@ export function NewOrderCustomerSection({
 
       {isDineIn ? (
         <Card>
-          <CardHeader>
-            <CardTitle>{labels.table.title}</CardTitle>
-            <CardDescription>{labels.table.description}</CardDescription>
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle>{labels.table.title}</CardTitle>
+              <CardDescription>{labels.table.description}</CardDescription>
+            </div>
+            {hasFloorPlan ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="gap-2"
+                onClick={() => setPickerDialogOpen(true)}
+              >
+                <TbArrowsMaximize className="size-4" aria-hidden />
+                {labels.table.expandPicker}
+              </Button>
+            ) : null}
           </CardHeader>
           <CardContent>
             <Field data-invalid={Boolean(errors.tableNumber)}>
               <FieldLabel htmlFor="table-number">
                 {labels.table.number}
               </FieldLabel>
-              {floorPlanSurface ? (
+              {hasFloorPlan && activeSurface ? (
                 <>
+                  <FloorPlanFloorSwitcher
+                    surfaces={floorPlanSurfaces}
+                    currentFloor={selection.currentFloor}
+                    activeSurfaceId={selection.activeSurfaceId}
+                    labels={floorSwitcherLabels}
+                    floorNameLabels={floorNameLabels}
+                    canFloorUp={selection.canFloorUp}
+                    canFloorDown={selection.canFloorDown}
+                    onFloorUp={() => selection.navigateFloor("up")}
+                    onFloorDown={() => selection.navigateFloor("down")}
+                    onSelectSurface={selection.selectSurface}
+                    className="mb-3"
+                  />
                   <FloorPlanTablePicker
-                    surface={floorPlanSurface}
+                    surface={activeSurface}
                     occupiedTableNumbers={occupiedTableNumbers}
                     selectedTableNumber={values.tableNumber}
-                    onSelectTable={onTableNumberChange}
-                    labels={{
-                      legendFree: labels.table.pickerFree,
-                      legendOccupied: labels.table.pickerOccupied,
-                      legendSelected: labels.table.pickerSelected,
-                      pickHint: labels.table.pickerHint,
-                    }}
+                    onSelectTable={handleSelectTable}
+                    labels={pickerLabels}
                   />
                   <TableNumberSelect
                     id="table-number"
@@ -190,7 +250,7 @@ export function NewOrderCustomerSection({
                     placeholder={labels.table.numberPlaceholder}
                     occupiedLabel={labels.table.pickerOccupied}
                     invalid={Boolean(errors.tableNumber)}
-                    onChange={onTableNumberChange}
+                    onChange={handleSelectTable}
                   />
                 </>
               ) : (
@@ -220,6 +280,27 @@ export function NewOrderCustomerSection({
             </Field>
           </CardContent>
         </Card>
+      ) : null}
+
+      {hasFloorPlan ? (
+        <FloorPlanTablePickerDialog
+          open={pickerDialogOpen}
+          onOpenChange={setPickerDialogOpen}
+          surfaces={floorPlanSurfaces}
+          occupiedTableNumbers={occupiedTableNumbers}
+          selectedTableNumber={values.tableNumber}
+          onSelectTable={handleSelectTable}
+          labels={{
+            title: labels.table.pickerDialogTitle,
+            description: labels.table.pickerDialogDescription,
+            legendFree: labels.table.pickerFree,
+            legendOccupied: labels.table.pickerOccupied,
+            legendSelected: labels.table.pickerSelected,
+            pickHint: labels.table.pickerHint,
+            floorSwitcher: floorSwitcherLabels,
+            floorName: floorNameLabels,
+          }}
+        />
       ) : null}
 
       <NewCustomerDialog

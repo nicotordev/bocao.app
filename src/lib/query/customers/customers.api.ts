@@ -27,14 +27,6 @@ function buildCustomersSearchParams(filters?: CustomersListFilters) {
     params.set("sort", filters.sort);
   }
 
-  if (filters?.tab && filters.tab !== "customers") {
-    params.set("tab", filters.tab);
-  }
-
-  if (filters?.customerId) {
-    params.set("customerId", filters.customerId);
-  }
-
   if (filters?.savedSegmentId) {
     params.set("savedSegmentId", filters.savedSegmentId);
   }
@@ -60,6 +52,16 @@ export async function fetchCustomersPage(
       filters,
     )}`,
   );
+}
+
+export async function fetchCustomerOptions(
+  restaurantId: string,
+): Promise<CustomerOption[]> {
+  const response = await apiRequest<{ customers: CustomerOption[] }>(
+    `/api/restaurants/${restaurantId}/customers/options`,
+  );
+
+  return response.customers;
 }
 
 export async function fetchCustomerDetail(

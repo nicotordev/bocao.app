@@ -570,7 +570,18 @@
           "pickerFree": "Available",
           "pickerOccupied": "Occupied",
           "pickerSelected": "Selected",
-          "configureFloorPlan": "Configure the table floor plan to pick tables visually."
+          "configureFloorPlan": "Configure the table floor plan to pick tables visually.",
+          "expandPicker": "View large",
+          "pickerDialogTitle": "Select table",
+          "pickerDialogDescription": "Switch floors and tap an available table to assign it to this order.",
+          "floor": "Floor",
+          "floorUp": "Higher floor",
+          "floorDown": "Lower floor",
+          "switchFloor": "Switch floor",
+          "selectSurface": "Select surface",
+          "surfaceNameBasement": "Basement {level}",
+          "surfaceNameGround": "Ground floor",
+          "surfaceNameFloor": "Floor {floor}"
         },
         "channel": {
           "title": "Channel",

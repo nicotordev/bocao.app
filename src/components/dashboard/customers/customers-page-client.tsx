@@ -21,7 +21,6 @@ import {
 } from "@/lib/customers/filters";
 import type {
   CustomerListItem,
-  CustomerOption,
   CustomerSegmentCard,
 } from "@/lib/customers/types";
 import { useBulkCustomerTagsMutation } from "@/lib/query/customers/customer-tags.mutations";
@@ -32,7 +31,9 @@ import {
   useUpdateCustomerMutation,
 } from "@/lib/query/customers/customers.mutations";
 import {
+  customerDetailQueryOptions,
   useCustomerDetailQuery,
+  useCustomerOptionsQuery,
   useCustomersPageQuery,
 } from "@/lib/query/customers/customers.queries";
 import { queryKeys } from "@/lib/query/query-keys";
@@ -57,7 +58,6 @@ type CustomersPageClientProps = {
   segmentLabels: CustomerSegmentLabelMap;
   restaurantId: string;
   organizationId: string;
-  customerOptions: CustomerOption[];
 };
 
 function buildCustomersCsv(customers: CustomerListItem[]) {
@@ -149,7 +149,6 @@ export function CustomersPageClient({
   segmentLabels,
   restaurantId,
   organizationId,
-  customerOptions,
 }: CustomersPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -191,7 +190,13 @@ export function CustomersPageClient({
   const urlSearch = filters.search ?? "";
   const selectedCustomerId = filters.customerId ?? null;
 
+  const activeTab = filters.tab ?? "customers";
   const customersQuery = useCustomersPageQuery(restaurantId, filters);
+  const customerOptionsQuery = useCustomerOptionsQuery(
+    restaurantId,
+    activeTab === "segments",
+  );
+  const customerOptions = customerOptionsQuery.data ?? [];
   const profileCustomerId = selectedCustomerId;
   const editCustomerId =
     customerDialogMode === "edit" ? editingCustomerId : null;
@@ -384,7 +389,14 @@ export function CustomersPageClient({
     router.refresh();
   };
 
-  const activeTab = filters.tab ?? "customers";
+  const prefetchCustomerDetail = useCallback(
+    (customerId: string) => {
+      void queryClient.prefetchQuery(
+        customerDetailQueryOptions(restaurantId, customerId),
+      );
+    },
+    [queryClient, restaurantId],
+  );
 
   const customerDialogLabels = {
     ...labels.formDialog,
@@ -557,6 +569,7 @@ export function CustomersPageClient({
                     selectedCustomerIds={selectedCustomerIds}
                     onSelectedCustomerIdsChange={setSelectedCustomerIds}
                     onSelectCustomer={handleSelectCustomer}
+                    onPrefetchCustomer={prefetchCustomerDetail}
                     onEditCustomer={(customer) => {
                       if (selectedCustomerId) {
                         navigateFilters({ customerId: undefined });
@@ -633,6 +646,11 @@ export function CustomersPageClient({
         labels={labels}
         segmentLabels={segmentLabels}
         customer={profileCustomerId ? (detailQuery.data ?? null) : null}
+        isLoading={
+          profileCustomerId !== null &&
+          detailQuery.isLoading &&
+          !detailQuery.data
+        }
         open={profileCustomerId !== null}
         onOpenChange={handleDrawerOpenChange}
       />

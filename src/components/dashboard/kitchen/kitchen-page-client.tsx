@@ -371,7 +371,7 @@ export function KitchenPageClient({
         canCreate={newOrder.canCreate}
         menuItems={newOrder.menuItems}
         customers={newOrder.customers}
-        floorPlanSurface={newOrder.floorPlanSurface}
+        floorPlanSurfaces={newOrder.floorPlanSurfaces}
         occupiedTableNumbers={newOrder.occupiedTableNumbers}
         localeOptions={newOrder.localeOptions}
       />

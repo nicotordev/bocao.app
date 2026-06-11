@@ -25,7 +25,7 @@ type KitchenNewOrderDialogProps = Pick<
   | "canCreate"
   | "menuItems"
   | "customers"
-  | "floorPlanSurface"
+  | "floorPlanSurfaces"
   | "occupiedTableNumbers"
   | "localeOptions"
 > & {
@@ -44,7 +44,7 @@ export function KitchenNewOrderDialog({
   canCreate,
   menuItems,
   customers,
-  floorPlanSurface,
+  floorPlanSurfaces,
   occupiedTableNumbers,
   localeOptions,
 }: KitchenNewOrderDialogProps) {
@@ -52,7 +52,9 @@ export function KitchenNewOrderDialog({
 
   useEffect(() => {
     if (open) {
-      setFormKey((current) => current + 1);
+      setTimeout(() => {
+        setFormKey((current) => current + 1);
+      }, 0);
     }
   }, [open]);
 
@@ -75,7 +77,7 @@ export function KitchenNewOrderDialog({
               currency={currency}
               menuItems={menuItems}
               customers={customers}
-              floorPlanSurface={floorPlanSurface}
+              floorPlanSurfaces={floorPlanSurfaces}
               occupiedTableNumbers={occupiedTableNumbers}
               localeOptions={localeOptions}
               formClassName="xl:grid-cols-[minmax(0,1fr)_280px]"

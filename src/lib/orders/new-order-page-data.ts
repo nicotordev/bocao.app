@@ -31,16 +31,21 @@ export async function getNewOrderPageData({
   const labels = await getNewOrderLabels();
   const canCreate = permissions.includes(PERMISSIONS.ORDERS_WRITE);
 
-  const [menuItems, contentLocales, customers, floorPlan, occupiedTableNumbers] =
-    restaurantId
-      ? await Promise.all([
-          listMenuItemsWithPurchaseFlows(restaurantId),
-          getRestaurantContentLocales(restaurantId),
-          listCustomers(restaurantId),
-          getFloorPlan(restaurantId),
-          getOccupiedTableNumbers(restaurantId),
-        ])
-      : [[], DEFAULT_CONTENT_LOCALES, [], null, {}];
+  const [
+    menuItems,
+    contentLocales,
+    customers,
+    floorPlan,
+    occupiedTableNumbers,
+  ] = restaurantId
+    ? await Promise.all([
+        listMenuItemsWithPurchaseFlows(restaurantId),
+        getRestaurantContentLocales(restaurantId),
+        listCustomers(restaurantId),
+        getFloorPlan(restaurantId),
+        getOccupiedTableNumbers(restaurantId),
+      ])
+    : [[], DEFAULT_CONTENT_LOCALES, [], null, {}];
 
   const localeOptions = buildRestaurantLocaleOptions(contentLocales, uiLocale);
 
@@ -51,7 +56,7 @@ export async function getNewOrderPageData({
     canCreate,
     menuItems,
     customers,
-    floorPlanSurface: floorPlan?.surfaces[0] ?? null,
+    floorPlanSurfaces: floorPlan?.surfaces ?? [],
     occupiedTableNumbers,
     initialTableNumber,
     localeOptions,

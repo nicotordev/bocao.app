@@ -173,6 +173,15 @@ export function buildCustomersPrismaOrderBy(
   }
 }
 
+/** Filters that affect list/KPI API data — excludes UI-only URL state. */
+export function customersPageQueryFilters(
+  filters: CustomersListFilters,
+): Omit<CustomersListFilters, "customerId" | "tab"> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- strip UI-only URL state
+  const { customerId, tab, ...dataFilters } = filters;
+  return dataFilters;
+}
+
 export function needsComputedCustomerPipeline(
   filters: CustomersListFilters,
 ): boolean {
@@ -212,9 +221,7 @@ export function buildTargetCustomersListFilters(
     tab: next.tab ?? current.tab ?? "customers",
     customerId: "customerId" in next ? next.customerId : current.customerId,
     savedSegmentId:
-      "savedSegmentId" in next
-        ? next.savedSegmentId
-        : current.savedSegmentId,
+      "savedSegmentId" in next ? next.savedSegmentId : current.savedSegmentId,
     page: options?.page ?? (hasFilterChange ? 1 : current.page),
     pageSize: current.pageSize,
   };

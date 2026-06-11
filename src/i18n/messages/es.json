@@ -570,7 +570,18 @@
           "pickerFree": "Libre",
           "pickerOccupied": "Ocupada",
           "pickerSelected": "Seleccionada",
-          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente."
+          "configureFloorPlan": "Configura el plano de mesas para seleccionar visualmente.",
+          "expandPicker": "Ver en grande",
+          "pickerDialogTitle": "Seleccionar mesa",
+          "pickerDialogDescription": "Cambia de piso y toca una mesa disponible para asignarla al pedido.",
+          "floor": "Piso",
+          "floorUp": "Piso superior",
+          "floorDown": "Piso inferior",
+          "switchFloor": "Cambiar piso",
+          "selectSurface": "Seleccionar superficie",
+          "surfaceNameBasement": "Subsuelo {level}",
+          "surfaceNameGround": "Planta baja",
+          "surfaceNameFloor": "Piso {floor}"
         },
         "channel": {
           "title": "Canal",

@@ -106,6 +106,17 @@ export type NewOrderLabels = {
     pickerOccupied: string;
     pickerSelected: string;
     configureFloorPlan: string;
+    expandPicker: string;
+    pickerDialogTitle: string;
+    pickerDialogDescription: string;
+    floor: string;
+    floorUp: string;
+    floorDown: string;
+    switchFloor: string;
+    selectSurface: string;
+    surfaceNameBasement: string;
+    surfaceNameGround: string;
+    surfaceNameFloor: string;
   };
   channel: {
     title: string;
@@ -194,7 +205,7 @@ export type NewOrderPageClientProps = {
   canCreate: boolean;
   menuItems: MenuItemWithFlowOption[];
   customers: CustomerOption[];
-  floorPlanSurface: DiningSurfaceRecord | null;
+  floorPlanSurfaces: DiningSurfaceRecord[];
   occupiedTableNumbers: TableOccupancy;
   initialTableNumber?: string;
   localeOptions: MenuLocaleOption[];

@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CustomerDetail } from "@/lib/customers/types";
 import { CustomerChannelBadge } from "./customer-channel-badge";
 import { CustomerSegmentBadge } from "./customer-segment-badge";
@@ -27,9 +28,38 @@ type CustomerProfileDialogProps = {
   labels: CustomersLabels;
   segmentLabels: CustomerSegmentLabelMap;
   customer: CustomerDetail | null;
+  isLoading?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
+
+function CustomerProfileDialogSkeleton() {
+  return (
+    <div className="min-h-0 overflow-y-auto">
+      <div className="space-y-6 px-6 py-6">
+        <section className="rounded-3xl border border-border bg-card p-4">
+          <Skeleton className="h-5 w-32" />
+          <div className="mt-4 space-y-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="flex justify-between gap-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="rounded-3xl border border-border bg-card p-4">
+          <Skeleton className="h-5 w-28" />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-20 rounded-2xl" />
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -84,10 +114,12 @@ export function CustomerProfileDialog({
   labels,
   segmentLabels,
   customer,
+  isLoading = false,
   open,
   onOpenChange,
 }: CustomerProfileDialogProps) {
   const profileLabels = labels.profile;
+  const showSkeleton = isLoading && !customer;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -109,6 +141,16 @@ export function CustomerProfileDialog({
               </div>
             </div>
           </DialogHeader>
+        ) : showSkeleton ? (
+          <DialogHeader className="shrink-0 border-b border-border px-6 py-5">
+            <div className="flex items-center gap-4">
+              <Skeleton className="size-12 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+          </DialogHeader>
         ) : (
           <DialogHeader className="sr-only">
             <DialogTitle>{profileLabels.title}</DialogTitle>
@@ -116,7 +158,9 @@ export function CustomerProfileDialog({
           </DialogHeader>
         )}
 
-        {customer ? (
+        {showSkeleton ? (
+          <CustomerProfileDialogSkeleton />
+        ) : customer ? (
           <div className="min-h-0 overflow-y-auto">
             <div className="space-y-6 px-6 py-6">
               <section className="rounded-3xl border border-border bg-card p-4">

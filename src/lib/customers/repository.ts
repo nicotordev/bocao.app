@@ -35,6 +35,7 @@ import type {
   UpdateCustomerInput,
 } from "@/lib/customers/types";
 import type { Prisma } from "@/generated/prisma/client";
+import { fetchRestaurantSegmentContext } from "@/lib/customers/segment-context";
 import { listSavedCustomerSegments } from "@/lib/customers/saved-segments.repository";
 import { buildPaginationMeta, getSkipTake } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
@@ -305,12 +306,8 @@ function buildCustomerData(input: {
 }) {
   return {
     ...(input.name !== undefined ? { name: input.name.trim() } : {}),
-    ...(input.phone !== undefined
-      ? { phone: input.phone.trim() || null }
-      : {}),
-    ...(input.email !== undefined
-      ? { email: input.email.trim() || null }
-      : {}),
+    ...(input.phone !== undefined ? { phone: input.phone.trim() || null } : {}),
+    ...(input.email !== undefined ? { email: input.email.trim() || null } : {}),
     ...(input.documentId !== undefined
       ? { documentId: input.documentId.trim() || null }
       : {}),
@@ -346,11 +343,7 @@ export async function createCustomer(
   });
 
   if (input.tagIds && input.tagIds.length > 0) {
-    await syncCustomerTagAssignments(
-      customer.id,
-      organizationId,
-      input.tagIds,
-    );
+    await syncCustomerTagAssignments(customer.id, organizationId, input.tagIds);
   }
 
   return mapCustomerOption(customer);
@@ -387,11 +380,7 @@ export async function updateCustomer(
   });
 
   if (input.tagIds !== undefined) {
-    await syncCustomerTagAssignments(
-      customerId,
-      organizationId,
-      input.tagIds,
-    );
+    await syncCustomerTagAssignments(customerId, organizationId, input.tagIds);
   }
 
   return mapCustomerOption(customer);
@@ -538,22 +527,22 @@ export async function getCustomerDetail(
   customerId: string,
   options: ListCustomersOptions,
 ): Promise<CustomerDetail | null> {
-  const records = await fetchCustomerRecords({ restaurantId });
-  const preliminary = records.map((record) =>
-    mapCustomerRecord(
-      record,
-      { restaurantAverageTicketCents: 0, spendPercentile90Cents: 0 },
-      options,
-    ),
-  );
-  const context = buildSegmentContext(preliminary);
-  const record = records.find((entry) => entry.id === customerId);
+  const [record, segmentContext] = await Promise.all([
+    prisma.customer.findFirst({
+      where: {
+        id: customerId,
+        restaurantId,
+      },
+      include: customerInclude,
+    }),
+    fetchRestaurantSegmentContext(restaurantId),
+  ]);
 
   if (!record) {
     return null;
   }
 
-  const detail = mapCustomerDetail(record, context, options);
+  const detail = mapCustomerDetail(record, segmentContext, options);
   const activity = buildCustomersActivityFeed({
     customers: [detail],
     detailsById: new Map([[customerId, detail]]),

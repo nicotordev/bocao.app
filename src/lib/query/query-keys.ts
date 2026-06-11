@@ -1,4 +1,7 @@
-import type { CustomersListFilters } from "@/lib/customers/filters";
+import {
+  customersPageQueryFilters,
+  type CustomersListFilters,
+} from "@/lib/customers/filters";
 import type { KitchenListFilters } from "@/lib/kitchen/list-filters";
 import type { OrdersKpiFilters, OrdersListFilters } from "@/lib/orders/filters";
 
@@ -62,7 +65,11 @@ export const queryKeys = {
     all: ["customers"] as const,
     pages: () => [...queryKeys.customers.all, "page"] as const,
     page: (restaurantId: string, filters?: CustomersListFilters) =>
-      [...queryKeys.customers.pages(), restaurantId, filters ?? {}] as const,
+      [
+        ...queryKeys.customers.pages(),
+        restaurantId,
+        customersPageQueryFilters(filters ?? { page: 1, pageSize: 20 }),
+      ] as const,
     details: () => [...queryKeys.customers.all, "detail"] as const,
     detail: (restaurantId: string, customerId: string) =>
       [...queryKeys.customers.details(), restaurantId, customerId] as const,

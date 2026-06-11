@@ -19,6 +19,9 @@ type FloorPlanTablePickerProps = {
     pickHint: string;
   };
   className?: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  fillContainer?: boolean;
 };
 
 export function FloorPlanTablePicker({
@@ -28,6 +31,9 @@ export function FloorPlanTablePicker({
   onSelectTable,
   labels,
   className,
+  canvasWidth,
+  canvasHeight,
+  fillContainer = false,
 }: FloorPlanTablePickerProps) {
   return (
     <div className={cn("space-y-3", className)}>
@@ -53,6 +59,9 @@ export function FloorPlanTablePicker({
         selectedTableNumber={selectedTableNumber || null}
         mode="picker"
         onSelectTable={onSelectTable}
+        canvasWidth={canvasWidth}
+        canvasHeight={canvasHeight}
+        fillContainer={fillContainer}
       />
     </div>
   );
