@@ -1,4 +1,6 @@
+import { TbUsers } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
+import { DashboardSectionEmpty } from "@/components/dashboard/home/dashboard-section-empty";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,34 +42,46 @@ export async function TeamActivityCard({ members }: TeamActivityCardProps) {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-3">
-          {members.map((member) => (
-            <li
-              key={member.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-muted/20 px-3 py-2.5"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <Avatar size="sm">
-                  <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{member.name}</p>
-                  <p className="text-xs text-muted-foreground">{member.role}</p>
+        {members.length === 0 ? (
+          <DashboardSectionEmpty
+            icon={<TbUsers aria-hidden />}
+            title={t("empty.title")}
+            description={t("empty.description")}
+          />
+        ) : (
+          <ul className="space-y-3">
+            {members.map((member) => (
+              <li
+                key={member.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-muted/20 px-3 py-2.5"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar size="sm">
+                    <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {member.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {member.role}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <Badge variant="outline" className="gap-1.5">
-                <span
-                  className={cn(
-                    "size-2 rounded-full",
-                    statusDotStyles[member.status],
-                  )}
-                  aria-hidden
-                />
-                {t(`status.${member.status}`)}
-              </Badge>
-            </li>
-          ))}
-        </ul>
+                <Badge variant="outline" className="gap-1.5">
+                  <span
+                    className={cn(
+                      "size-2 rounded-full",
+                      statusDotStyles[member.status],
+                    )}
+                    aria-hidden
+                  />
+                  {t(`status.${member.status}`)}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   );

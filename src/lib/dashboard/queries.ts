@@ -6,6 +6,8 @@ import {
   subDays,
 } from "date-fns";
 import { enUS, es } from "date-fns/locale";
+import { computeDashboardInsights } from "@/lib/dashboard/compute-insights";
+import type { DashboardInsightLabels } from "@/lib/dashboard/compute-insights";
 import type { DashboardHomeData, DashboardMetric } from "@/lib/dashboard/data";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
 import {
@@ -31,6 +33,7 @@ type DashboardMetricLabels = {
 
 type GetDashboardHomeDataOptions = {
   metricLabels: DashboardMetricLabels;
+  insightLabels?: DashboardInsightLabels;
   locale?: string;
   notAvailable?: string;
   customerLabels?: {
@@ -314,6 +317,26 @@ export async function getDashboardHomeData(
     notAvailable,
   );
 
+  const pendingReservationsCount = reservations.filter(
+    (reservation) => reservation.status === "PENDING",
+  ).length;
+
+  const insights = options.insightLabels
+    ? computeDashboardInsights(
+        {
+          preparingCount,
+          openOrdersCount,
+          reservationsNextThreeHours,
+          revenueTodayCents,
+          revenueYesterdayCents,
+          avgPrepCurrent,
+          avgPrepPrevious,
+          pendingReservationsCount,
+        },
+        options.insightLabels,
+      )
+    : [];
+
   const metrics: DashboardMetric[] = [
     {
       id: "revenue-today",
@@ -388,7 +411,7 @@ export async function getDashboardHomeData(
       customerId:
         reservation.customerId ?? reservation.customer?.id ?? undefined,
     })),
-    insights: [],
+    insights,
     whatsapp: {
       connected: false,
       unreadCount: 0,

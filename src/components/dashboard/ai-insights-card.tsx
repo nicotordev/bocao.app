@@ -1,5 +1,6 @@
 import { TbSparkles } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
+import { DashboardSectionEmpty } from "@/components/dashboard/home/dashboard-section-empty";
 import type { DashboardInsight } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -39,29 +40,40 @@ export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[280px] pr-3">
-          <ul className="space-y-3">
-            {insights.map((insight) => (
-              <li
-                key={insight.id}
-                className="rounded-2xl border border-border/60 bg-background/40 p-4"
-              >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{insight.title}</p>
-                  <Badge
-                    variant="outline"
-                    className={cn("shrink-0", priorityStyles[insight.priority])}
-                  >
-                    {t(`priority.${insight.priority}`)}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {insight.description}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </ScrollArea>
+        {insights.length === 0 ? (
+          <DashboardSectionEmpty
+            icon={<TbSparkles aria-hidden />}
+            title={t("empty.title")}
+            description={t("empty.description")}
+          />
+        ) : (
+          <ScrollArea className="h-[280px] pr-3">
+            <ul className="space-y-3">
+              {insights.map((insight) => (
+                <li
+                  key={insight.id}
+                  className="rounded-2xl border border-border/60 bg-background/40 p-4"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{insight.title}</p>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "shrink-0",
+                        priorityStyles[insight.priority],
+                      )}
+                    >
+                      {t(`priority.${insight.priority}`)}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {insight.description}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        )}
       </CardContent>
     </Card>
   );

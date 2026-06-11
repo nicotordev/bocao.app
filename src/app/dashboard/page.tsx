@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
 import { getTranslations } from "next-intl/server";
 import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
+import { DashboardNoRestaurant } from "@/components/dashboard/home/dashboard-no-restaurant";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentOrdersList } from "@/components/dashboard/recent-orders-list";
 import { TeamActivityCard } from "@/components/dashboard/team-activity-card";
@@ -22,6 +23,7 @@ export default async function DashboardPage() {
     locale: homeFormat.locale,
     notAvailable: homeFormat.notAvailable,
     metricLabels: homeFormat.metricLabels,
+    insightLabels: homeFormat.insightLabels,
     customerLabels: homeFormat.customerLabels,
   });
 
@@ -31,6 +33,8 @@ export default async function DashboardPage() {
 
   const firstName =
     context?.user.name.split(" ").filter(Boolean)[0] ?? t("greetingFallback");
+
+  const hasRestaurant = Boolean(context?.activeRestaurant);
 
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
@@ -51,34 +55,42 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricCard key={metric.id} metric={metric} />
-        ))}
-      </section>
+      {!hasRestaurant ? (
+        <section>{await DashboardNoRestaurant()}</section>
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          {await AiInsightsCard({ insights: data.insights })}
-        </div>
-        {await WhatsappStatusCard({
-          connected: data.whatsapp.connected,
-          unreadCount: data.whatsapp.unreadCount,
-          lastMessageAt: data.whatsapp.lastMessageAt,
-          responseRate: data.whatsapp.responseRate,
-        })}
-      </section>
+      {hasRestaurant ? (
+        <>
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {data.metrics.map((metric) => (
+              <MetricCard key={metric.id} metric={metric} />
+            ))}
+          </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        {await RecentOrdersList({ orders: data.recentOrders })}
-        {await UpcomingReservationsList({
-          reservations: data.upcomingReservations,
-        })}
-      </section>
+          <section className="grid gap-4 xl:grid-cols-3">
+            <div className="xl:col-span-2">
+              {await AiInsightsCard({ insights: data.insights })}
+            </div>
+            {await WhatsappStatusCard({
+              connected: data.whatsapp.connected,
+              unreadCount: data.whatsapp.unreadCount,
+              lastMessageAt: data.whatsapp.lastMessageAt,
+              responseRate: data.whatsapp.responseRate,
+            })}
+          </section>
 
-      <section>
-        {await TeamActivityCard({ members: data.teamActivity })}
-      </section>
+          <section className="grid gap-4 lg:grid-cols-2">
+            {await RecentOrdersList({ orders: data.recentOrders })}
+            {await UpcomingReservationsList({
+              reservations: data.upcomingReservations,
+            })}
+          </section>
+
+          <section>
+            {await TeamActivityCard({ members: data.teamActivity })}
+          </section>
+        </>
+      ) : null}
     </main>
   );
 }

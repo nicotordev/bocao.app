@@ -40,6 +40,7 @@ export async function GET(request: Request) {
     locale: homeFormat.locale,
     notAvailable: homeFormat.notAvailable,
     metricLabels: homeFormat.metricLabels,
+    insightLabels: homeFormat.insightLabels,
     customerLabels: homeFormat.customerLabels,
   });
 

@@ -285,6 +285,12 @@
       }
     },
     "home": {
+      "noRestaurant": {
+        "title": "No active restaurant",
+        "description": "Select a location from the switcher or set up a new restaurant to see your operational summary.",
+        "ctaOrganizations": "View all locations",
+        "ctaOnboarding": "Set up restaurant"
+      },
       "insights": {
         "title": "AI insights",
         "description": "Real-time recommendations for your operation",
@@ -292,6 +298,36 @@
           "high": "High",
           "medium": "Medium",
           "low": "Low"
+        },
+        "empty": {
+          "title": "No insights right now",
+          "description": "When orders, reservations, or kitchen activity pick up, operational recommendations will appear here."
+        },
+        "items": {
+          "kitchenBacklog": {
+            "title": "Kitchen backlog",
+            "description": "{count} orders are in preparation with {open} open orders in total."
+          },
+          "upcomingReservations": {
+            "title": "Reservations approaching",
+            "description": "{count} reservations are scheduled in the next {hours} hours."
+          },
+          "revenueUp": {
+            "title": "Revenue is up",
+            "description": "Today's revenue is {percent}% higher than yesterday."
+          },
+          "revenueDown": {
+            "title": "Revenue is down",
+            "description": "Today's revenue is {percent}% lower than yesterday."
+          },
+          "slowPrep": {
+            "title": "Prep time is slowing",
+            "description": "Average prep time rose by {minutes} min this week (now {current} min)."
+          },
+          "pendingReservations": {
+            "title": "Reservations need confirmation",
+            "description": "{count} upcoming reservations are still pending confirmation."
+          }
         }
       },
       "whatsapp": {
@@ -301,7 +337,11 @@
         "disconnected": "Disconnected",
         "unread": "Unread",
         "responseRate": "Response rate",
-        "lastMessage": "Last message {time}"
+        "lastMessage": "Last message {time}",
+        "empty": {
+          "title": "WhatsApp not connected",
+          "description": "Connect your Meta WhatsApp Business account to receive messages and orders in Bocao."
+        }
       },
       "recentOrders": {
         "title": "Recent orders",
@@ -311,6 +351,11 @@
           "preparing": "In kitchen",
           "ready": "Ready",
           "completed": "Completed"
+        },
+        "empty": {
+          "title": "No orders yet",
+          "description": "Recent orders will show up here as soon as you start taking them.",
+          "cta": "Create order"
         }
       },
       "reservations": {
@@ -325,6 +370,11 @@
           "notes": "Notes",
           "reservationNotes": "Reservation notes",
           "noContactInfo": "No contact information on file."
+        },
+        "empty": {
+          "title": "No upcoming reservations",
+          "description": "When guests book a table, the next reservations will appear here.",
+          "cta": "View reservations"
         }
       },
       "teamActivity": {
@@ -334,6 +384,10 @@
           "online": "Online",
           "busy": "Busy",
           "offline": "Offline"
+        },
+        "empty": {
+          "title": "No team members",
+          "description": "Invite staff to your organization to see who is online."
         }
       }
     },

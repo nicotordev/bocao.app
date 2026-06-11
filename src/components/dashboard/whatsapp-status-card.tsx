@@ -1,5 +1,6 @@
 import { TbBrandWhatsapp, TbMessageCircle } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
+import { DashboardSectionEmpty } from "@/components/dashboard/home/dashboard-section-empty";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -50,20 +51,32 @@ export async function WhatsappStatusCard({
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
-            <p className="text-xs text-muted-foreground">{t("unread")}</p>
-            <p className="text-xl font-semibold">{unreadCount}</p>
-          </div>
-          <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
-            <p className="text-xs text-muted-foreground">{t("responseRate")}</p>
-            <p className="text-xl font-semibold">{responseRate}</p>
-          </div>
-        </div>
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <TbMessageCircle className="size-4" aria-hidden />
-          {t("lastMessage", { time: lastMessageAt })}
-        </p>
+        {connected ? (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
+                <p className="text-xs text-muted-foreground">{t("unread")}</p>
+                <p className="text-xl font-semibold">{unreadCount}</p>
+              </div>
+              <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
+                <p className="text-xs text-muted-foreground">
+                  {t("responseRate")}
+                </p>
+                <p className="text-xl font-semibold">{responseRate}</p>
+              </div>
+            </div>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TbMessageCircle className="size-4" aria-hidden />
+              {t("lastMessage", { time: lastMessageAt })}
+            </p>
+          </>
+        ) : (
+          <DashboardSectionEmpty
+            icon={<TbBrandWhatsapp aria-hidden />}
+            title={t("empty.title")}
+            description={t("empty.description")}
+          />
+        )}
       </CardContent>
     </Card>
   );
