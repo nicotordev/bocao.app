@@ -1657,6 +1657,103 @@
         }
       }
     },
+    "marketingAi": {
+      "title": "AI Marketing",
+      "description": "Generate campaigns, promotions, and personalized messages for your customers.",
+      "newCampaign": "New campaign",
+      "viewHistory": "View history",
+      "generate": "Generate campaign",
+      "copy": "Copy",
+      "regenerate": "Regenerate",
+      "saveCampaign": "Save campaign",
+      "useWhatsapp": "Use in WhatsApp",
+      "generating": "Generating...",
+      "copySuccess": "Campaign copied to clipboard",
+      "saveSuccess": "Campaign saved successfully",
+      "comingSoon": "Coming soon",
+      "form": {
+        "title": "Campaign settings",
+        "campaignGoal": "Campaign goal",
+        "channel": "Channel",
+        "tone": "Tone",
+        "audience": "Audience",
+        "productName": "Product or dish (optional)",
+        "productNamePlaceholder": "e.g. Margherita pizza, lunch menu",
+        "promotion": "Discount or promotion (optional)",
+        "promotionPlaceholder": "e.g. 20% off, 2-for-1 on desserts",
+        "extraInstructions": "Additional instructions (optional)",
+        "extraInstructionsPlaceholder": "Mention timing, event details, or constraints"
+      },
+      "goals": {
+        "increase_sales": "Increase sales",
+        "reactivate_customers": "Reactivate customers",
+        "promote_dish": "Promote a dish",
+        "fill_slow_hours": "Fill slow hours",
+        "announce_event": "Announce an event",
+        "birthday_campaign": "Birthday campaign",
+        "other": "Other"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "email": "Email",
+        "sms": "SMS"
+      },
+      "tones": {
+        "friendly": "Friendly",
+        "elegant": "Elegant",
+        "playful": "Playful",
+        "urgent": "Urgent",
+        "premium": "Premium",
+        "family": "Family"
+      },
+      "audiences": {
+        "all_customers": "All customers",
+        "frequent_customers": "Frequent customers",
+        "inactive_customers": "Inactive customers",
+        "new_customers": "New customers",
+        "custom_segment": "Custom segment"
+      },
+      "result": {
+        "title": "AI result",
+        "emptyTitle": "No campaign generated yet",
+        "emptyDescription": "Fill in the form and generate your first AI marketing campaign.",
+        "suggestedTitle": "Suggested title",
+        "mainMessage": "Main message",
+        "alternatives": "Alternative versions",
+        "callToAction": "Call to action",
+        "hashtags": "Hashtags",
+        "shortVersion": "Short version",
+        "sendingRecommendation": "Sending recommendation"
+      },
+      "history": {
+        "title": "Campaign history",
+        "emptyTitle": "No saved campaigns",
+        "emptyDescription": "Saved campaigns will appear here so you can reuse them later."
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "reactivation": "Inactive customers",
+        "birthday": "Birthday campaign",
+        "slowHours": "Slow hours offer",
+        "newProduct": "New product launch",
+        "whatsappPromo": "WhatsApp promo"
+      },
+      "permissions": {
+        "deniedTitle": "No marketing access",
+        "deniedDescription": "Your role cannot view AI marketing campaigns.",
+        "readOnlyHint": "You can view this page, but your role cannot generate or save campaigns."
+      },
+      "errors": {
+        "forbidden": "You do not have permission to perform this action.",
+        "invalidInput": "Please review the form and try again.",
+        "openaiNotConfigured": "OpenAI is not configured. Add OPENAI_API_KEY to your environment.",
+        "openaiFailed": "We could not generate the campaign. Please try again.",
+        "invalidResponse": "The AI returned an invalid response. Please try again.",
+        "saveFailed": "We could not save the campaign. Please try again.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
     "menu": {
       "header": {
         "title": "Menu",

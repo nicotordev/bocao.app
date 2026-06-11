@@ -271,8 +271,37 @@ model Restaurant {
   productFlowTemplates  ProductFlowTemplate[]
   productPurchaseFlows  ProductPurchaseFlow[]
   kitchenStations       KitchenStation[]
+  marketingCampaigns    MarketingCampaign[]
 
   @@index([organizationId])
+}
+
+/// AI-generated marketing campaign draft or saved copy for a restaurant.
+model MarketingCampaign {
+  id           String  @id @default(cuid())
+  tenantId     String
+  restaurantId String
+  createdById  String?
+
+  goal     String
+  channel  String
+  tone     String
+  audience String
+
+  productName String?
+  promotion   String?
+  input       Json
+  output      Json
+
+  status String @default("draft")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, restaurantId, createdAt])
+  @@index([restaurantId, channel])
 }
 
 /// Operational kitchen prep station configured per restaurant.
@@ -624,18 +653,18 @@ model Order {
 
 /// Payment record for an order. Provider-agnostic; adapters map external PSP events later.
 model Payment {
-  id             String          @id @default(cuid())
-  orderId        String
-  method         PaymentMethod
-  provider       PaymentProvider @default(MANUAL)
-  status         PaymentStatus   @default(PENDING)
-  amountCents    Int
-  currency       String
+  id          String          @id @default(cuid())
+  orderId     String
+  method      PaymentMethod
+  provider    PaymentProvider @default(MANUAL)
+  status      PaymentStatus   @default(PENDING)
+  amountCents Int
+  currency    String
   /// External reference from a future PSP adapter (optional).
-  externalRef    String?
-  metadata       Json?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  externalRef String?
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 

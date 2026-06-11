@@ -1657,6 +1657,103 @@
         }
       }
     },
+    "marketingAi": {
+      "title": "Marketing con IA",
+      "description": "Genera campañas, promociones y mensajes personalizados para tus clientes.",
+      "newCampaign": "Nueva campaña",
+      "viewHistory": "Ver historial",
+      "generate": "Generar campaña",
+      "copy": "Copiar",
+      "regenerate": "Regenerar",
+      "saveCampaign": "Guardar campaña",
+      "useWhatsapp": "Usar en WhatsApp",
+      "generating": "Generando...",
+      "copySuccess": "Campaña copiada al portapapeles",
+      "saveSuccess": "Campaña guardada correctamente",
+      "comingSoon": "Próximamente",
+      "form": {
+        "title": "Configuración de campaña",
+        "campaignGoal": "Objetivo de campaña",
+        "channel": "Canal",
+        "tone": "Tono",
+        "audience": "Audiencia",
+        "productName": "Producto o plato (opcional)",
+        "productNamePlaceholder": "ej. Pizza margarita, menú del día",
+        "promotion": "Descuento o promoción (opcional)",
+        "promotionPlaceholder": "ej. 20% de descuento, 2x1 en postres",
+        "extraInstructions": "Instrucciones adicionales (opcional)",
+        "extraInstructionsPlaceholder": "Indica horario, evento o restricciones"
+      },
+      "goals": {
+        "increase_sales": "Aumentar ventas",
+        "reactivate_customers": "Reactivar clientes",
+        "promote_dish": "Promocionar plato",
+        "fill_slow_hours": "Llenar horario bajo",
+        "announce_event": "Anunciar evento",
+        "birthday_campaign": "Campaña de cumpleaños",
+        "other": "Otro"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram",
+        "email": "Email",
+        "sms": "SMS"
+      },
+      "tones": {
+        "friendly": "Cercano",
+        "elegant": "Elegante",
+        "playful": "Divertido",
+        "urgent": "Urgente",
+        "premium": "Premium",
+        "family": "Familiar"
+      },
+      "audiences": {
+        "all_customers": "Todos los clientes",
+        "frequent_customers": "Clientes frecuentes",
+        "inactive_customers": "Clientes inactivos",
+        "new_customers": "Clientes nuevos",
+        "custom_segment": "Segmento personalizado"
+      },
+      "result": {
+        "title": "Resultado IA",
+        "emptyTitle": "Aún no hay campaña generada",
+        "emptyDescription": "Completa el formulario y genera tu primera campaña de marketing con IA.",
+        "suggestedTitle": "Título sugerido",
+        "mainMessage": "Mensaje principal",
+        "alternatives": "Variantes alternativas",
+        "callToAction": "Llamada a la acción",
+        "hashtags": "Hashtags",
+        "shortVersion": "Versión corta",
+        "sendingRecommendation": "Recomendación de envío"
+      },
+      "history": {
+        "title": "Historial de campañas",
+        "emptyTitle": "No hay campañas guardadas",
+        "emptyDescription": "Las campañas guardadas aparecerán aquí para reutilizarlas después."
+      },
+      "quickActions": {
+        "title": "Acciones rápidas",
+        "reactivation": "Clientes inactivos",
+        "birthday": "Campaña de cumpleaños",
+        "slowHours": "Oferta horario bajo",
+        "newProduct": "Lanzamiento de producto",
+        "whatsappPromo": "Promo WhatsApp"
+      },
+      "permissions": {
+        "deniedTitle": "Sin acceso a marketing",
+        "deniedDescription": "Tu rol no puede ver campañas de marketing con IA.",
+        "readOnlyHint": "Puedes ver esta página, pero tu rol no puede generar ni guardar campañas."
+      },
+      "errors": {
+        "forbidden": "No tienes permiso para realizar esta acción.",
+        "invalidInput": "Revisa el formulario e inténtalo de nuevo.",
+        "openaiNotConfigured": "OpenAI no está configurado. Agrega OPENAI_API_KEY al entorno.",
+        "openaiFailed": "No pudimos generar la campaña. Inténtalo de nuevo.",
+        "invalidResponse": "La IA devolvió una respuesta inválida. Inténtalo de nuevo.",
+        "saveFailed": "No pudimos guardar la campaña. Inténtalo de nuevo.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
     "menu": {
       "header": {
         "title": "Menú",

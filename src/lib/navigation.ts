@@ -15,7 +15,11 @@ export type NavItemId =
   | "team"
   | "settings";
 
-export type NavItemGroup = "inicio" | "operaciones" | "clientes" | "administracion";
+export type NavItemGroup =
+  | "inicio"
+  | "operaciones"
+  | "clientes"
+  | "administracion";
 
 export type NavItem = {
   id: NavItemId;
@@ -96,7 +100,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "marketing",
     label: "Marketing IA",
-    href: "/dashboard/marketing",
+    href: "/dashboard/marketing/ai",
     icon: "marketing",
     group: "clientes",
     permission: PERMISSIONS.MARKETING_READ,
@@ -145,4 +149,3 @@ export function getVisibleNavItems(
     return permissionSet.has(item.permission);
   });
 }
-
