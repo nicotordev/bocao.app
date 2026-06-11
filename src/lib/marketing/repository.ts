@@ -2,10 +2,17 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { GenerateMarketingCopyInput } from "@/lib/marketing/ai/schema";
-import type { GeneratedMarketingCampaign } from "@/lib/marketing/ai/schema";
+import type {
+  CampaignSource,
+  GenerateMarketingCopyInput,
+  GeneratedMarketingCampaign,
+} from "@/lib/marketing/ai/schema";
 import type { MarketingCampaignRecord } from "@/lib/marketing/ai/types";
-import { generatedMarketingCampaignSchema } from "@/lib/marketing/ai/schema";
+import {
+  CAMPAIGN_SOURCES,
+  generatedMarketingCampaignSchema,
+} from "@/lib/marketing/ai/schema";
+import { z } from "zod";
 
 async function getRestaurantOrganizationId(restaurantId: string) {
   const restaurant = await prisma.restaurant.findUnique({
@@ -20,6 +27,15 @@ async function getRestaurantOrganizationId(restaurantId: string) {
   return restaurant.organizationId;
 }
 
+const campaignInputSourceSchema = z.object({
+  source: z.enum(CAMPAIGN_SOURCES).optional(),
+});
+
+function parseCampaignSource(input: Prisma.JsonValue): CampaignSource {
+  const parsed = campaignInputSourceSchema.safeParse(input);
+  return parsed.success && parsed.data.source ? parsed.data.source : "ai";
+}
+
 function mapCampaignRecord(campaign: {
   id: string;
   goal: string;
@@ -29,6 +45,7 @@ function mapCampaignRecord(campaign: {
   productName: string | null;
   promotion: string | null;
   status: string;
+  input: Prisma.JsonValue;
   output: Prisma.JsonValue;
   createdAt: Date;
 }): MarketingCampaignRecord | null {
@@ -49,6 +66,7 @@ function mapCampaignRecord(campaign: {
     productName: campaign.productName,
     promotion: campaign.promotion,
     status: campaign.status,
+    source: parseCampaignSource(campaign.input),
     output: parsedOutput.data,
     createdAt: campaign.createdAt.toISOString(),
   };
@@ -74,6 +92,7 @@ export async function listMarketingCampaigns(
       productName: true,
       promotion: true,
       status: true,
+      input: true,
       output: true,
       createdAt: true,
     },
@@ -121,4 +140,32 @@ export async function getRestaurantName(restaurantId: string) {
   });
 
   return restaurant?.name;
+}
+
+export async function getMenuItemForMarketing(
+  restaurantId: string,
+  menuItemId: string,
+) {
+  const item = await prisma.menuItem.findFirst({
+    where: { id: menuItemId, restaurantId, isAvailable: true },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      priceCents: true,
+      category: { select: { name: true } },
+    },
+  });
+
+  if (!item) {
+    return null;
+  }
+
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    categoryName: item.category.name,
+  };
 }

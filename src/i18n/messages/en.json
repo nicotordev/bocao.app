@@ -1661,6 +1661,7 @@
       "title": "AI Marketing",
       "description": "Generate campaigns, promotions, and personalized messages for your customers.",
       "newCampaign": "New campaign",
+      "newManualCampaign": "New manual campaign",
       "viewHistory": "View history",
       "generate": "Generate campaign",
       "copy": "Copy",
@@ -1671,6 +1672,13 @@
       "copySuccess": "Campaign copied to clipboard",
       "saveSuccess": "Campaign saved successfully",
       "comingSoon": "Coming soon",
+      "actions": {
+        "back": "Back to marketing",
+        "next": "Next",
+        "previous": "Previous",
+        "viewCampaign": "View campaign",
+        "createFirst": "Create your first campaign"
+      },
       "form": {
         "title": "Campaign settings",
         "campaignGoal": "Campaign goal",
@@ -1679,6 +1687,10 @@
         "audience": "Audience",
         "productName": "Product or dish (optional)",
         "productNamePlaceholder": "e.g. Margherita pizza, lunch menu",
+        "selectProduct": "Select from menu",
+        "changeProduct": "Change product",
+        "clearProduct": "Clear selection",
+        "noProductSelected": "No product selected yet.",
         "promotion": "Discount or promotion (optional)",
         "promotionPlaceholder": "e.g. 20% off, 2-for-1 on desserts",
         "extraInstructions": "Additional instructions (optional)",
@@ -1730,6 +1742,60 @@
         "title": "Campaign history",
         "emptyTitle": "No saved campaigns",
         "emptyDescription": "Saved campaigns will appear here so you can reuse them later."
+      },
+      "overview": {
+        "totalCampaigns": "Total campaigns",
+        "recentCampaigns": "Recent campaigns",
+        "channelsUsed": "Channels used",
+        "emptyTitle": "No campaigns yet",
+        "emptyDescription": "Create your first AI campaign to start building your marketing library."
+      },
+      "wizard": {
+        "title": "New AI campaign",
+        "subtitle": "Configure your campaign step by step and generate copy with AI.",
+        "stepProgress": "Step {current} of {total}",
+        "steps": {
+          "goal": "Goal & channel",
+          "audience": "Tone & audience",
+          "details": "Product & promo",
+          "result": "AI result"
+        },
+        "reviewTitle": "Campaign summary",
+        "reviewDescription": "Review the settings used to generate this copy.",
+        "generateHint": "Generate the campaign to preview AI copy here.",
+        "manualHint": "Write your campaign copy manually and save it when ready.",
+        "modeTitle": "Creation mode",
+        "modeDescription": "Choose whether to generate copy with AI or write it yourself."
+      },
+      "mode": {
+        "ai": "With AI",
+        "manual": "Manual",
+        "aiDescription": "Generate copy automatically from your campaign settings.",
+        "manualDescription": "Write the title, message, and CTA yourself.",
+        "badgeAi": "AI",
+        "badgeManual": "Manual"
+      },
+      "manual": {
+        "title": "Campaign title",
+        "titlePlaceholder": "e.g. Weekend lunch special",
+        "mainMessage": "Main message",
+        "mainMessagePlaceholder": "Write the message your customers will receive",
+        "callToAction": "Call to action",
+        "callToActionPlaceholder": "e.g. Book now, Order today",
+        "shortVersion": "Short version",
+        "shortVersionPlaceholder": "Brief version for SMS or WhatsApp",
+        "hashtags": "Hashtags",
+        "hashtagsPlaceholder": "e.g. #foodie #lunch #restaurant",
+        "sendingRecommendation": "Sending notes",
+        "sendingRecommendationPlaceholder": "Internal notes on when or how to send"
+      },
+      "productPicker": {
+        "title": "Select a menu product",
+        "description": "Choose an available product from your restaurant menu.",
+        "emptyTitle": "No products available",
+        "emptyDescription": "Add available products to your menu before creating dish-focused campaigns.",
+        "footerHint": "Only available menu products are shown.",
+        "selectProduct": "Select product"
       },
       "quickActions": {
         "title": "Quick actions",

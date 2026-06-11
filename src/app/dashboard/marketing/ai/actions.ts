@@ -7,10 +7,12 @@ import {
 } from "@/lib/marketing/ai/generate-marketing-copy";
 import {
   generateMarketingCopyInputSchema,
+  generatedMarketingCampaignSchema,
   type GeneratedMarketingCampaign,
 } from "@/lib/marketing/ai/schema";
 import { requireRestaurantMarketingWriteAccess } from "@/lib/marketing/api-auth";
 import {
+  getMenuItemForMarketing,
   getRestaurantName,
   saveMarketingCampaign,
 } from "@/lib/marketing/repository";
@@ -40,9 +42,20 @@ export async function generateMarketingCampaignAction(
   }
 
   try {
+    const menuItem = parsed.data.menuItemId
+      ? await getMenuItemForMarketing(restaurantId, parsed.data.menuItemId)
+      : null;
+
+    if (parsed.data.menuItemId && !menuItem) {
+      return { ok: false, error: "INVALID_INPUT" };
+    }
+
     const restaurantName = await getRestaurantName(restaurantId);
+
     const campaign = await generateMarketingCopy(parsed.data, {
       restaurantName,
+      productDescription: menuItem?.description,
+      productCategory: menuItem?.categoryName,
     });
 
     return { ok: true, campaign };
@@ -72,16 +85,33 @@ export async function saveMarketingCampaignAction(
     return { ok: false, error: "INVALID_INPUT" };
   }
 
+  if (parsed.data.menuItemId) {
+    const menuItem = await getMenuItemForMarketing(
+      restaurantId,
+      parsed.data.menuItemId,
+    );
+
+    if (!menuItem) {
+      return { ok: false, error: "INVALID_INPUT" };
+    }
+  }
+
+  const parsedOutput = generatedMarketingCampaignSchema.safeParse(output);
+
+  if (!parsedOutput.success) {
+    return { ok: false, error: "INVALID_INPUT" };
+  }
+
   try {
     const saved = await saveMarketingCampaign({
       restaurantId,
       createdById: access.context.user.id,
       formInput: parsed.data,
-      output,
+      output: parsedOutput.data,
       status: "saved",
     });
 
-    revalidatePath("/dashboard/marketing/ai");
+    revalidatePath("/dashboard/marketing/ai", "layout");
 
     return { ok: true, id: saved.id };
   } catch {

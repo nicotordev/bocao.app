@@ -5,6 +5,7 @@ import type {
   MARKETING_TONES,
 } from "@/lib/marketing/ai/schema";
 import type { MarketingCampaignRecord } from "@/lib/marketing/ai/types";
+import type { MenuItemOption } from "@/lib/menu/types";
 
 export type MarketingAiOptionMap<T extends string> = Record<T, string>;
 
@@ -15,6 +16,7 @@ export type MarketingAiLabels = {
   };
   actions: {
     newCampaign: string;
+    newManualCampaign: string;
     viewHistory: string;
     generate: string;
     copy: string;
@@ -25,6 +27,11 @@ export type MarketingAiLabels = {
     copySuccess: string;
     saveSuccess: string;
     comingSoon: string;
+    back: string;
+    next: string;
+    previous: string;
+    viewCampaign: string;
+    createFirst: string;
   };
   form: {
     title: string;
@@ -34,6 +41,10 @@ export type MarketingAiLabels = {
     audience: string;
     productName: string;
     productNamePlaceholder: string;
+    selectProduct: string;
+    changeProduct: string;
+    clearProduct: string;
+    noProductSelected: string;
     promotion: string;
     promotionPlaceholder: string;
     extraInstructions: string;
@@ -59,6 +70,60 @@ export type MarketingAiLabels = {
     title: string;
     emptyTitle: string;
     emptyDescription: string;
+  };
+  overview: {
+    totalCampaigns: string;
+    recentCampaigns: string;
+    channelsUsed: string;
+    emptyTitle: string;
+    emptyDescription: string;
+  };
+  wizard: {
+    title: string;
+    subtitle: string;
+    stepProgress: string;
+    steps: {
+      goal: string;
+      audience: string;
+      details: string;
+      result: string;
+    };
+    reviewTitle: string;
+    reviewDescription: string;
+    generateHint: string;
+    manualHint: string;
+    modeTitle: string;
+    modeDescription: string;
+  };
+  mode: {
+    ai: string;
+    manual: string;
+    aiDescription: string;
+    manualDescription: string;
+    badgeAi: string;
+    badgeManual: string;
+  };
+  manual: {
+    title: string;
+    titlePlaceholder: string;
+    mainMessage: string;
+    mainMessagePlaceholder: string;
+    callToAction: string;
+    callToActionPlaceholder: string;
+    shortVersion: string;
+    shortVersionPlaceholder: string;
+    hashtags: string;
+    hashtagsPlaceholder: string;
+    sendingRecommendation: string;
+    sendingRecommendationPlaceholder: string;
+  };
+  productPicker: {
+    title: string;
+    description: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    footerHint: string;
+    selectProduct: string;
   };
   quickActions: {
     title: string;
@@ -89,5 +154,16 @@ export type MarketingAiPageClientProps = {
   restaurantId: string;
   restaurantName: string;
   canEdit: boolean;
-  initialCampaigns: MarketingCampaignRecord[];
+  campaigns: MarketingCampaignRecord[];
+};
+
+export type MarketingAiNewPageClientProps = {
+  labels: MarketingAiLabels;
+  restaurantId: string;
+  restaurantName: string;
+  currency: string;
+  canEdit: boolean;
+  menuItems: MenuItemOption[];
+  initialPreset?: string;
+  initialMode?: "ai" | "manual";
 };

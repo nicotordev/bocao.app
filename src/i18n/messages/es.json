@@ -1661,6 +1661,7 @@
       "title": "Marketing con IA",
       "description": "Genera campañas, promociones y mensajes personalizados para tus clientes.",
       "newCampaign": "Nueva campaña",
+      "newManualCampaign": "Nueva campaña manual",
       "viewHistory": "Ver historial",
       "generate": "Generar campaña",
       "copy": "Copiar",
@@ -1671,6 +1672,13 @@
       "copySuccess": "Campaña copiada al portapapeles",
       "saveSuccess": "Campaña guardada correctamente",
       "comingSoon": "Próximamente",
+      "actions": {
+        "back": "Volver a marketing",
+        "next": "Siguiente",
+        "previous": "Anterior",
+        "viewCampaign": "Ver campaña",
+        "createFirst": "Crear tu primera campaña"
+      },
       "form": {
         "title": "Configuración de campaña",
         "campaignGoal": "Objetivo de campaña",
@@ -1679,6 +1687,10 @@
         "audience": "Audiencia",
         "productName": "Producto o plato (opcional)",
         "productNamePlaceholder": "ej. Pizza margarita, menú del día",
+        "selectProduct": "Seleccionar del menú",
+        "changeProduct": "Cambiar producto",
+        "clearProduct": "Quitar selección",
+        "noProductSelected": "Aún no hay producto seleccionado.",
         "promotion": "Descuento o promoción (opcional)",
         "promotionPlaceholder": "ej. 20% de descuento, 2x1 en postres",
         "extraInstructions": "Instrucciones adicionales (opcional)",
@@ -1730,6 +1742,60 @@
         "title": "Historial de campañas",
         "emptyTitle": "No hay campañas guardadas",
         "emptyDescription": "Las campañas guardadas aparecerán aquí para reutilizarlas después."
+      },
+      "overview": {
+        "totalCampaigns": "Campañas totales",
+        "recentCampaigns": "Campañas recientes",
+        "channelsUsed": "Canales usados",
+        "emptyTitle": "Aún no hay campañas",
+        "emptyDescription": "Crea tu primera campaña con IA para empezar tu biblioteca de marketing."
+      },
+      "wizard": {
+        "title": "Nueva campaña con IA",
+        "subtitle": "Configura tu campaña paso a paso y genera textos con IA.",
+        "stepProgress": "Paso {current} de {total}",
+        "steps": {
+          "goal": "Objetivo y canal",
+          "audience": "Tono y audiencia",
+          "details": "Producto y promo",
+          "result": "Resultado IA"
+        },
+        "reviewTitle": "Resumen de campaña",
+        "reviewDescription": "Revisa la configuración usada para generar este texto.",
+        "generateHint": "Genera la campaña para ver aquí el texto creado por IA.",
+        "manualHint": "Escribe el contenido de la campaña manualmente y guárdala cuando esté lista.",
+        "modeTitle": "Modo de creación",
+        "modeDescription": "Elige si quieres generar el texto con IA o escribirlo tú mismo."
+      },
+      "mode": {
+        "ai": "Con IA",
+        "manual": "Manual",
+        "aiDescription": "Genera el texto automáticamente según la configuración de la campaña.",
+        "manualDescription": "Escribe tú el título, mensaje y llamada a la acción.",
+        "badgeAi": "IA",
+        "badgeManual": "Manual"
+      },
+      "manual": {
+        "title": "Título de campaña",
+        "titlePlaceholder": "ej. Promo almuerzo de fin de semana",
+        "mainMessage": "Mensaje principal",
+        "mainMessagePlaceholder": "Escribe el mensaje que recibirán tus clientes",
+        "callToAction": "Llamada a la acción",
+        "callToActionPlaceholder": "ej. Reserva ahora, Pide hoy",
+        "shortVersion": "Versión corta",
+        "shortVersionPlaceholder": "Versión breve para SMS o WhatsApp",
+        "hashtags": "Hashtags",
+        "hashtagsPlaceholder": "ej. #foodie #almuerzo #restaurante",
+        "sendingRecommendation": "Notas de envío",
+        "sendingRecommendationPlaceholder": "Notas internas sobre cuándo o cómo enviar"
+      },
+      "productPicker": {
+        "title": "Seleccionar producto del menú",
+        "description": "Elige un producto disponible del menú de tu restaurante.",
+        "emptyTitle": "No hay productos disponibles",
+        "emptyDescription": "Agrega productos disponibles en tu menú antes de crear campañas enfocadas en platos.",
+        "footerHint": "Solo se muestran productos disponibles del menú.",
+        "selectProduct": "Seleccionar producto"
       },
       "quickActions": {
         "title": "Acciones rápidas",

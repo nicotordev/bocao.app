@@ -1,4 +1,4 @@
-import type { GeneratedMarketingCampaign } from "./schema";
+import type { CampaignSource, GeneratedMarketingCampaign } from "./schema";
 
 export type {
   GenerateMarketingCopyInput,
@@ -14,6 +14,7 @@ export type MarketingCampaignRecord = {
   productName: string | null;
   promotion: string | null;
   status: string;
+  source: CampaignSource;
   output: GeneratedMarketingCampaign;
   createdAt: string;
 };

@@ -21,10 +21,14 @@ Respond only with valid JSON matching the required schema.`;
 
 function buildUserPrompt(
   input: GenerateMarketingCopyInput,
-  restaurantName?: string,
+  options?: {
+    restaurantName?: string;
+    productDescription?: string | null;
+    productCategory?: string;
+  },
 ): string {
   const lines = [
-    `Restaurant: ${restaurantName ?? "the restaurant"}`,
+    `Restaurant: ${options?.restaurantName ?? "the restaurant"}`,
     `Campaign goal: ${input.campaignGoal}`,
     `Channel: ${input.channel}`,
     `Tone: ${input.tone}`,
@@ -33,6 +37,14 @@ function buildUserPrompt(
 
   if (input.productName) {
     lines.push(`Product/dish: ${input.productName}`);
+  }
+
+  if (options?.productCategory) {
+    lines.push(`Product category: ${options.productCategory}`);
+  }
+
+  if (options?.productDescription) {
+    lines.push(`Product description: ${options.productDescription}`);
   }
 
   if (input.promotion) {
@@ -65,7 +77,11 @@ export class MarketingCopyGenerationError extends Error {
 
 export async function generateMarketingCopy(
   input: GenerateMarketingCopyInput,
-  options?: { restaurantName?: string },
+  options?: {
+    restaurantName?: string;
+    productDescription?: string | null;
+    productCategory?: string;
+  },
 ): Promise<GeneratedMarketingCampaign> {
   let client;
 
@@ -82,7 +98,7 @@ export async function generateMarketingCopy(
     const response = await client.responses.parse({
       model: getMarketingModel(),
       instructions: SYSTEM_PROMPT,
-      input: buildUserPrompt(input, options?.restaurantName),
+      input: buildUserPrompt(input, options),
       text: {
         format: zodTextFormat(
           generatedMarketingCampaignSchema,
