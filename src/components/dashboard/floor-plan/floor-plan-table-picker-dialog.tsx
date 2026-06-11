@@ -18,6 +18,7 @@ import type { DiningSurfaceRecord } from "@/lib/floor-plan/types";
 export type FloorPlanTablePickerDialogLabels = {
   title: string;
   description: string;
+  emptySurfaces: string;
   legendFree: string;
   legendOccupied: string;
   legendSelected: string;
@@ -65,9 +66,7 @@ export function FloorPlanTablePickerDialog({
     onOpenChange(false);
   }
 
-  if (!selection.activeSurface) {
-    return null;
-  }
+  const activeSurface = selection.activeSurface;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,42 +78,52 @@ export function FloorPlanTablePickerDialog({
           <DialogDescription>{labels.description}</DialogDescription>
         </DialogHeader>
 
-        <div className="shrink-0 border-b border-border px-6 py-4">
-          <FloorPlanFloorSwitcher
-            surfaces={surfaces}
-            currentFloor={selection.currentFloor}
-            activeSurfaceId={selection.activeSurfaceId}
-            labels={labels.floorSwitcher}
-            floorNameLabels={labels.floorName}
-            canFloorUp={selection.canFloorUp}
-            canFloorDown={selection.canFloorDown}
-            onFloorUp={() => selection.navigateFloor("up")}
-            onFloorDown={() => selection.navigateFloor("down")}
-            onSelectSurface={selection.selectSurface}
-          />
-        </div>
-
-        <div className="min-h-0 overflow-y-auto px-6 py-5">
-          <div
-            ref={canvasContainerRef}
-            className="min-h-[min(60vh,560px)] w-full"
-          >
-            <FloorPlanTablePicker
-              surface={selection.activeSurface}
-              occupiedTableNumbers={occupiedTableNumbers}
-              selectedTableNumber={selectedTableNumber}
-              onSelectTable={handleSelectTable}
-              labels={{
-                legendFree: labels.legendFree,
-                legendOccupied: labels.legendOccupied,
-                legendSelected: labels.legendSelected,
-                pickHint: labels.pickHint,
-              }}
-              canvasWidth={canvasSize.width}
-              canvasHeight={canvasSize.height}
-              fillContainer
+        {surfaces.length > 0 ? (
+          <div className="shrink-0 border-b border-border px-6 py-4">
+            <FloorPlanFloorSwitcher
+              surfaces={surfaces}
+              currentFloor={selection.currentFloor}
+              activeSurfaceId={selection.activeSurfaceId}
+              labels={labels.floorSwitcher}
+              floorNameLabels={labels.floorName}
+              canFloorUp={selection.canFloorUp}
+              canFloorDown={selection.canFloorDown}
+              onFloorUp={() => selection.navigateFloor("up")}
+              onFloorDown={() => selection.navigateFloor("down")}
+              onSelectSurface={selection.selectSurface}
             />
           </div>
+        ) : null}
+
+        <div className="min-h-0 overflow-y-auto px-6 py-5">
+          {activeSurface ? (
+            <div
+              ref={canvasContainerRef}
+              className="min-h-[min(60vh,560px)] w-full"
+            >
+              <FloorPlanTablePicker
+                surface={activeSurface}
+                occupiedTableNumbers={occupiedTableNumbers}
+                selectedTableNumber={selectedTableNumber}
+                onSelectTable={handleSelectTable}
+                labels={{
+                  legendFree: labels.legendFree,
+                  legendOccupied: labels.legendOccupied,
+                  legendSelected: labels.legendSelected,
+                  pickHint: labels.pickHint,
+                }}
+                canvasWidth={canvasSize.width}
+                canvasHeight={canvasSize.height}
+                fillContainer
+              />
+            </div>
+          ) : (
+            <div className="flex min-h-[min(40vh,320px)] items-center justify-center rounded-3xl border border-dashed border-border bg-muted/30 px-6 py-10 text-center">
+              <p className="text-sm text-muted-foreground">
+                {labels.emptySurfaces}
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

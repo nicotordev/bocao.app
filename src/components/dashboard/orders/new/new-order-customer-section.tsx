@@ -293,6 +293,7 @@ export function NewOrderCustomerSection({
           labels={{
             title: labels.table.pickerDialogTitle,
             description: labels.table.pickerDialogDescription,
+            emptySurfaces: labels.table.configureFloorPlan,
             legendFree: labels.table.pickerFree,
             legendOccupied: labels.table.pickerOccupied,
             legendSelected: labels.table.pickerSelected,
