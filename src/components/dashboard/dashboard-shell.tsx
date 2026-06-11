@@ -60,7 +60,12 @@ function DashboardShellInner({ context, children }: DashboardShellProps) {
             activeRestaurant={context.activeRestaurant}
           />
         )}
-        <div className={cn("flex-1", isFocused && "min-h-0 h-full")}>
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col",
+            isFocused && "h-full",
+          )}
+        >
           {children}
         </div>
       </SidebarInset>

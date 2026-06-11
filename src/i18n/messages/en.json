@@ -1657,6 +1657,48 @@
         }
       }
     },
+    "whatsappInbox": {
+      "title": "WhatsApp Inbox",
+      "description": "Manage conversations and reply to customers from one place.",
+      "open": "Open",
+      "closed": "Closed",
+      "assignedToMe": "Assigned to me",
+      "unassigned": "Unassigned",
+      "all": "All",
+      "searchPlaceholder": "Search by customer, phone, or message...",
+      "sendMessage": "Send message",
+      "messagePlaceholder": "Write a reply...",
+      "closeConversation": "Close conversation",
+      "reopenConversation": "Reopen conversation",
+      "emptyTitle": "No conversations yet",
+      "emptyDescription": "When WhatsApp messages arrive, they will appear here.",
+      "selectConversation": "Select a conversation to view messages.",
+      "customer": "Customer",
+      "phone": "Phone",
+      "status": "Status",
+      "assignedTo": "Assigned to",
+      "unassignedLabel": "Unassigned",
+      "assignTo": "Assign conversation",
+      "suggestAiReply": "Suggest reply with AI",
+      "suggestAiReplySoon": "AI reply suggestions are coming soon.",
+      "messageStatus": {
+        "received": "Received",
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read",
+        "failed": "Failed"
+      },
+      "errors": {
+        "sendFailed": "We could not send the message. Please try again.",
+        "updateFailed": "We could not update the conversation. Please try again."
+      },
+      "success": {
+        "sent": "Message sent",
+        "closed": "Conversation closed",
+        "reopened": "Conversation reopened",
+        "assigned": "Conversation assigned"
+      }
+    },
     "marketingAi": {
       "title": "AI Marketing",
       "description": "Generate campaigns, promotions, and personalized messages for your customers.",

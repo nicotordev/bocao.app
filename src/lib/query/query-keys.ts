@@ -61,6 +61,24 @@ export const queryKeys = {
     importable: (restaurantId: string) =>
       [...queryKeys.menu.all, "importable", restaurantId] as const,
   },
+  whatsapp: {
+    all: ["whatsapp"] as const,
+    conversations: () => [...queryKeys.whatsapp.all, "conversations"] as const,
+    conversationsList: (
+      restaurantId: string,
+      filters?: Record<string, unknown>,
+    ) =>
+      [...queryKeys.whatsapp.conversations(), restaurantId, filters ?? {}] as const,
+    conversation: (restaurantId: string, conversationId: string) =>
+      [
+        ...queryKeys.whatsapp.all,
+        "conversation",
+        restaurantId,
+        conversationId,
+      ] as const,
+    members: (restaurantId: string) =>
+      [...queryKeys.whatsapp.all, "members", restaurantId] as const,
+  },
   customers: {
     all: ["customers"] as const,
     pages: () => [...queryKeys.customers.all, "page"] as const,

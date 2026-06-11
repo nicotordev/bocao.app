@@ -1657,6 +1657,48 @@
         }
       }
     },
+    "whatsappInbox": {
+      "title": "WhatsApp Inbox",
+      "description": "Gestiona conversaciones y responde clientes desde un solo lugar.",
+      "open": "Abiertas",
+      "closed": "Cerradas",
+      "assignedToMe": "Asignadas a mí",
+      "unassigned": "Sin asignar",
+      "all": "Todas",
+      "searchPlaceholder": "Buscar por cliente, teléfono o mensaje...",
+      "sendMessage": "Enviar mensaje",
+      "messagePlaceholder": "Escribe una respuesta...",
+      "closeConversation": "Cerrar conversación",
+      "reopenConversation": "Reabrir conversación",
+      "emptyTitle": "No hay conversaciones todavía",
+      "emptyDescription": "Cuando lleguen mensajes de WhatsApp, aparecerán aquí.",
+      "selectConversation": "Selecciona una conversación para ver los mensajes.",
+      "customer": "Cliente",
+      "phone": "Teléfono",
+      "status": "Estado",
+      "assignedTo": "Asignada a",
+      "unassignedLabel": "Sin asignar",
+      "assignTo": "Asignar conversación",
+      "suggestAiReply": "Sugerir respuesta con IA",
+      "suggestAiReplySoon": "Las sugerencias con IA estarán disponibles pronto.",
+      "messageStatus": {
+        "received": "Recibido",
+        "sent": "Enviado",
+        "delivered": "Entregado",
+        "read": "Leído",
+        "failed": "Fallido"
+      },
+      "errors": {
+        "sendFailed": "No pudimos enviar el mensaje. Intenta de nuevo.",
+        "updateFailed": "No pudimos actualizar la conversación. Intenta de nuevo."
+      },
+      "success": {
+        "sent": "Mensaje enviado",
+        "closed": "Conversación cerrada",
+        "reopened": "Conversación reabierta",
+        "assigned": "Conversación asignada"
+      }
+    },
     "marketingAi": {
       "title": "Marketing con IA",
       "description": "Genera campañas, promociones y mensajes personalizados para tus clientes.",

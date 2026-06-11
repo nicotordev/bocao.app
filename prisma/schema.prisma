@@ -237,6 +237,38 @@ enum KitchenStationCategory {
   OTHER
 }
 
+enum MessagingProvider {
+  META_WHATSAPP
+  TWILIO_WHATSAPP
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  UNKNOWN
+}
+
+enum MessageStatus {
+  RECEIVED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
 /// Restaurant (location) operating under an organization.
 model Restaurant {
   id             String        @id @default(cuid())
@@ -272,6 +304,7 @@ model Restaurant {
   productPurchaseFlows  ProductPurchaseFlow[]
   kitchenStations       KitchenStation[]
   marketingCampaigns    MarketingCampaign[]
+  conversations         Conversation[]
 
   @@index([organizationId])
 }
@@ -691,6 +724,56 @@ model Reservation {
   @@index([restaurantId])
   @@index([scheduledAt])
   @@index([status])
+}
+
+/// WhatsApp (or other provider) conversation thread scoped to a restaurant.
+model Conversation {
+  id               String             @id @default(cuid())
+  tenantId         String
+  restaurantId     String
+  provider         MessagingProvider
+  providerThreadId String?
+  customerName     String?
+  customerPhone    String
+  status           ConversationStatus @default(OPEN)
+  assignedToId     String?
+  lastMessageAt    DateTime?
+  lastMessageText  String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@index([tenantId, restaurantId, status])
+  @@index([restaurantId, customerPhone])
+  @@index([restaurantId, lastMessageAt])
+}
+
+/// Individual message within a conversation.
+model Message {
+  id                String            @id @default(cuid())
+  tenantId          String
+  restaurantId      String
+  conversationId    String
+  provider          MessagingProvider
+  providerMessageId String?
+  direction         MessageDirection
+  type              MessageType
+  status            MessageStatus     @default(RECEIVED)
+  fromPhone         String?
+  toPhone           String?
+  body              String?
+  rawPayload        Json?
+  sentAt            DateTime?
+  receivedAt        DateTime?
+  createdAt         DateTime          @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerMessageId])
+  @@index([tenantId, restaurantId, createdAt])
+  @@index([conversationId, createdAt])
 }
 
 /// Domain events persisted after successful mutations for audit and realtime fan-out.

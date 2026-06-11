@@ -7,7 +7,7 @@ import type { KitchenListResponse } from "@/lib/kitchen/repository";
 import { fetchKitchenRealtimeToken } from "@/lib/query/kitchen/kitchen.api";
 import { queryKeys } from "@/lib/query/query-keys";
 import {
-  isAppRealtimeEvent,
+  isKitchenRealtimeEvent,
   type KitchenRealtimeConnectionState,
   type KitchenRealtimePayload,
 } from "@/lib/realtime/types";
@@ -191,7 +191,7 @@ export function useKitchenRealtime({
               return;
             }
 
-            if (!isAppRealtimeEvent(parsed)) {
+            if (!isKitchenRealtimeEvent(parsed)) {
               refetchKitchenRef.current();
               return;
             }

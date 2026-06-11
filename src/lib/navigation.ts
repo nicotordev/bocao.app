@@ -67,7 +67,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "whatsapp",
     label: "WhatsApp Inbox",
-    href: "/dashboard/whatsapp",
+    href: "/dashboard/whatsapp/inbox",
     icon: "whatsapp",
     group: "clientes",
     permission: PERMISSIONS.WHATSAPP_READ,
