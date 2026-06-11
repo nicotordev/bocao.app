@@ -1657,6 +1657,105 @@
         }
       }
     },
+    "analytics": {
+      "title": "Analítica",
+      "description": "Mide ventas, pedidos, canales y rendimiento operativo.",
+      "totalRevenue": "Ventas totales",
+      "orders": "Pedidos",
+      "averageTicket": "Ticket promedio",
+      "uniqueCustomers": "Clientes únicos",
+      "cancellationRate": "Tasa de cancelación",
+      "averagePreparationTime": "Tiempo promedio de preparación",
+      "revenueOverTime": "Ventas en el tiempo",
+      "ordersOverTime": "Pedidos en el tiempo",
+      "ordersByChannel": "Pedidos por canal",
+      "topProducts": "Productos más vendidos",
+      "peakHours": "Horarios peak",
+      "kitchenPerformance": "Rendimiento de cocina",
+      "customerInsightsSection": "Insights de clientes",
+      "aiInsights": "Insights con IA",
+      "exportCsv": "Exportar CSV",
+      "exportSuccess": "Analítica exportada correctamente.",
+      "clearFilters": "Limpiar filtros",
+      "vsPrevious": "vs período anterior",
+      "minutesShort": "{minutes} min",
+      "emptyTitle": "Todavía no hay datos suficientes",
+      "emptyDescription": "Cuando empieces a registrar pedidos, verás métricas aquí.",
+      "filters": {
+        "restaurant": "Restaurante",
+        "dateRange": "Rango de fechas",
+        "channel": "Canal",
+        "status": "Estado de orden",
+        "from": "Desde",
+        "to": "Hasta",
+        "all": "Todos",
+        "activeCount": "{count} filtros activos",
+        "noActive": "Sin filtros activos",
+        "presets": {
+          "today": "Hoy",
+          "yesterday": "Ayer",
+          "last7days": "Últimos 7 días",
+          "last30days": "Últimos 30 días",
+          "thisMonth": "Este mes",
+          "lastMonth": "Mes anterior",
+          "custom": "Personalizado"
+        }
+      },
+      "channels": {
+        "all": "Todos los canales",
+        "pos": "POS",
+        "whatsapp": "WhatsApp",
+        "web": "Web",
+        "delivery": "Delivery",
+        "manual": "Manual"
+      },
+      "statuses": {
+        "all": "Todas",
+        "confirmed": "Confirmadas",
+        "completed": "Completadas",
+        "cancelled": "Canceladas"
+      },
+      "charts": {
+        "revenue": "Ventas",
+        "orders": "Pedidos",
+        "hour": "Hora",
+        "product": "Producto",
+        "quantity": "Cantidad",
+        "share": "Participación"
+      },
+      "customerInsights": {
+        "uniqueCustomers": "Clientes únicos",
+        "customersWithOrders": "Clientes con pedidos",
+        "reservations": "Reservas en el período"
+      },
+      "kitchen": {
+        "averagePreparation": "Tiempo promedio de preparación",
+        "delayedOrders": "Pedidos atrasados",
+        "busiestStation": "Estación más cargada",
+        "stationStats": "Rendimiento por estación",
+        "emptyTitle": "Sin métricas de cocina",
+        "emptyDescription": "Los tiempos de preparación aparecerán cuando los pedidos incluyan timestamps de cocina.",
+        "todoStations": "TODO: Conectar datos de KitchenEvent para métricas por estación."
+      },
+      "table": {
+        "product": "Producto",
+        "quantity": "Cantidad vendida",
+        "revenue": "Ingresos",
+        "share": "% del total"
+      },
+      "insights": {
+        "revenueUp": "Tus ventas subieron {percent}% vs el período anterior.",
+        "revenueDown": "Tus ventas bajaron {percent}% vs el período anterior.",
+        "topChannel": "El canal con más ventas fue {channel}.",
+        "topProduct": "Tu producto más vendido fue {product}.",
+        "peakHours": "La mayor demanda ocurre entre {start} y {end}.",
+        "cancellationHigh": "La tasa de cancelación es {percent}%."
+      },
+      "permissions": {
+        "deniedTitle": "Se requiere acceso a analítica",
+        "deniedDescription": "No tienes permiso para ver analítica de este restaurante."
+      }
+    },
     "whatsappInbox": {
       "title": "WhatsApp Inbox",
       "description": "Gestiona conversaciones y responde clientes desde un solo lugar.",

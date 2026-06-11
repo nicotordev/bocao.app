@@ -2,6 +2,7 @@ import {
   customersPageQueryFilters,
   type CustomersListFilters,
 } from "@/lib/customers/filters";
+import type { AnalyticsListFilters } from "@/lib/analytics/filters";
 import type { KitchenListFilters } from "@/lib/kitchen/list-filters";
 import type { OrdersKpiFilters, OrdersListFilters } from "@/lib/orders/filters";
 
@@ -78,6 +79,16 @@ export const queryKeys = {
       ] as const,
     members: (restaurantId: string) =>
       [...queryKeys.whatsapp.all, "members", restaurantId] as const,
+  },
+  analytics: {
+    all: ["analytics"] as const,
+    dashboards: () => [...queryKeys.analytics.all, "dashboard"] as const,
+    dashboard: (restaurantId: string, filters?: AnalyticsListFilters) =>
+      [
+        ...queryKeys.analytics.dashboards(),
+        restaurantId,
+        filters ?? {},
+      ] as const,
   },
   customers: {
     all: ["customers"] as const,
