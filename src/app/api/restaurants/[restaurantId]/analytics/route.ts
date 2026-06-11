@@ -68,23 +68,35 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   const t = await getTranslations("dashboard.analytics");
-  const tInsights = await getTranslations("dashboard.analytics.insights");
+  const channelLabels = {
+    pos: t("channels.pos"),
+    whatsapp: t("channels.whatsapp"),
+    web: t("channels.web"),
+    delivery: t("channels.delivery"),
+    manual: t("channels.manual"),
+  };
+
+  const tKitchen = await getTranslations("dashboard.kitchen");
 
   const data = await getAnalyticsDashboardData(filters, {
-    insightLabels: {
-      revenueUp: tInsights.raw("revenueUp"),
-      revenueDown: tInsights.raw("revenueDown"),
-      topChannel: tInsights.raw("topChannel"),
-      topProduct: tInsights.raw("topProduct"),
-      peakHours: tInsights.raw("peakHours"),
-      cancellationHigh: tInsights.raw("cancellationHigh"),
-      channelLabels: {
-        pos: t("channels.pos"),
-        whatsapp: t("channels.whatsapp"),
-        web: t("channels.web"),
-        delivery: t("channels.delivery"),
-        manual: t("channels.manual"),
-      },
+    restaurantName: activeRestaurant.name,
+    channelLabels,
+    kitchenStationLabels: {
+      grill: tKitchen("stationTypes.grill"),
+      fryer: tKitchen("stationTypes.fryer"),
+      sushi: tKitchen("stationTypes.sushi"),
+      bar: tKitchen("stationTypes.bar"),
+      desserts: tKitchen("stationTypes.desserts"),
+      delivery_station: tKitchen("stationTypes.delivery"),
+    },
+    fallbackInsightLabels: {
+      revenueUp: t.raw("insights.revenueUp"),
+      revenueDown: t.raw("insights.revenueDown"),
+      topChannel: t.raw("insights.topChannel"),
+      topProduct: t.raw("insights.topProduct"),
+      peakHours: t.raw("insights.peakHours"),
+      cancellationHigh: t.raw("insights.cancellationHigh"),
+      channelLabels,
     },
   });
 

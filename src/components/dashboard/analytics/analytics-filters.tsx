@@ -23,7 +23,7 @@ import type {
   AnalyticsDatePreset,
   AnalyticsOrderStatus,
 } from "@/lib/analytics/types";
-import type { AnalyticsLabels, AnalyticsRestaurantOption } from "./types";
+import type { AnalyticsLabels } from "./types";
 
 const presetOptions: AnalyticsDatePreset[] = [
   "today",
@@ -53,11 +53,8 @@ const statusOptions: AnalyticsOrderStatus[] = [
 
 type AnalyticsFiltersProps = {
   labels: AnalyticsLabels;
-  restaurants: AnalyticsRestaurantOption[];
-  activeRestaurantId: string;
   value: AnalyticsListFilters;
   onChange: (value: AnalyticsListFilters) => void;
-  onRestaurantChange: (restaurantId: string) => void;
   onClear: () => void;
 };
 
@@ -81,11 +78,8 @@ function countActiveFilters(value: AnalyticsListFilters) {
 
 export function AnalyticsFilters({
   labels,
-  restaurants,
-  activeRestaurantId,
   value,
   onChange,
-  onRestaurantChange,
   onClear,
 }: AnalyticsFiltersProps) {
   const activeCount = countActiveFilters(value);
@@ -96,30 +90,9 @@ export function AnalyticsFilters({
   ) => onChange({ ...value, [key]: nextValue });
 
   return (
-    <section className="sticky top-14 z-20 overflow-visible rounded-3xl border border-border/70 bg-background/90 p-3 shadow-sm backdrop-blur md:top-16">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="space-y-2">
-            <Label htmlFor="analytics-filter-restaurant">
-              {labels.filters.restaurant}
-            </Label>
-            <Select value={activeRestaurantId} onValueChange={onRestaurantChange}>
-              <SelectTrigger
-                id="analytics-filter-restaurant"
-                className="w-full rounded-2xl"
-              >
-                <SelectValue placeholder={labels.filters.restaurant} />
-              </SelectTrigger>
-              <SelectContent>
-                {restaurants.map((restaurant) => (
-                  <SelectItem key={restaurant.id} value={restaurant.id}>
-                    {restaurant.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+    <section className="overflow-visible rounded-3xl border border-border/70 bg-background/90 p-3 shadow-sm">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="analytics-filter-preset">
               {labels.filters.dateRange}

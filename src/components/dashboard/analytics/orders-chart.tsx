@@ -1,6 +1,12 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
@@ -23,19 +29,19 @@ type OrdersChartProps = {
   ordersLabel: string;
 };
 
-const chartConfig = {
-  orders: {
-    label: "Orders",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
-
 export function OrdersChart({
   title,
   description,
   data,
   ordersLabel,
 }: OrdersChartProps) {
+  const chartConfig = {
+    orders: {
+      label: ordersLabel,
+      color: "var(--chart-2)",
+    },
+  } satisfies ChartConfig;
+
   return (
     <Card className="border-border/60 bg-card/80">
       <CardHeader>
@@ -43,9 +49,21 @@ export function OrdersChart({
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={{ ...chartConfig, orders: { ...chartConfig.orders, label: ordersLabel } }} className="h-[280px] w-full">
-          <LineChart data={data} margin={{ left: 8, right: 8, top: 8 }}>
-            <CartesianGrid vertical={false} />
+        <ChartContainer config={chartConfig} className="h-[280px] w-full">
+          <AreaChart data={data} margin={{ left: 8, right: 8, top: 8 }}>
+            <defs>
+              <linearGradient id="analyticsOrdersFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.55} />
+                <stop offset="55%" stopColor="var(--chart-4)" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="var(--chart-5)" stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="analyticsOrdersStroke" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="var(--chart-2)" />
+                <stop offset="50%" stopColor="var(--chart-3)" />
+                <stop offset="100%" stopColor="var(--primary)" />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -55,14 +73,26 @@ export function OrdersChart({
             />
             <YAxis tickLine={false} axisLine={false} width={40} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <Line
+            <Area
               type="monotone"
               dataKey="orders"
-              stroke="var(--color-orders)"
-              strokeWidth={2}
-              dot={false}
+              stroke="url(#analyticsOrdersStroke)"
+              strokeWidth={2.5}
+              fill="url(#analyticsOrdersFill)"
+              dot={{
+                r: 3,
+                fill: "var(--chart-1)",
+                stroke: "var(--background)",
+                strokeWidth: 2,
+              }}
+              activeDot={{
+                r: 5,
+                fill: "var(--primary)",
+                stroke: "var(--background)",
+                strokeWidth: 2,
+              }}
             />
-          </LineChart>
+          </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>

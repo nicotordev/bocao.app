@@ -21,3 +21,11 @@ export function getOpenAIClient(): OpenAI {
 export function getMarketingModel(): string {
   return process.env.OPENAI_MARKETING_MODEL ?? "gpt-4.1-mini";
 }
+
+export function getAnalyticsModel(): string {
+  return (
+    process.env.OPENAI_ANALYTICS_MODEL ??
+    process.env.OPENAI_MARKETING_MODEL ??
+    "gpt-4.1-mini"
+  );
+}

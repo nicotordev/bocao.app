@@ -49,6 +49,8 @@ export type AnalyticsLabels = {
     kitchenPerformance: string;
     customerInsights: string;
     aiInsights: string;
+    viewMore: string;
+    insightsDialogDescription: string;
     revenue: string;
     orders: string;
     hour: string;
@@ -68,7 +70,8 @@ export type AnalyticsLabels = {
     stationStats: string;
     emptyTitle: string;
     emptyDescription: string;
-    todoStations: string;
+    stationOrders: string;
+    stationEvents: string;
   };
   table: {
     product: string;
@@ -84,9 +87,4 @@ export type AnalyticsLabels = {
     deniedTitle: string;
     deniedDescription: string;
   };
-};
-
-export type AnalyticsRestaurantOption = {
-  id: string;
-  name: string;
 };

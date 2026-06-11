@@ -74,6 +74,18 @@ const CHANNEL_TO_KITCHEN: Record<string, KitchenChannel> = {
   pos: "table",
 };
 
+export function resolveKitchenStationFromDetails(
+  details: unknown,
+): KitchenStation {
+  const parsed = parseOrderDetailsJson<OrderDetailsJson>(details);
+
+  if (parsed.kitchen?.station) {
+    return parsed.kitchen.station;
+  }
+
+  return inferStation(mapItems(parsed));
+}
+
 function inferStation(items: KitchenOrderItem[]): KitchenStation {
   const haystack = items.map((item) => item.name.toLowerCase()).join(" ");
 

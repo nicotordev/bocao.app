@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { formatAnalyticsCurrency } from "@/lib/analytics/format";
 import type { PeakHour } from "@/lib/analytics/types";
 import {
@@ -10,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { AnalyticsLabels } from "./types";
+import { getAnalyticsChartColor } from "./chart-colors";
 
 type PeakHoursHeatmapProps = {
   title: string;
@@ -42,22 +42,18 @@ export function PeakHoursHeatmap({
           <p className="text-sm text-muted-foreground">{labels.empty.description}</p>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
-            {data.map((row) => {
+            {data.map((row, index) => {
               const intensity = row.orders / maxOrders;
+              const color = getAnalyticsChartColor(index);
 
               return (
                 <div
                   key={row.hour}
-                  className={cn(
-                    "rounded-2xl border border-border/60 p-3 transition",
-                    intensity > 0.7 && "border-primary/40 bg-primary/10",
-                    intensity > 0.35 &&
-                      intensity <= 0.7 &&
-                      "border-chart-2/30 bg-chart-2/10",
-                    intensity > 0 &&
-                      intensity <= 0.35 &&
-                      "bg-muted/30",
-                  )}
+                  className="rounded-2xl border p-3 transition"
+                  style={{
+                    borderColor: `color-mix(in oklch, ${color} ${Math.round(25 + intensity * 55)}%, transparent)`,
+                    backgroundColor: `color-mix(in oklch, ${color} ${Math.round(8 + intensity * 28)}%, transparent)`,
+                  }}
                 >
                   <p className="text-xs font-medium text-muted-foreground">
                     {formatHour(row.hour)}
@@ -67,9 +63,6 @@ export function PeakHoursHeatmap({
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {formatAnalyticsCurrency(row.revenue, currency, locale)}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {labels.charts.orders}: {row.orders}
                   </p>
                 </div>
               );

@@ -16,14 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { AnalyticsLabels } from "./types";
-
-const CHART_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-];
+import { getAnalyticsChartColor } from "./chart-colors";
 
 type ChannelBreakdownChartProps = {
   title: string;
@@ -40,15 +33,15 @@ export function ChannelBreakdownChart({
   currency,
   locale,
 }: ChannelBreakdownChartProps) {
-  const chartConfig = data.reduce<ChartConfig>((config, row, index) => {
+  const chartData = data.filter((row) => row.orders > 0);
+
+  const chartConfig = chartData.reduce<ChartConfig>((config, row, index) => {
     config[row.channel] = {
       label: labels.channels[row.channel],
-      color: CHART_COLORS[index % CHART_COLORS.length],
+      color: getAnalyticsChartColor(index),
     };
     return config;
   }, {});
-
-  const chartData = data.filter((row) => row.orders > 0);
 
   return (
     <Card className="border-border/60 bg-card/80">
@@ -79,14 +72,16 @@ export function ChannelBreakdownChart({
                 data={chartData}
                 dataKey="orders"
                 nameKey="channel"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
+                innerRadius={58}
+                outerRadius={102}
+                paddingAngle={4}
+                stroke="var(--background)"
+                strokeWidth={2}
               >
                 {chartData.map((row, index) => (
                   <Cell
                     key={row.channel}
-                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                    fill={getAnalyticsChartColor(index)}
                   />
                 ))}
               </Pie>

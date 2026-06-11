@@ -83,10 +83,59 @@ export function KitchenPerformanceCard({
               </span>
             </div>
 
-            {data?.stationStats.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                {labels.kitchen.todoStations}
-              </p>
+            {data?.busiestStation ? (
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {labels.kitchen.busiestStation}
+                </p>
+                <p className="mt-1 text-base font-semibold">{data.busiestStation}</p>
+              </div>
+            ) : null}
+
+            {data && data.stationStats.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {labels.kitchen.stationStats}
+                </p>
+                <ul className="space-y-2">
+                  {data.stationStats.map((stat) => (
+                    <li
+                      key={stat.station}
+                      className="rounded-2xl border border-border/60 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium">{stat.station}</p>
+                        <p className="shrink-0 text-sm font-semibold tabular-nums">
+                          {stat.averageMinutes > 0
+                            ? labels.kpis.minutesShort.replace(
+                                "{minutes}",
+                                String(stat.averageMinutes),
+                              )
+                            : labels.kpis.notAvailable}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        {stat.orderCount > 0 ? (
+                          <span>
+                            {labels.kitchen.stationOrders.replace(
+                              "{count}",
+                              String(stat.orderCount),
+                            )}
+                          </span>
+                        ) : null}
+                        {stat.kitchenEvents > 0 ? (
+                          <span>
+                            {labels.kitchen.stationEvents.replace(
+                              "{count}",
+                              String(stat.kitchenEvents),
+                            )}
+                          </span>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : null}
           </div>
         )}

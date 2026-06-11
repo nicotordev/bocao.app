@@ -1674,6 +1674,8 @@
       "kitchenPerformance": "Kitchen performance",
       "customerInsightsSection": "Customer insights",
       "aiInsights": "AI insights",
+      "viewMore": "See more",
+      "insightsDialogDescription": "Full AI-generated analysis for the selected period.",
       "exportCsv": "Export CSV",
       "exportSuccess": "Analytics exported successfully.",
       "clearFilters": "Clear filters",
@@ -1735,7 +1737,8 @@
         "stationStats": "Station performance",
         "emptyTitle": "No kitchen metrics yet",
         "emptyDescription": "Preparation times will appear when orders include kitchen timestamps.",
-        "todoStations": "TODO: Connect KitchenEvent data for per-station metrics."
+        "stationOrders": "{count} completed orders",
+        "stationEvents": "{count} kitchen events"
       },
       "table": {
         "product": "Product",

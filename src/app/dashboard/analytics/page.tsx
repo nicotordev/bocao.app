@@ -19,7 +19,16 @@ type AnalyticsPageProps = {
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
   const t = await getTranslations("dashboard.analytics");
+  const tKitchen = await getTranslations("dashboard.kitchen");
   const tCommon = await getTranslations("common");
+  const kitchenStationLabels = {
+    grill: tKitchen("stationTypes.grill"),
+    fryer: tKitchen("stationTypes.fryer"),
+    sushi: tKitchen("stationTypes.sushi"),
+    bar: tKitchen("stationTypes.bar"),
+    desserts: tKitchen("stationTypes.desserts"),
+    delivery_station: tKitchen("stationTypes.delivery"),
+  };
   const locale = await getLocale();
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
@@ -95,6 +104,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       kitchenPerformance: t("kitchenPerformance"),
       customerInsights: t("customerInsightsSection"),
       aiInsights: t("aiInsights"),
+      viewMore: t("viewMore"),
+      insightsDialogDescription: t("insightsDialogDescription"),
       revenue: t("charts.revenue"),
       orders: t("charts.orders"),
       hour: t("charts.hour"),
@@ -114,7 +125,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       stationStats: t("kitchen.stationStats"),
       emptyTitle: t("kitchen.emptyTitle"),
       emptyDescription: t("kitchen.emptyDescription"),
-      todoStations: t("kitchen.todoStations"),
+      stationOrders: t.raw("kitchen.stationOrders"),
+      stationEvents: t.raw("kitchen.stationEvents"),
     },
     table: {
       product: t("table.product"),
@@ -170,24 +182,29 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       locale,
     );
 
+    const channelLabels = {
+      pos: t("channels.pos"),
+      whatsapp: t("channels.whatsapp"),
+      web: t("channels.web"),
+      delivery: t("channels.delivery"),
+      manual: t("channels.manual"),
+    };
+
     await queryClient.prefetchQuery({
       ...analyticsDashboardQueryOptions(restaurantId, listFilters),
       queryFn: () =>
         getAnalyticsDashboardData(filters, {
-          insightLabels: {
+          restaurantName: context?.activeRestaurant?.name ?? "",
+          channelLabels,
+          kitchenStationLabels,
+          fallbackInsightLabels: {
             revenueUp: t.raw("insights.revenueUp"),
             revenueDown: t.raw("insights.revenueDown"),
             topChannel: t.raw("insights.topChannel"),
             topProduct: t.raw("insights.topProduct"),
             peakHours: t.raw("insights.peakHours"),
             cancellationHigh: t.raw("insights.cancellationHigh"),
-            channelLabels: {
-              pos: t("channels.pos"),
-              whatsapp: t("channels.whatsapp"),
-              web: t("channels.web"),
-              delivery: t("channels.delivery"),
-              manual: t("channels.manual"),
-            },
+            channelLabels,
           },
         }),
     });
@@ -198,12 +215,6 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       <AnalyticsPageClient
         labels={labels}
         restaurantId={restaurantId}
-        restaurants={
-          context?.restaurants.map((restaurant) => ({
-            id: restaurant.id,
-            name: restaurant.name,
-          })) ?? []
-        }
         timezone={timezone}
         currency={currency}
         locale={locale}

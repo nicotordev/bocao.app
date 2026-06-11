@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getAnalyticsChartColor } from "./chart-colors";
 
 type RevenueChartProps = {
   title: string;
@@ -26,13 +27,6 @@ type RevenueChartProps = {
   revenueLabel: string;
 };
 
-const chartConfig = {
-  revenue: {
-    label: "Revenue",
-    color: "hsl(var(--chart-1))",
-  },
-} satisfies ChartConfig;
-
 export function RevenueChart({
   title,
   description,
@@ -41,6 +35,13 @@ export function RevenueChart({
   locale,
   revenueLabel,
 }: RevenueChartProps) {
+  const chartConfig = {
+    revenue: {
+      label: revenueLabel,
+      color: "var(--chart-1)",
+    },
+  } satisfies ChartConfig;
+
   return (
     <Card className="border-border/60 bg-card/80">
       <CardHeader>
@@ -48,9 +49,9 @@ export function RevenueChart({
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent>
-        <ChartContainer config={{ ...chartConfig, revenue: { ...chartConfig.revenue, label: revenueLabel } }} className="h-[280px] w-full">
+        <ChartContainer config={chartConfig} className="h-[280px] w-full">
           <BarChart data={data} margin={{ left: 8, right: 8, top: 8 }}>
-            <CartesianGrid vertical={false} />
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -75,7 +76,14 @@ export function RevenueChart({
                 />
               }
             />
-            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={6} />
+            <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
+              {data.map((entry, index) => (
+                <Cell
+                  key={entry.date}
+                  fill={getAnalyticsChartColor(index)}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ChartContainer>
       </CardContent>

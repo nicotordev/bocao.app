@@ -13,16 +13,14 @@ import type {
   AnalyticsFilters,
   ChannelBreakdown,
   CustomerInsights,
-  KitchenPerformance,
   PeakHour,
   RevenuePoint,
   TopProduct,
 } from "@/lib/analytics/types";
 import { prisma } from "@/lib/prisma";
 
-const DELAYED_PREP_THRESHOLD_MINUTES = 30;
-
-type OrderSeriesRow = {
+export type OrderSeriesRow = {
+  id: string;
   createdAt: Date;
   totalCents: number;
   status: string;
@@ -80,6 +78,7 @@ export async function fetchAnalyticsOrderRows(
   return prisma.order.findMany({
     where: buildBaseOrderWhere(filters),
     select: {
+      id: true,
       createdAt: true,
       totalCents: true,
       status: true,
@@ -351,34 +350,6 @@ export function buildPeakHours(
       averageTicket:
         values.orders > 0 ? Math.round(values.revenue / values.orders) : 0,
     }));
-}
-
-export function buildKitchenPerformance(rows: OrderSeriesRow[]): KitchenPerformance {
-  const completedRows = rows.filter(
-    (row) => row.status === "COMPLETED" && row.preparationMins !== null,
-  );
-
-  const delayedOrders = completedRows.filter(
-    (row) => (row.preparationMins ?? 0) > DELAYED_PREP_THRESHOLD_MINUTES,
-  ).length;
-
-  const averagePreparationMinutes =
-    completedRows.length > 0
-      ? Math.round(
-          completedRows.reduce(
-            (sum, row) => sum + (row.preparationMins ?? 0),
-            0,
-          ) / completedRows.length,
-        )
-      : null;
-
-  // TODO: Connect KitchenEvent / station assignment data for per-station metrics.
-  return {
-    averagePreparationMinutes,
-    delayedOrders,
-    busiestStation: null,
-    stationStats: [],
-  };
 }
 
 export function buildCustomerInsights(input: {

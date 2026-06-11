@@ -1,13 +1,15 @@
 import "server-only";
 
-import { computeAnalyticsInsights } from "@/lib/analytics/compute-insights";
+import { generateAnalyticsInsights } from "@/lib/analytics/ai/generate-analytics-insights";
+import type { AnalyticsChannel } from "@/lib/analytics/types";
 import { getPreviousAnalyticsPeriod } from "@/lib/analytics/filters";
 import { computeChangePercent, safeAverage, safeRate } from "@/lib/analytics/math";
+import { buildKitchenPerformanceMetrics } from "@/lib/analytics/kitchen-performance";
+import { fetchKitchenStationLabelMap } from "@/lib/analytics/kitchen-stations";
 import {
   aggregateOverviewMetrics,
   buildChannelBreakdown,
   buildCustomerInsights,
-  buildKitchenPerformance,
   buildPeakHours,
   buildRevenueSeries,
   buildTopProducts,
@@ -19,21 +21,19 @@ import type {
 } from "@/lib/analytics/types";
 import { formatDateInputValue } from "@/lib/orders/date";
 
-type AnalyticsInsightLabels = {
-  revenueUp: string;
-  revenueDown: string;
-  topChannel: string;
-  topProduct: string;
-  peakHours: string;
-  cancellationHigh: string;
-  channelLabels: Record<
-    import("@/lib/analytics/types").AnalyticsChannel,
-    string
-  >;
-};
-
 type GetAnalyticsDashboardOptions = {
-  insightLabels: AnalyticsInsightLabels;
+  restaurantName: string;
+  channelLabels: Record<AnalyticsChannel, string>;
+  kitchenStationLabels: Record<string, string>;
+  fallbackInsightLabels: {
+    revenueUp: string;
+    revenueDown: string;
+    topChannel: string;
+    topProduct: string;
+    peakHours: string;
+    cancellationHigh: string;
+    channelLabels: Record<AnalyticsChannel, string>;
+  };
 };
 
 export async function getAnalyticsDashboardData(
@@ -42,9 +42,13 @@ export async function getAnalyticsDashboardData(
 ): Promise<AnalyticsDashboardData> {
   const previousPeriod = getPreviousAnalyticsPeriod(filters.from, filters.to);
 
-  const [rows, overviewMetrics] = await Promise.all([
+  const [rows, overviewMetrics, stationLabelMap] = await Promise.all([
     fetchAnalyticsOrderRows(filters),
     aggregateOverviewMetrics(filters, previousPeriod),
+    fetchKitchenStationLabelMap(
+      filters.restaurantId,
+      options.kitchenStationLabels,
+    ),
   ]);
 
   const overview = {
@@ -76,7 +80,11 @@ export async function getAnalyticsDashboardData(
   const channelBreakdown = buildChannelBreakdown(rows);
   const topProducts = buildTopProducts(rows);
   const peakHours = buildPeakHours(rows, filters);
-  const kitchenPerformance = buildKitchenPerformance(rows);
+  const kitchenPerformance = await buildKitchenPerformanceMetrics(
+    filters,
+    rows,
+    stationLabelMap,
+  );
   const customerInsights = buildCustomerInsights({
     uniqueCustomers: overviewMetrics.uniqueCustomers,
     customersWithOrders: overviewMetrics.customersWithOrders,
@@ -101,7 +109,13 @@ export async function getAnalyticsDashboardData(
     updatedAt: new Date().toISOString(),
   };
 
-  dashboard.insights = computeAnalyticsInsights(dashboard, options.insightLabels);
+  dashboard.insights = await generateAnalyticsInsights({
+    restaurantName: options.restaurantName,
+    locale: filters.locale,
+    currency: filters.currency,
+    dashboard,
+    fallbackLabels: options.fallbackInsightLabels,
+  });
 
   return dashboard;
 }

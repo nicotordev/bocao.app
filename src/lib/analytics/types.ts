@@ -79,6 +79,7 @@ export type KitchenStationStat = {
   station: string;
   averageMinutes: number;
   orderCount: number;
+  kitchenEvents: number;
 };
 
 export type KitchenPerformance = {

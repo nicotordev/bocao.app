@@ -1674,6 +1674,8 @@
       "kitchenPerformance": "Rendimiento de cocina",
       "customerInsightsSection": "Insights de clientes",
       "aiInsights": "Insights con IA",
+      "viewMore": "Ver más",
+      "insightsDialogDescription": "Análisis completo generado por IA para el período seleccionado.",
       "exportCsv": "Exportar CSV",
       "exportSuccess": "Analítica exportada correctamente.",
       "clearFilters": "Limpiar filtros",
@@ -1735,7 +1737,8 @@
         "stationStats": "Rendimiento por estación",
         "emptyTitle": "Sin métricas de cocina",
         "emptyDescription": "Los tiempos de preparación aparecerán cuando los pedidos incluyan timestamps de cocina.",
-        "todoStations": "TODO: Conectar datos de KitchenEvent para métricas por estación."
+        "stationOrders": "{count} pedidos completados",
+        "stationEvents": "{count} eventos de cocina"
       },
       "table": {
         "product": "Producto",

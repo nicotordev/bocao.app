@@ -22,7 +22,6 @@ import {
   resolveAnalyticsDateRange,
 } from "@/lib/analytics/filters";
 import { useAnalyticsDashboardQuery } from "@/lib/query/analytics/analytics.queries";
-import { useSwitchRestaurantMutation } from "@/lib/query/restaurant/restaurant.mutations";
 import { buildListUrl } from "@/lib/list-url";
 import { AnalyticsAiInsightsCard } from "./ai-insights-card";
 import { AnalyticsFilters } from "./analytics-filters";
@@ -34,12 +33,11 @@ import { OrdersChart } from "./orders-chart";
 import { PeakHoursHeatmap } from "./peak-hours-heatmap";
 import { RevenueChart } from "./revenue-chart";
 import { TopProductsTable } from "./top-products-table";
-import type { AnalyticsLabels, AnalyticsRestaurantOption } from "./types";
+import type { AnalyticsLabels } from "./types";
 
 type AnalyticsPageClientProps = {
   labels: AnalyticsLabels;
   restaurantId: string;
-  restaurants: AnalyticsRestaurantOption[];
   timezone: string;
   currency: string;
   locale: string;
@@ -64,14 +62,12 @@ function AnalyticsLoadingSkeleton() {
 export function AnalyticsPageClient({
   labels,
   restaurantId,
-  restaurants,
   timezone,
   currency,
   locale,
 }: AnalyticsPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const switchRestaurantMutation = useSwitchRestaurantMutation();
 
   const filters = useMemo(
     () =>
@@ -120,23 +116,6 @@ export function AnalyticsPageClient({
     [timezone, updateUrl],
   );
 
-  const handleRestaurantChange = useCallback(
-    (nextRestaurantId: string) => {
-      if (nextRestaurantId === restaurantId) {
-        return;
-      }
-
-      switchRestaurantMutation.mutate(nextRestaurantId, {
-        onSuccess: (result) => {
-          if (!result.success) {
-            toast.error(result.error);
-          }
-        },
-      });
-    },
-    [restaurantId, switchRestaurantMutation],
-  );
-
   const handleExportCsv = useCallback(() => {
     if (!analyticsQuery.data) {
       toast.error(labels.empty.title);
@@ -176,11 +155,8 @@ export function AnalyticsPageClient({
 
       <AnalyticsFilters
         labels={labels}
-        restaurants={restaurants}
-        activeRestaurantId={restaurantId}
         value={filters}
         onChange={handleFiltersChange}
-        onRestaurantChange={handleRestaurantChange}
         onClear={() =>
           handleFiltersChange({
             preset: "last7days",
@@ -239,6 +215,8 @@ export function AnalyticsPageClient({
               <AnalyticsAiInsightsCard
                 title={labels.charts.aiInsights}
                 description={labels.header.subtitle}
+                viewMoreLabel={labels.charts.viewMore}
+                dialogDescription={labels.charts.insightsDialogDescription}
                 insights={data.insights}
                 emptyTitle={labels.empty.title}
                 emptyDescription={labels.empty.description}

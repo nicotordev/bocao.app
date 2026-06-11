@@ -70,21 +70,33 @@ export async function GET(request: Request, { params }: RouteContext) {
     "en",
   );
 
+  const channelLabels = {
+    pos: "POS",
+    whatsapp: "WhatsApp",
+    web: "Web",
+    delivery: "Delivery",
+    manual: "Manual",
+  };
+
   const data = await getAnalyticsDashboardData(filters, {
-    insightLabels: {
+    restaurantName: activeRestaurant.name,
+    channelLabels,
+    kitchenStationLabels: {
+      grill: "Grill",
+      fryer: "Fryer",
+      sushi: "Sushi",
+      bar: "Bar",
+      desserts: "Desserts",
+      delivery_station: "Delivery",
+    },
+    fallbackInsightLabels: {
       revenueUp: "",
       revenueDown: "",
       topChannel: "",
       topProduct: "",
       peakHours: "",
       cancellationHigh: "",
-      channelLabels: {
-        pos: "POS",
-        whatsapp: "WhatsApp",
-        web: "Web",
-        delivery: "Delivery",
-        manual: "Manual",
-      },
+      channelLabels,
     },
   });
 
