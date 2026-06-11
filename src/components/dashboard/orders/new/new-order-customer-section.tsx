@@ -51,7 +51,7 @@ import { cn } from "@/lib/utils";
 type NewOrderCustomerSectionProps = {
   labels: NewOrderLabels;
   customers: CustomerOption[];
-  channel: NewOrderFormValues["channel"];
+  kind: NewOrderFormValues["kind"];
   floorPlanSurfaces: DiningSurfaceRecord[];
   occupiedTableNumbers: TableOccupancy;
   values: Pick<NewOrderFormValues, "selectedCustomers" | "tableNumber">;
@@ -68,7 +68,7 @@ type NewOrderCustomerSectionProps = {
 export function NewOrderCustomerSection({
   labels,
   customers,
-  channel,
+  kind,
   floorPlanSurfaces,
   occupiedTableNumbers,
   values,
@@ -80,7 +80,7 @@ export function NewOrderCustomerSection({
 }: NewOrderCustomerSectionProps) {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [pickerDialogOpen, setPickerDialogOpen] = useState(false);
-  const isDineIn = channel === "dineIn";
+  const isDineIn = kind === "dineIn" || kind === "pos";
   const hasFloorPlan = floorPlanSurfaces.length > 0;
   const selection = useFloorPlanSurfaceSelection(
     floorPlanSurfaces,

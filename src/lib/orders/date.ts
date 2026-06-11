@@ -1,3 +1,35 @@
+export function resolveIntlLocale(locale?: string): string {
+  return locale === "es" ? "es-CL" : "en-US";
+}
+
+export function elapsedMinutesSince(date: Date): number {
+  return Math.max(0, Math.round((Date.now() - date.getTime()) / 60_000));
+}
+
+export function formatTimeInTimezone(
+  date: Date,
+  timezone: string,
+  locale?: string,
+): string {
+  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: timezone,
+  }).format(date);
+}
+
+export function formatMediumDateInTimezone(
+  date: Date,
+  timezone: string,
+  locale?: string,
+): string {
+  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
+    dateStyle: "medium",
+    timeZone: timezone,
+  }).format(date);
+}
+
 export function formatDateInputValue(date: Date, timezone: string): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,

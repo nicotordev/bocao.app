@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createOrderBodySchema } from "@/lib/orders/schemas";
+import type { CreateOrderIntent } from "@/lib/orders/types";
 import { useCreateOrderMutation } from "@/lib/query/orders/orders.mutations";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { NewOrderChannelSection } from "./new-order-channel-section";
 import { NewOrderCustomerSection } from "./new-order-customer-section";
 import { NewOrderItemsSection } from "./new-order-items-section";
 import { NewOrderNotesSection } from "./new-order-notes-section";
+import { NewOrderPaymentSection } from "./new-order-payment-section";
 import { NewOrderSummaryCard } from "./new-order-summary-card";
 import type {
   NewOrderFormValues,
@@ -24,6 +26,8 @@ type FormErrors = {
   customers?: string;
   tableNumber?: string;
   items?: string;
+  notes?: string;
+  paymentMethod?: string;
 };
 
 function createLineItemId() {
@@ -68,42 +72,45 @@ export function NewOrderForm({
   const [values, setValues] = useState<NewOrderFormValues>({
     selectedCustomers: [],
     tableNumber: initialTableNumber ?? "",
-    channel: "dineIn",
+    kind: "pos",
     notes: "",
     items: [],
+    paymentMethod: "manual_pending",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [pendingIntent, setPendingIntent] = useState<CreateOrderIntent | null>(
+    null,
+  );
 
   const isSubmitting = createOrderMutation.isPending;
 
-  const payload = useMemo(
-    () => ({
-      customers: values.selectedCustomers.map((customer) => ({
-        id: customer.id,
-        name: customer.name.trim(),
-        phone: customer.phone.trim() || undefined,
-        email: customer.email.trim() || undefined,
-        documentId: customer.documentId.trim() || undefined,
-        address: customer.address.trim() || undefined,
-        notes: customer.notes.trim() || undefined,
-      })),
-      tableNumber:
-        values.channel === "dineIn"
-          ? values.tableNumber.trim() || undefined
-          : undefined,
-      channel: values.channel,
-      notes: values.notes.trim() || undefined,
-      items: values.items.map((item) => ({
-        menuItemId: item.menuItemId,
-        name: item.name.trim(),
-        quantity: item.quantity,
-        priceCents: item.priceCents,
-        imageUrls: item.imageUrls.length ? item.imageUrls : undefined,
-        customization: item.customization,
-      })),
-    }),
-    [values],
-  );
+  const buildPayload = (intent: CreateOrderIntent) => ({
+    customers: values.selectedCustomers.map((customer) => ({
+      id: customer.id,
+      name: customer.name.trim(),
+      phone: customer.phone.trim() || undefined,
+      email: customer.email.trim() || undefined,
+      documentId: customer.documentId.trim() || undefined,
+      address: customer.address.trim() || undefined,
+      notes: customer.notes.trim() || undefined,
+    })),
+    tableNumber:
+      values.kind === "dineIn" || values.kind === "pos"
+        ? values.tableNumber.trim() || undefined
+        : undefined,
+    kind: values.kind,
+    notes: values.notes.trim(),
+    items: values.items.map((item) => ({
+      menuItemId: item.menuItemId,
+      name: item.name.trim(),
+      quantity: item.quantity,
+      priceCents: item.priceCents,
+      imageUrls: item.imageUrls.length ? item.imageUrls : undefined,
+      customization: item.customization,
+    })),
+    paymentMethod: values.paymentMethod,
+    intent,
+  });
 
   function updateField<K extends keyof NewOrderFormValues>(
     field: K,
@@ -121,6 +128,14 @@ export function NewOrderForm({
 
     if (field === "selectedCustomers") {
       setErrors((current) => ({ ...current, customers: undefined }));
+    }
+
+    if (field === "notes") {
+      setErrors((current) => ({ ...current, notes: undefined }));
+    }
+
+    if (field === "paymentMethod") {
+      setErrors((current) => ({ ...current, paymentMethod: undefined }));
     }
   }
 
@@ -294,8 +309,8 @@ export function NewOrderForm({
     }));
   }
 
-  function validateForm(): boolean {
-    const parsed = createOrderBodySchema.safeParse(payload);
+  function validateForm(intent: CreateOrderIntent): boolean {
+    const parsed = createOrderBodySchema.safeParse(buildPayload(intent));
     const nextErrors: FormErrors = {};
 
     if (!parsed.success) {
@@ -313,6 +328,14 @@ export function NewOrderForm({
         if (field === "items" && !nextErrors.items) {
           nextErrors.items = labels.validation.items;
         }
+
+        if (field === "notes" && !nextErrors.notes) {
+          nextErrors.notes = labels.validation.notes;
+        }
+
+        if (field === "paymentMethod" && !nextErrors.paymentMethod) {
+          nextErrors.paymentMethod = labels.validation.paymentMethod;
+        }
       }
     }
 
@@ -328,16 +351,23 @@ export function NewOrderForm({
     return Object.keys(nextErrors).length === 0 && parsed.success;
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitWithIntent(intent: CreateOrderIntent) {
+    setPendingIntent(intent);
 
-    if (!validateForm()) {
+    if (!validateForm(intent)) {
+      setPendingIntent(null);
       return;
     }
 
     try {
-      const response = await createOrderMutation.mutateAsync(payload);
-      toast.success(labels.feedback.success);
+      const response = await createOrderMutation.mutateAsync(
+        buildPayload(intent),
+      );
+      toast.success(
+        intent === "draft"
+          ? labels.feedback.draftSuccess
+          : labels.feedback.success,
+      );
 
       if (onSuccess) {
         onSuccess(response.order.id);
@@ -349,12 +379,17 @@ export function NewOrderForm({
       );
     } catch {
       toast.error(labels.feedback.error);
+    } finally {
+      setPendingIntent(null);
     }
   }
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submitWithIntent("confirm");
+      }}
       className={cn(
         "grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]",
         formClassName,
@@ -363,13 +398,13 @@ export function NewOrderForm({
       <div className="space-y-6">
         <NewOrderChannelSection
           labels={labels}
-          value={values.channel}
-          onChange={(channel) => updateField("channel", channel)}
+          value={values.kind}
+          onChange={(kind) => updateField("kind", kind)}
         />
         <NewOrderCustomerSection
           labels={labels}
           customers={customers}
-          channel={values.channel}
+          kind={values.kind}
           floorPlanSurfaces={floorPlanSurfaces}
           occupiedTableNumbers={occupiedTableNumbers}
           values={{
@@ -403,11 +438,35 @@ export function NewOrderForm({
         <NewOrderNotesSection
           labels={labels}
           value={values.notes}
+          error={errors.notes}
           onChange={(notes) => updateField("notes", notes)}
         />
-        <div className="flex justify-end">
+        <NewOrderPaymentSection
+          labels={labels}
+          value={values.paymentMethod}
+          onChange={(paymentMethod) =>
+            updateField("paymentMethod", paymentMethod)
+          }
+          error={errors.paymentMethod}
+        />
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-w-36"
+            disabled={isSubmitting}
+            onClick={() => {
+              void submitWithIntent("draft");
+            }}
+          >
+            {isSubmitting && pendingIntent === "draft"
+              ? labels.actions.savingDraft
+              : labels.actions.saveDraft}
+          </Button>
           <Button type="submit" className="min-w-40" disabled={isSubmitting}>
-            {isSubmitting ? labels.actions.submitting : labels.actions.submit}
+            {isSubmitting && pendingIntent === "confirm"
+              ? labels.actions.confirmingOrder
+              : labels.actions.confirmOrder}
           </Button>
         </div>
       </div>
@@ -416,6 +475,7 @@ export function NewOrderForm({
         labels={labels}
         currency={currency}
         items={values.items}
+        paymentMethod={values.paymentMethod}
       />
     </form>
   );

@@ -13,7 +13,13 @@ import type {
   KitchenStation,
   KitchenTimelineEvent,
 } from "@/lib/kitchen/types";
-import { formatDateInputValue } from "@/lib/orders/date";
+import {
+  elapsedMinutesSince,
+  formatDateInputValue,
+  formatMediumDateInTimezone,
+  formatTimeInTimezone,
+} from "@/lib/orders/date";
+import { parseOrderDetailsJson } from "@/lib/orders/order-details-json";
 
 const DEFAULT_SLA_MINUTES = 20;
 
@@ -65,47 +71,8 @@ const CHANNEL_TO_KITCHEN: Record<string, KitchenChannel> = {
   dineIn: "table",
   uberEats: "delivery",
   rappi: "delivery",
+  pos: "table",
 };
-
-function parseDetails(details: unknown): OrderDetailsJson {
-  if (!details || typeof details !== "object") {
-    return {};
-  }
-
-  return details as OrderDetailsJson;
-}
-
-function resolveIntlLocale(locale?: string): string {
-  return locale === "es" ? "es-CL" : "en-US";
-}
-
-function formatReceivedAt(
-  date: Date,
-  timezone: string,
-  locale?: string,
-): string {
-  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: timezone,
-  }).format(date);
-}
-
-function formatReceivedDate(
-  date: Date,
-  timezone: string,
-  locale?: string,
-): string {
-  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
-    dateStyle: "medium",
-    timeZone: timezone,
-  }).format(date);
-}
-
-function getElapsedMinutes(createdAt: Date): number {
-  return Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60_000));
-}
 
 function inferStation(items: KitchenOrderItem[]): KitchenStation {
   const haystack = items.map((item) => item.name.toLowerCase()).join(" ");
@@ -217,12 +184,12 @@ export function mapDbOrderToKitchen(
   options: MapKitchenOrderOptions = {},
 ): KitchenOrder {
   const timezone = options.timezone ?? "America/Santiago";
-  const details = parseDetails(order.details);
+  const details = parseOrderDetailsJson<OrderDetailsJson>(order.details);
   const kitchen = details.kitchen ?? {};
   const items = mapItems(details);
   const channel = CHANNEL_TO_KITCHEN[order.channel ?? "web"] ?? "web";
   const slaMinutes = kitchen.slaMinutes ?? DEFAULT_SLA_MINUTES;
-  const elapsedMinutes = getElapsedMinutes(order.createdAt);
+  const elapsedMinutes = elapsedMinutesSince(order.createdAt);
   const customerLabel = formatOrderCustomerLabel({
     customers: getOrderCustomers(order),
     tableNumber: order.tableNumber,
@@ -248,8 +215,8 @@ export function mapDbOrderToKitchen(
     tableNumber: order.tableNumber ?? undefined,
     elapsedMinutes,
     slaMinutes,
-    receivedAt: formatReceivedAt(order.createdAt, timezone, options.locale),
-    receivedAtDate: formatReceivedDate(
+    receivedAt: formatTimeInTimezone(order.createdAt, timezone, options.locale),
+    receivedAtDate: formatMediumDateInTimezone(
       order.createdAt,
       timezone,
       options.locale,
@@ -342,12 +309,7 @@ export function appendKitchenTimelineEvent(
   },
   timezone: string,
 ): OrderDetailsJson {
-  const nowLabel = new Intl.DateTimeFormat("es-CL", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: timezone,
-  }).format(new Date());
+  const nowLabel = formatTimeInTimezone(new Date(), timezone, "es");
 
   return {
     ...details,
@@ -383,7 +345,7 @@ export function kitchenStatusToTimelineKey(
 }
 
 export function parseOrderDetails(details: unknown): OrderDetailsJson {
-  return parseDetails(details);
+  return parseOrderDetailsJson<OrderDetailsJson>(details);
 }
 
 export function shouldMarkKitchenCompletedLate(
@@ -394,6 +356,6 @@ export function shouldMarkKitchenCompletedLate(
   return (
     kitchen.completedLate === true ||
     kitchen.priority === "delayed" ||
-    getElapsedMinutes(createdAt) > slaMinutes
+    elapsedMinutesSince(createdAt) > slaMinutes
   );
 }

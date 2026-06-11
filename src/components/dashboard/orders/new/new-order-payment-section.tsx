@@ -13,42 +13,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { OrderKind } from "@/lib/orders/types";
-import { ORDER_KINDS } from "@/lib/orders/order-kind";
+import type { PaymentMethod } from "@/lib/payments/types";
 import type { NewOrderLabels } from "./types";
 
-type NewOrderChannelSectionProps = {
+const paymentMethods: PaymentMethod[] = [
+  "cash",
+  "card",
+  "transfer",
+  "qr",
+  "other",
+  "manual_pending",
+];
+
+type NewOrderPaymentSectionProps = {
   labels: NewOrderLabels;
-  value: OrderKind;
-  onChange: (value: OrderKind) => void;
+  value: PaymentMethod;
+  onChange: (value: PaymentMethod) => void;
+  error?: string;
 };
 
-export function NewOrderChannelSection({
+export function NewOrderPaymentSection({
   labels,
   value,
   onChange,
-}: NewOrderChannelSectionProps) {
+  error,
+}: NewOrderPaymentSectionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{labels.channel.title}</CardTitle>
-        <CardDescription>{labels.channel.description}</CardDescription>
+        <CardTitle>{labels.payment.title}</CardTitle>
+        <CardDescription>{labels.payment.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Field>
-          <FieldLabel>{labels.channel.label}</FieldLabel>
+          <FieldLabel>{labels.payment.label}</FieldLabel>
           <Select value={value} onValueChange={onChange}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ORDER_KINDS.map((kind) => (
-                <SelectItem key={kind} value={kind}>
-                  {labels.orderKinds[kind]}
+              {paymentMethods.map((method) => (
+                <SelectItem key={method} value={method}>
+                  {labels.payment.methods[method]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </Field>
       </CardContent>
     </Card>

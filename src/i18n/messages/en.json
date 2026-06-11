@@ -412,6 +412,7 @@
       },
       "statuses": {
         "all": "All",
+        "draft": "Draft",
         "received": "Received",
         "confirmed": "Confirmed",
         "preparing": "Preparing",
@@ -425,7 +426,8 @@
         "web": "Web",
         "dineIn": "In person",
         "uberEats": "Uber Eats",
-        "rappi": "Rappi"
+        "rappi": "Rappi",
+        "pos": "POS / manual"
       },
       "tabs": {
         "orders": "Orders",
@@ -529,6 +531,11 @@
           "back": "Back to orders",
           "submit": "Create order",
           "submitting": "Creating...",
+          "saveDraft": "Save draft",
+          "savingDraft": "Saving...",
+          "confirmOrder": "Confirm order",
+          "confirmingOrder": "Confirming...",
+          "cancel": "Cancel",
           "addItem": "Add item",
           "removeItem": "Remove item",
           "addCustomer": "Add customer",
@@ -585,9 +592,29 @@
           "surfaceNameFloor": "Floor {floor}"
         },
         "channel": {
-          "title": "Channel",
-          "description": "Where this order was received.",
-          "label": "Sales channel"
+          "title": "Order type",
+          "description": "Define how this order is received and fulfilled.",
+          "label": "Order type"
+        },
+        "orderKinds": {
+          "dineIn": "Dine in",
+          "takeout": "Takeout",
+          "delivery": "Delivery",
+          "whatsapp": "WhatsApp",
+          "pos": "POS / manual"
+        },
+        "payment": {
+          "title": "Payment method",
+          "description": "Select how this order will be paid.",
+          "label": "Payment method",
+          "methods": {
+            "cash": "Cash",
+            "card": "Card",
+            "transfer": "Transfer",
+            "qr": "QR",
+            "other": "Other",
+            "manualPending": "Pending / manual"
+          }
         },
         "items": {
           "title": "Products",
@@ -657,7 +684,8 @@
           "subtotal": "Subtotal",
           "taxes": "Taxes (19%)",
           "total": "Total",
-          "taxNote": "Taxes are estimated for manual orders."
+          "taxNote": "Taxes are estimated for manual orders.",
+          "paymentMethod": "Payment method"
         },
         "validation": {
           "customers": "Add at least one customer for non dine-in orders.",
@@ -666,10 +694,13 @@
           "items": "Add at least one product.",
           "itemName": "Each custom item needs a name.",
           "itemPrice": "Price must be a valid number.",
-          "itemQuantity": "Quantity must be between 1 and 99."
+          "itemQuantity": "Quantity must be between 1 and 99.",
+          "notes": "Add notes for this order.",
+          "paymentMethod": "Select a payment method."
         },
         "feedback": {
-          "success": "Order created successfully.",
+          "success": "Order confirmed and sent to the kitchen.",
+          "draftSuccess": "Draft saved successfully.",
           "error": "We couldn't create the order. Try again."
         },
         "permissions": {

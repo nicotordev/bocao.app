@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/orders/currency";
 import type { Order } from "@/lib/orders/types";
 
 export type OrdersKpiTrend = {
@@ -17,14 +18,6 @@ export type OrdersKpiValues = {
     sales?: OrdersKpiTrend;
   };
 };
-
-function formatCurrency(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amountCents / 100);
-}
 
 export function computeOrdersKpis(
   orders: Order[],

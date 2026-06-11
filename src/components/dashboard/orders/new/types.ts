@@ -6,7 +6,8 @@ import type {
 import type { MenuItemWithFlowOption } from "@/lib/product-flow/types";
 import type { OrderLineCustomization } from "@/lib/product-flow/types";
 import type { ProductFlowWizardLabels } from "./product-purchase-wizard";
-import type { OrderChannel } from "@/lib/orders/types";
+import type { OrderKind, CreateOrderIntent } from "@/lib/orders/types";
+import type { PaymentMethod } from "@/lib/payments/types";
 import type { MenuLocaleOption } from "@/components/dashboard/menu/types";
 
 export type NewOrderLineItem = {
@@ -44,9 +45,10 @@ export type NewOrderNewCustomerInput = {
 export type NewOrderFormValues = {
   selectedCustomers: NewOrderSelectedCustomer[];
   tableNumber: string;
-  channel: OrderChannel;
+  kind: OrderKind;
   notes: string;
   items: NewOrderLineItem[];
+  paymentMethod: PaymentMethod;
 };
 
 export type NewOrderLabels = {
@@ -64,6 +66,11 @@ export type NewOrderLabels = {
     back: string;
     submit: string;
     submitting: string;
+    saveDraft: string;
+    savingDraft: string;
+    confirmOrder: string;
+    confirmingOrder: string;
+    cancel: string;
     addItem: string;
     removeItem: string;
     addCustomer: string;
@@ -124,6 +131,13 @@ export type NewOrderLabels = {
     description: string;
     label: string;
   };
+  orderKinds: Record<OrderKind, string>;
+  payment: {
+    title: string;
+    description: string;
+    label: string;
+    methods: Record<PaymentMethod, string>;
+  };
   items: {
     title: string;
     description: string;
@@ -178,8 +192,8 @@ export type NewOrderLabels = {
     taxes: string;
     total: string;
     taxNote: string;
+    paymentMethod: string;
   };
-  channels: Record<OrderChannel, string>;
   validation: {
     customers: string;
     tableNumber: string;
@@ -188,9 +202,12 @@ export type NewOrderLabels = {
     itemName: string;
     itemPrice: string;
     itemQuantity: string;
+    notes: string;
+    paymentMethod: string;
   };
   feedback: {
     success: string;
+    draftSuccess: string;
     error: string;
   };
   permissions: {

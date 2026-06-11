@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  TbMinus,
-  TbPlus,
-  TbTrash,
-} from "react-icons/tb";
+import { TbMinus, TbPlus, TbTrash } from "react-icons/tb";
 import { useState } from "react";
 import { formatCurrency } from "@/lib/orders/currency";
 import { Button } from "@/components/ui/button";
@@ -97,7 +93,7 @@ export function NewOrderItemsSection({
           <CardTitle>{labels.items.title}</CardTitle>
           <CardDescription>{labels.items.description}</CardDescription>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-wrap justify-end gap-2 sm:ml-auto sm:w-auto">
           <Button
             type="button"
             className="gap-2"
@@ -205,10 +201,7 @@ function OrderListItem({
   return (
     <li className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <ProductThumbnail
-          name={item.name}
-          imageUrl={item.imageUrls[0]}
-        />
+        <ProductThumbnail name={item.name} imageUrl={item.imageUrls[0]} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{item.name}</p>
           {item.customization?.displaySummary ? (
@@ -217,8 +210,8 @@ function OrderListItem({
             </p>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            {formatCurrency(item.priceCents, currency)} · {labels.items.quantity}{" "}
-            {item.quantity}
+            {formatCurrency(item.priceCents, currency)} ·{" "}
+            {labels.items.quantity} {item.quantity}
           </p>
         </div>
       </div>
@@ -234,7 +227,9 @@ function OrderListItem({
           >
             <TbMinus className="size-4" aria-hidden />
           </Button>
-          <span className="min-w-8 text-center text-sm font-medium">{item.quantity}</span>
+          <span className="min-w-8 text-center text-sm font-medium">
+            {item.quantity}
+          </span>
           <Button
             type="button"
             variant="outline"

@@ -412,6 +412,7 @@
       },
       "statuses": {
         "all": "Todos",
+        "draft": "Borrador",
         "received": "Recibido",
         "confirmed": "Confirmado",
         "preparing": "En preparación",
@@ -425,7 +426,8 @@
         "web": "Web",
         "dineIn": "Presencial",
         "uberEats": "Uber Eats",
-        "rappi": "Rappi"
+        "rappi": "Rappi",
+        "pos": "POS / manual"
       },
       "tabs": {
         "orders": "Pedidos",
@@ -529,6 +531,11 @@
           "back": "Volver a pedidos",
           "submit": "Crear pedido",
           "submitting": "Creando...",
+          "saveDraft": "Guardar borrador",
+          "savingDraft": "Guardando...",
+          "confirmOrder": "Confirmar pedido",
+          "confirmingOrder": "Confirmando...",
+          "cancel": "Cancelar",
           "addItem": "Agregar producto",
           "removeItem": "Quitar producto",
           "addCustomer": "Agregar cliente",
@@ -585,9 +592,29 @@
           "surfaceNameFloor": "Piso {floor}"
         },
         "channel": {
-          "title": "Canal",
-          "description": "Dónde se recibió este pedido.",
-          "label": "Canal de venta"
+          "title": "Tipo de pedido",
+          "description": "Define cómo se recibe y entrega este pedido.",
+          "label": "Tipo de pedido"
+        },
+        "orderKinds": {
+          "dineIn": "Mesa",
+          "takeout": "Retiro",
+          "delivery": "Delivery",
+          "whatsapp": "WhatsApp",
+          "pos": "POS / manual"
+        },
+        "payment": {
+          "title": "Método de pago",
+          "description": "Selecciona cómo se cobrará este pedido.",
+          "label": "Método de pago",
+          "methods": {
+            "cash": "Efectivo",
+            "card": "Tarjeta",
+            "transfer": "Transferencia",
+            "qr": "QR",
+            "other": "Otro",
+            "manualPending": "Pendiente / manual"
+          }
         },
         "items": {
           "title": "Productos",
@@ -657,7 +684,8 @@
           "subtotal": "Subtotal",
           "taxes": "Impuestos (19%)",
           "total": "Total",
-          "taxNote": "Los impuestos se estiman para pedidos manuales."
+          "taxNote": "Los impuestos se estiman para pedidos manuales.",
+          "paymentMethod": "Método de pago"
         },
         "validation": {
           "customers": "Agrega al menos un cliente para pedidos fuera del local.",
@@ -666,10 +694,13 @@
           "items": "Agrega al menos un producto.",
           "itemName": "Cada ítem personalizado necesita un nombre.",
           "itemPrice": "El precio debe ser un número válido.",
-          "itemQuantity": "La cantidad debe estar entre 1 y 99."
+          "itemQuantity": "La cantidad debe estar entre 1 y 99.",
+          "notes": "Agrega notas para este pedido.",
+          "paymentMethod": "Selecciona un método de pago."
         },
         "feedback": {
-          "success": "Pedido creado correctamente.",
+          "success": "Pedido confirmado y enviado a cocina.",
+          "draftSuccess": "Borrador guardado correctamente.",
           "error": "No pudimos crear el pedido. Intenta nuevamente."
         },
         "permissions": {

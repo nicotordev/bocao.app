@@ -8,18 +8,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type { PaymentMethod } from "@/lib/payments/types";
 import type { NewOrderLineItem, NewOrderLabels } from "./types";
 
 type NewOrderSummaryCardProps = {
   labels: NewOrderLabels;
   currency: string;
   items: NewOrderLineItem[];
+  paymentMethod: PaymentMethod;
 };
 
 export function NewOrderSummaryCard({
   labels,
   currency,
   items,
+  paymentMethod,
 }: NewOrderSummaryCardProps) {
   const totals = computeOrderTotals(items);
 
@@ -45,6 +48,11 @@ export function NewOrderSummaryCard({
           label={labels.summary.total}
           value={formatCurrency(totals.totalCents, currency)}
           emphasis
+        />
+        <Separator />
+        <SummaryRow
+          label={labels.summary.paymentMethod}
+          value={labels.payment.methods[paymentMethod]}
         />
       </CardContent>
     </Card>

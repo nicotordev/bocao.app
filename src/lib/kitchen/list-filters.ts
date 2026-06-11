@@ -61,7 +61,7 @@ export function buildKitchenPrismaWhere(
 
   return {
     restaurantId,
-    status: { not: "CANCELLED" },
+    status: { notIn: ["CANCELLED", "DRAFT"] },
     createdAt: {
       gte: dayStart,
       lte: dayEnd,

@@ -1,5 +1,8 @@
+import {
+  buildOrderDetailsPayload,
+  parseStoredOrderLineItems,
+} from "@/lib/orders/build-order-details";
 import { computeOrderTotals } from "@/lib/orders/compute-order-totals";
-import { formatCurrency } from "@/lib/orders/currency";
 import {
   buildOrdersPrismaWhere,
   type OrdersListFilters,
@@ -7,42 +10,41 @@ import {
 } from "@/lib/orders/filters";
 import { buildPaginationMeta, getSkipTake } from "@/lib/pagination";
 import { generateOrderNumber } from "@/lib/orders/generate-order-number";
-import { orderCustomerInclude } from "@/lib/orders/order-customers";
+import {
+  buildOrderCreatedEvents,
+  buildOrderStatusChangeEvents,
+  buildOrderUpdatedEvent,
+  buildPaymentCreatedEvent,
+  buildPaymentUpdatedEvent,
+} from "@/lib/orders/order-events";
+import { resolveOrderKind } from "@/lib/orders/order-kind";
+import { orderWithPaymentsInclude } from "@/lib/orders/order-includes";
 import type {
   CreateOrderLabels,
   OrderFormatOptions,
 } from "@/lib/orders/format-options";
 import { mapDbOrderToUi, mapUiStatusToDb } from "@/lib/orders/order-mapper";
+import {
+  mapPaymentMethodToDb,
+  mapPaymentProviderToDb,
+  mapPaymentStatusToDb,
+  resolvePaymentStatusForOrderIntent,
+} from "@/lib/payments/mapper";
 import type {
   CreateOrderCustomerInput,
   CreateOrderInput,
   Order,
   OrderStatus,
   OrdersListResponse,
+  UpdateOrderInput,
 } from "@/lib/orders/types";
-import {
-  buildKitchenRealtimeEvent,
-  publishKitchenEventAfterCommit,
-  recordKitchenEventInTx,
-} from "@/lib/realtime/event-log";
 import type { RecordKitchenEventInput } from "@/lib/kitchen/events";
 import {
-  isKitchenQueueStatus,
-  resolveKitchenRemovalReason,
-  shouldEmitKitchenOrderCreated,
-} from "@/lib/kitchen/kitchen-queue";
+  buildOrderEventContext,
+  getRestaurantOrderContext,
+} from "@/lib/orders/context";
+import { executeOrderMutationWithEvents } from "@/lib/orders/mutation";
 import { prisma } from "@/lib/prisma";
-
-async function getRestaurantContext(restaurantId: string) {
-  return prisma.restaurant.findUnique({
-    where: { id: restaurantId },
-    select: {
-      currency: true,
-      timezone: true,
-      organizationId: true,
-    },
-  });
-}
 
 async function resolveOrderCustomers(
   restaurantId: string,
@@ -130,74 +132,31 @@ async function resolveOrderCustomers(
 
 const ORDERS_BOARD_LIMIT = 500;
 
-function buildOrderStatusChangeEvents(
-  restaurant: NonNullable<Awaited<ReturnType<typeof getRestaurantContext>>>,
+const EDITABLE_ORDER_STATUSES = new Set([
+  "DRAFT",
+  "PENDING",
+  "CONFIRMED",
+  "PREPARING",
+  "READY",
+]);
+
+async function syncOrderCustomers(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  orderId: string,
   restaurantId: string,
-  orderNumber: string,
-  previousStatus: ReturnType<typeof mapUiStatusToDb>,
-  nextStatus: ReturnType<typeof mapUiStatusToDb>,
-): RecordKitchenEventInput[] {
-  const base = {
-    tenantId: restaurant.organizationId,
-    restaurantId,
-  };
+  customers: CreateOrderCustomerInput[],
+) {
+  const linkedCustomers = await resolveOrderCustomers(restaurantId, customers);
 
-  const removalReason = resolveKitchenRemovalReason(nextStatus);
-  const wasInKitchen = isKitchenQueueStatus(previousStatus);
-  const isInKitchen = isKitchenQueueStatus(nextStatus);
+  await tx.orderCustomer.deleteMany({ where: { orderId } });
+  await tx.orderCustomer.createMany({
+    data: linkedCustomers.map((customer) => ({
+      orderId,
+      customerId: customer.id,
+    })),
+  });
 
-  if (removalReason && wasInKitchen) {
-    return [
-      {
-        ...base,
-        payload: {
-          type: "order.removed",
-          orderId: orderNumber,
-          reason: removalReason,
-        },
-      },
-    ];
-  }
-
-  if (!wasInKitchen && isInKitchen) {
-    return [
-      {
-        ...base,
-        payload: {
-          type: "order.created",
-          orderId: orderNumber,
-        },
-      },
-    ];
-  }
-
-  if (wasInKitchen && isInKitchen && previousStatus !== nextStatus) {
-    return [
-      {
-        ...base,
-        payload: {
-          type: "order.status.changed",
-          orderId: orderNumber,
-          fromStatus: previousStatus,
-          toStatus: nextStatus,
-        },
-      },
-    ];
-  }
-
-  if (wasInKitchen && isInKitchen) {
-    return [
-      {
-        ...base,
-        payload: {
-          type: "order.updated",
-          orderId: orderNumber,
-        },
-      },
-    ];
-  }
-
-  return [];
+  return linkedCustomers;
 }
 
 export async function listOrders(
@@ -205,7 +164,7 @@ export async function listOrders(
   filters?: OrdersListFilters,
   formatOptions?: OrderFormatOptions,
 ): Promise<OrdersListResponse> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     return {
@@ -235,7 +194,7 @@ export async function listOrders(
     prisma.order.count({ where }),
     prisma.order.findMany({
       where,
-      include: orderCustomerInclude,
+      include: orderWithPaymentsInclude,
       orderBy: { createdAt: "desc" },
       skip,
       take,
@@ -265,7 +224,7 @@ export async function listOrdersBoard(
   filters: OrdersQueryFilters | undefined,
   formatOptions?: OrderFormatOptions,
 ): Promise<Order[]> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     return [];
@@ -279,7 +238,7 @@ export async function listOrdersBoard(
 
   const dbOrders = await prisma.order.findMany({
     where,
-    include: orderCustomerInclude,
+    include: orderWithPaymentsInclude,
     orderBy: { createdAt: "desc" },
     take: ORDERS_BOARD_LIMIT,
   });
@@ -299,7 +258,7 @@ export async function getOrder(
   orderId: string,
   formatOptions?: OrderFormatOptions,
 ): Promise<Order | null> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     return null;
@@ -312,7 +271,7 @@ export async function getOrder(
         orderNumber: orderId,
       },
     },
-    include: orderCustomerInclude,
+    include: orderWithPaymentsInclude,
   });
 
   if (!order) {
@@ -333,7 +292,7 @@ export async function updateOrderStatus(
   status: OrderStatus,
   formatOptions?: OrderFormatOptions,
 ): Promise<Order> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     throw new Error("Restaurant not found");
@@ -356,15 +315,12 @@ export async function updateOrderStatus(
   }
 
   const nextStatus = mapUiStatusToDb(status);
-  const pendingEvents = buildOrderStatusChangeEvents(
-    restaurant,
-    restaurantId,
-    orderId,
-    existing.status,
-    nextStatus,
-  );
-
-  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
+  const order = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents = buildOrderStatusChangeEvents(
+      buildOrderEventContext(restaurant, restaurantId, orderId),
+      existing.status,
+      nextStatus,
+    );
     const updatedOrder = await tx.order.update({
       where: {
         restaurantId_orderNumber: {
@@ -375,24 +331,203 @@ export async function updateOrderStatus(
       data: {
         status: nextStatus,
       },
-      include: orderCustomerInclude,
+      include: orderWithPaymentsInclude,
     });
 
-    const logs = await Promise.all(
-      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
-    );
-
-    return { order: updatedOrder, eventLogs: logs };
+    return { value: updatedOrder, pendingEvents };
   });
 
-  await Promise.all(
-    eventLogs.map((log, index) => {
-      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
-      return publishKitchenEventAfterCommit(event, log.id);
-    }),
-  );
+  return mapDbOrderToUi(order, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
+  });
+}
+
+export async function confirmOrder(
+  restaurantId: string,
+  orderId: string,
+  formatOptions?: OrderFormatOptions,
+): Promise<Order> {
+  const restaurant = await getRestaurantOrderContext(restaurantId);
+
+  if (!restaurant) {
+    throw new Error("Restaurant not found");
+  }
+
+  const existing = await prisma.order.findUnique({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    select: { id: true, status: true },
+  });
+
+  if (!existing) {
+    throw new Error("Order not found");
+  }
+
+  if (existing.status !== "DRAFT") {
+    throw new Error("Only draft orders can be confirmed");
+  }
+
+  const nextStatus = "PENDING";
+  const eventCtx = buildOrderEventContext(restaurant, restaurantId, orderId);
+
+  const order = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents: RecordKitchenEventInput[] = [
+      ...buildOrderCreatedEvents(eventCtx, nextStatus, "confirm"),
+    ];
+    const updatedOrder = await tx.order.update({
+      where: { id: existing.id },
+      data: { status: nextStatus },
+      include: orderWithPaymentsInclude,
+    });
+
+    return { value: updatedOrder, pendingEvents };
+  });
 
   return mapDbOrderToUi(order, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
+  });
+}
+
+export async function updateOrder(
+  restaurantId: string,
+  orderId: string,
+  input: UpdateOrderInput,
+  formatOptions?: OrderFormatOptions,
+): Promise<Order> {
+  const restaurant = await getRestaurantOrderContext(restaurantId);
+
+  if (!restaurant) {
+    throw new Error("Restaurant not found");
+  }
+
+  const existing = await prisma.order.findUnique({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    include: orderWithPaymentsInclude,
+  });
+
+  if (!existing) {
+    throw new Error("Order not found");
+  }
+
+  if (!EDITABLE_ORDER_STATUSES.has(existing.status)) {
+    throw new Error("Order cannot be edited in its current status");
+  }
+
+  const currentDetails =
+    existing.details && typeof existing.details === "object"
+      ? (existing.details as Record<string, unknown>)
+      : {};
+
+  const nextKind =
+    input.kind ??
+    (typeof currentDetails.kind === "string"
+      ? (currentDetails.kind as import("@/lib/orders/order-kind").OrderKind)
+      : "pos");
+  const tableNumber =
+    input.tableNumber?.trim() ?? existing.tableNumber ?? undefined;
+  const resolved = resolveOrderKind(nextKind, tableNumber);
+  const lineItems = input.items ?? parseStoredOrderLineItems(existing.details);
+  const totals = computeOrderTotals(lineItems);
+
+  const details = buildOrderDetailsPayload({
+    items: lineItems,
+    totals,
+    currency: restaurant.currency,
+    kind: nextKind,
+    history:
+      typeof currentDetails.history === "string"
+        ? currentDetails.history
+        : undefined,
+  });
+
+  const eventCtx = buildOrderEventContext(restaurant, restaurantId, orderId);
+
+  const order = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents: RecordKitchenEventInput[] = [
+      buildOrderUpdatedEvent(eventCtx),
+    ];
+
+    if (input.customers) {
+      await syncOrderCustomers(tx, existing.id, restaurantId, input.customers);
+    }
+
+    const updatedOrder = await tx.order.update({
+      where: { id: existing.id },
+      data: {
+        tableNumber: tableNumber?.trim() || null,
+        type: resolved.type,
+        channel: resolved.channel,
+        totalCents: totals.totalCents,
+        notes: input.notes?.trim() ?? existing.notes,
+        details: {
+          ...currentDetails,
+          ...details,
+        },
+      },
+      include: orderWithPaymentsInclude,
+    });
+
+    if (input.paymentMethod && existing.payments[0]) {
+      const paymentStatus = resolvePaymentStatusForOrderIntent(
+        existing.status === "DRAFT" ? "draft" : "confirm",
+        input.paymentMethod,
+      );
+
+      await tx.payment.update({
+        where: { id: existing.payments[0].id },
+        data: {
+          method: mapPaymentMethodToDb(input.paymentMethod),
+          status: mapPaymentStatusToDb(paymentStatus),
+          amountCents: totals.totalCents,
+        },
+      });
+
+      pendingEvents.push(
+        buildPaymentUpdatedEvent(eventCtx, existing.payments[0].id),
+      );
+    } else if (input.paymentMethod) {
+      const paymentStatus = resolvePaymentStatusForOrderIntent(
+        existing.status === "DRAFT" ? "draft" : "confirm",
+        input.paymentMethod,
+      );
+      const payment = await tx.payment.create({
+        data: {
+          orderId: existing.id,
+          method: mapPaymentMethodToDb(input.paymentMethod),
+          provider: mapPaymentProviderToDb("manual"),
+          status: mapPaymentStatusToDb(paymentStatus),
+          amountCents: totals.totalCents,
+          currency: restaurant.currency,
+        },
+      });
+
+      pendingEvents.push(buildPaymentCreatedEvent(eventCtx, payment.id));
+    }
+
+    return { value: updatedOrder, pendingEvents };
+  });
+
+  const refreshed = await prisma.order.findUnique({
+    where: { id: order.id },
+    include: orderWithPaymentsInclude,
+  });
+
+  return mapDbOrderToUi(refreshed ?? order, {
     currency: restaurant.currency,
     timezone: restaurant.timezone,
     locale: formatOptions?.locale,
@@ -407,7 +542,7 @@ export async function createOrder(
   labels?: CreateOrderLabels,
   formatOptions?: OrderFormatOptions,
 ): Promise<Order> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     throw new Error("Restaurant not found");
@@ -420,79 +555,73 @@ export async function createOrder(
     restaurantId,
     input.customers,
   );
+  const resolved = resolveOrderKind(input.kind, input.tableNumber);
+  const status = input.intent === "draft" ? "DRAFT" : "PENDING";
+  const paymentStatus = resolvePaymentStatusForOrderIntent(
+    input.intent,
+    input.paymentMethod,
+  );
+  const details = buildOrderDetailsPayload({
+    items: input.items,
+    totals,
+    currency,
+    kind: input.kind,
+    history: labels?.manualOrderHistory,
+    timelineNow: labels?.timelineNow,
+  });
+  const eventCtx = buildOrderEventContext(
+    restaurant,
+    restaurantId,
+    orderNumber,
+  );
 
-  const items = input.items.map((item) => ({
-    name: item.name,
-    quantity: item.quantity,
-    price: formatCurrency(item.priceCents, currency),
-    ...(item.imageUrls?.length ? { imageUrls: item.imageUrls } : {}),
-    ...(item.customization ? { customization: item.customization } : {}),
-  }));
+  const order = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents: RecordKitchenEventInput[] = [
+      ...buildOrderCreatedEvents(eventCtx, status, input.intent),
+    ];
 
-  const summary = {
-    subtotal: formatCurrency(totals.subtotalCents, currency),
-    taxes: formatCurrency(totals.taxCents, currency),
-    total: formatCurrency(totals.totalCents, currency),
-  };
-
-  const pendingEvents: RecordKitchenEventInput[] =
-    shouldEmitKitchenOrderCreated("PENDING")
-      ? [
-          {
-            tenantId: restaurant.organizationId,
-            restaurantId,
-            payload: {
-              type: "order.created",
-              orderId: orderNumber,
-            },
-          },
-        ]
-      : [];
-
-  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
     const createdOrder = await tx.order.create({
       data: {
         restaurantId,
         orderNumber,
         tableNumber: input.tableNumber?.trim() || null,
-        status: "PENDING",
-        channel: input.channel,
+        status,
+        type: resolved.type,
+        channel: resolved.channel,
         assignedTo,
         totalCents: totals.totalCents,
-        notes: input.notes?.trim() || null,
-        details: {
-          history: labels?.manualOrderHistory ?? "Manual order",
-          items,
-          summary,
-          timeline: [
-            {
-              time: labels?.timelineNow ?? "Now",
-              titleKey: "eventReceived",
-            },
-          ],
-        },
+        notes: input.notes.trim(),
+        details,
         customers: {
           create: linkedCustomers.map((customer) => ({
             customerId: customer.id,
           })),
         },
       },
-      include: orderCustomerInclude,
+      include: orderWithPaymentsInclude,
     });
 
-    const logs = await Promise.all(
-      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
-    );
+    const payment = await tx.payment.create({
+      data: {
+        orderId: createdOrder.id,
+        method: mapPaymentMethodToDb(input.paymentMethod),
+        provider: mapPaymentProviderToDb("manual"),
+        status: mapPaymentStatusToDb(paymentStatus),
+        amountCents: totals.totalCents,
+        currency,
+      },
+    });
 
-    return { order: createdOrder, eventLogs: logs };
+    pendingEvents.push(buildPaymentCreatedEvent(eventCtx, payment.id));
+
+    return {
+      value: {
+        ...createdOrder,
+        payments: [payment],
+      },
+      pendingEvents,
+    };
   });
-
-  await Promise.all(
-    eventLogs.map((log, index) => {
-      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
-      return publishKitchenEventAfterCommit(event, log.id);
-    }),
-  );
 
   return mapDbOrderToUi(order, {
     currency: restaurant.currency,

@@ -8,6 +8,7 @@ type OrderStatusBadgeProps = {
 };
 
 const statusClassName: Record<OrderStatus, string> = {
+  draft: "border-muted-foreground/30 bg-muted/50 text-muted-foreground",
   received: "border-secondary bg-secondary/60 text-secondary-foreground",
   confirmed: "border-chart-3/30 bg-chart-3/10 text-chart-3",
   preparing: "border-chart-2/30 bg-chart-2/10 text-chart-2",

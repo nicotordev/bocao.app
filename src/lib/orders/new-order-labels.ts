@@ -4,8 +4,6 @@ import type { NewOrderLabels } from "@/components/dashboard/orders/new/types";
 export async function getNewOrderLabels(): Promise<NewOrderLabels> {
   const t = await getTranslations("dashboard.orders.new");
   const tCommon = await getTranslations("common");
-  const tChannels = await getTranslations("dashboard.orders.channels");
-
   return {
     optional: tCommon("optional"),
     required: tCommon("required"),
@@ -21,6 +19,11 @@ export async function getNewOrderLabels(): Promise<NewOrderLabels> {
       back: t("actions.back"),
       submit: t("actions.submit"),
       submitting: t("actions.submitting"),
+      saveDraft: t("actions.saveDraft"),
+      savingDraft: t("actions.savingDraft"),
+      confirmOrder: t("actions.confirmOrder"),
+      confirmingOrder: t("actions.confirmingOrder"),
+      cancel: t("actions.cancel"),
       addItem: t("actions.addItem"),
       removeItem: t("actions.removeItem"),
       addCustomer: t("actions.addCustomer"),
@@ -144,19 +147,33 @@ export async function getNewOrderLabels(): Promise<NewOrderLabels> {
       description: t("notes.description"),
       placeholder: t("notes.placeholder"),
     },
+    orderKinds: {
+      dineIn: t("orderKinds.dineIn"),
+      takeout: t("orderKinds.takeout"),
+      delivery: t("orderKinds.delivery"),
+      whatsapp: t("orderKinds.whatsapp"),
+      pos: t("orderKinds.pos"),
+    },
+    payment: {
+      title: t("payment.title"),
+      description: t("payment.description"),
+      label: t("payment.label"),
+      methods: {
+        cash: t("payment.methods.cash"),
+        card: t("payment.methods.card"),
+        transfer: t("payment.methods.transfer"),
+        qr: t("payment.methods.qr"),
+        other: t("payment.methods.other"),
+        manual_pending: t("payment.methods.manualPending"),
+      },
+    },
     summary: {
       title: t("summary.title"),
       subtotal: t("summary.subtotal"),
       taxes: t("summary.taxes"),
       total: t("summary.total"),
       taxNote: t("summary.taxNote"),
-    },
-    channels: {
-      whatsapp: tChannels("whatsapp"),
-      web: tChannels("web"),
-      dineIn: tChannels("dineIn"),
-      uberEats: tChannels("uberEats"),
-      rappi: tChannels("rappi"),
+      paymentMethod: t("summary.paymentMethod"),
     },
     validation: {
       customers: t("validation.customers"),
@@ -166,9 +183,12 @@ export async function getNewOrderLabels(): Promise<NewOrderLabels> {
       itemName: t("validation.itemName"),
       itemPrice: t("validation.itemPrice"),
       itemQuantity: t("validation.itemQuantity"),
+      notes: t("validation.notes"),
+      paymentMethod: t("validation.paymentMethod"),
     },
     feedback: {
       success: t("feedback.success"),
+      draftSuccess: t("feedback.draftSuccess"),
       error: t("feedback.error"),
     },
     permissions: {

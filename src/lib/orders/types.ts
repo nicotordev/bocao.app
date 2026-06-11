@@ -1,4 +1,5 @@
 export type OrderStatus =
+  | "draft"
   | "received"
   | "confirmed"
   | "preparing"
@@ -6,11 +7,23 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
-export type OrderChannel = "whatsapp" | "web" | "dineIn" | "uberEats" | "rappi";
+export type OrderChannel =
+  | "whatsapp"
+  | "web"
+  | "dineIn"
+  | "uberEats"
+  | "rappi"
+  | "pos";
 
+export type OrderKind = "dineIn" | "takeout" | "delivery" | "whatsapp" | "pos";
+
+export type CreateOrderIntent = "draft" | "confirm";
+
+import type { OrderPayment, PaymentMethod } from "@/lib/payments/types";
 import type { OrderLineCustomization } from "@/lib/product-flow/types";
 
 export type { OrderLineCustomization };
+export type { OrderPayment };
 
 export type OrderItem = {
   name: string;
@@ -49,6 +62,8 @@ export type Order = {
     total: string;
   };
   timeline: OrderTimelineEvent[];
+  payment?: OrderPayment;
+  kind?: OrderKind;
 };
 
 /** @deprecated Use `Order` — kept for existing dashboard components. */
@@ -94,9 +109,24 @@ export type CreateOrderCustomerInput = {
 export type CreateOrderInput = {
   customers: CreateOrderCustomerInput[];
   tableNumber?: string;
-  channel: OrderChannel;
-  notes?: string;
+  kind: OrderKind;
+  notes: string;
   items: CreateOrderLineItemInput[];
+  paymentMethod: PaymentMethod;
+  intent: CreateOrderIntent;
+};
+
+export type UpdateOrderInput = {
+  customers?: CreateOrderCustomerInput[];
+  tableNumber?: string;
+  kind?: OrderKind;
+  notes?: string;
+  items?: CreateOrderLineItemInput[];
+  paymentMethod?: PaymentMethod;
+};
+
+export type UpdateOrderResponse = {
+  order: Order;
 };
 
 export type CreateOrderResponse = {

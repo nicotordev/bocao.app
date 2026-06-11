@@ -31,6 +31,14 @@ export {
   recordKitchenEventInTx,
 };
 
+export function buildKitchenEventInput(
+  tenantId: string,
+  restaurantId: string,
+  payload: KitchenRealtimePayload,
+): RecordKitchenEventInput {
+  return { tenantId, restaurantId, payload };
+}
+
 export function createKitchenStatusChangedPayload(
   orderId: string,
   fromStatus: string,
@@ -84,9 +92,13 @@ export function isKitchenRealtimePayload(
 
   return (
     type === "order.created" ||
+    type === "order.confirmed" ||
     type === "order.updated" ||
+    type === "order.cancelled" ||
     type === "order.status.changed" ||
     type === "order.removed" ||
+    type === "payment.created" ||
+    type === "payment.updated" ||
     type === "kitchen.sync"
   );
 }

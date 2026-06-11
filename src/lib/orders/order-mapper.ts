@@ -1,5 +1,16 @@
-import type { Order as PrismaOrder, Customer } from "@/generated/prisma/client";
-import { formatDateInputValue } from "@/lib/orders/date";
+import type {
+  Order as PrismaOrder,
+  Customer,
+  Payment as PrismaPayment,
+} from "@/generated/prisma/client";
+import { mapDbPaymentToUi } from "@/lib/payments/mapper";
+import type { OrderKind } from "@/lib/orders/order-kind";
+import {
+  elapsedMinutesSince,
+  formatDateInputValue,
+  formatTimeInTimezone,
+} from "@/lib/orders/date";
+import { parseOrderDetailsJson } from "@/lib/orders/order-details-json";
 import { formatCurrency } from "@/lib/orders/currency";
 import {
   formatOrderCustomerLabel,
@@ -15,6 +26,7 @@ import type {
 } from "@/lib/orders/types";
 
 type PrismaOrderStatus =
+  | "DRAFT"
   | "PENDING"
   | "CONFIRMED"
   | "PREPARING"
@@ -23,6 +35,7 @@ type PrismaOrderStatus =
   | "CANCELLED";
 
 const STATUS_TO_UI: Record<PrismaOrderStatus, OrderStatus> = {
+  DRAFT: "draft",
   PENDING: "received",
   CONFIRMED: "confirmed",
   PREPARING: "preparing",
@@ -32,6 +45,7 @@ const STATUS_TO_UI: Record<PrismaOrderStatus, OrderStatus> = {
 };
 
 const STATUS_TO_DB: Record<OrderStatus, PrismaOrderStatus> = {
+  draft: "DRAFT",
   received: "PENDING",
   confirmed: "CONFIRMED",
   preparing: "PREPARING",
@@ -45,6 +59,7 @@ type OrderDetailsJson = {
   items?: OrderItem[];
   summary?: Order["summary"];
   timeline?: OrderTimelineEvent[];
+  kind?: OrderKind;
 };
 
 export function mapDbStatusToUi(status: PrismaOrderStatus): OrderStatus {
@@ -55,35 +70,6 @@ export function mapUiStatusToDb(status: OrderStatus): PrismaOrderStatus {
   return STATUS_TO_DB[status];
 }
 
-function resolveIntlLocale(locale?: string): string {
-  return locale === "es" ? "es-CL" : "en-US";
-}
-
-function formatCreatedAt(
-  date: Date,
-  timezone: string,
-  locale?: string,
-): string {
-  return new Intl.DateTimeFormat(resolveIntlLocale(locale), {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: timezone,
-  }).format(date);
-}
-
-function getWaitMinutes(createdAt: Date): number {
-  return Math.max(0, Math.round((Date.now() - createdAt.getTime()) / 60_000));
-}
-
-function parseDetails(details: unknown): OrderDetailsJson {
-  if (!details || typeof details !== "object") {
-    return {};
-  }
-
-  return details as OrderDetailsJson;
-}
-
 type MapOrderOptions = {
   currency?: string;
   timezone?: string;
@@ -91,15 +77,26 @@ type MapOrderOptions = {
   customerLabels?: OrderCustomerLabels;
 };
 
+function resolvePrimaryPayment(
+  payments?: PrismaPayment[],
+): Order["payment"] | undefined {
+  if (!payments?.length) {
+    return undefined;
+  }
+
+  return mapDbPaymentToUi(payments[0]!);
+}
+
 export function mapDbOrderToUi(
   order: PrismaOrder & {
     customers?: Array<{ customer: Customer }>;
+    payments?: PrismaPayment[];
   },
   options: MapOrderOptions = {},
 ): Order {
   const currency = options.currency ?? "CLP";
   const timezone = options.timezone ?? "America/Santiago";
-  const details = parseDetails(order.details);
+  const details = parseOrderDetailsJson<OrderDetailsJson>(order.details);
   const summary = details.summary ?? {
     subtotal: formatCurrency(order.totalCents, currency),
     taxes: formatCurrency(0, currency),
@@ -122,14 +119,16 @@ export function mapDbOrderToUi(
     status: mapDbStatusToUi(order.status),
     total: formatCurrency(order.totalCents, currency),
     totalCents: order.totalCents,
-    createdAt: formatCreatedAt(order.createdAt, timezone, options.locale),
+    createdAt: formatTimeInTimezone(order.createdAt, timezone, options.locale),
     createdAtDate: formatDateInputValue(order.createdAt, timezone),
-    waitMinutes: order.preparationMins ?? getWaitMinutes(order.createdAt),
+    waitMinutes: order.preparationMins ?? elapsedMinutesSince(order.createdAt),
     owner: order.assignedTo ?? "",
     history: details.history ?? "",
     notes: order.notes ?? "",
     items: details.items ?? [],
     summary,
     timeline: details.timeline ?? [],
+    payment: resolvePrimaryPayment(order.payments),
+    kind: details.kind,
   };
 }

@@ -5,6 +5,11 @@ import {
 } from "@/lib/kitchen/list-filters";
 import type { OrderFormatOptions } from "@/lib/orders/format-options";
 import { orderCustomerInclude } from "@/lib/orders/order-customers";
+import {
+  getRestaurantOrderContext,
+  type RestaurantOrderContext,
+} from "@/lib/orders/context";
+import { executeOrderMutationWithEvents } from "@/lib/orders/mutation";
 import { prisma } from "@/lib/prisma";
 import {
   appendKitchenTimelineEvent,
@@ -16,11 +21,11 @@ import {
   shouldMarkKitchenCompletedLate,
 } from "@/lib/kitchen/kitchen-mapper";
 import {
-  buildKitchenRealtimeEvent,
-  publishKitchenEventAfterCommit,
-  recordKitchenEventInTx,
-} from "@/lib/realtime/event-log";
-import type { RecordKitchenEventInput } from "@/lib/kitchen/events";
+  buildKitchenEventInput,
+  createKitchenOrderUpdatedPayload,
+  createKitchenStatusChangedPayload,
+  type RecordKitchenEventInput,
+} from "@/lib/kitchen/events";
 import type { KitchenOrder, KitchenStation } from "@/lib/kitchen/types";
 import type { z } from "zod";
 import type { updateKitchenOrderBodySchema } from "@/lib/kitchen/schemas";
@@ -37,24 +42,13 @@ export type UpdateKitchenOrderResponse = {
   order: KitchenOrder;
 };
 
-async function getRestaurantContext(restaurantId: string) {
-  return prisma.restaurant.findUnique({
-    where: { id: restaurantId },
-    select: {
-      currency: true,
-      timezone: true,
-      organizationId: true,
-    },
-  });
-}
-
 export async function listKitchenOrders(
   restaurantId: string,
   formatOptions?: OrderFormatOptions,
   filters?: KitchenListFilters,
   timezone?: string,
 ): Promise<KitchenListResponse> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     return {
@@ -105,7 +99,7 @@ export async function listKitchenOrders(
 function buildKitchenUpdateEvents(
   existingOrder: Parameters<typeof mapDbOrderToKitchen>[0],
   input: UpdateKitchenOrderInput,
-  restaurant: NonNullable<Awaited<ReturnType<typeof getRestaurantContext>>>,
+  restaurant: RestaurantOrderContext,
   formatOptions?: OrderFormatOptions,
 ): RecordKitchenEventInput[] {
   const tenantId = restaurant.organizationId;
@@ -119,25 +113,25 @@ function buildKitchenUpdateEvents(
   });
 
   if (input.status) {
-    events.push({
-      tenantId,
-      restaurantId,
-      payload: {
-        type: "order.status.changed",
-        orderId,
-        fromStatus: previousKitchenOrder.status,
-        toStatus: input.status,
-      },
-    });
+    events.push(
+      buildKitchenEventInput(
+        tenantId,
+        restaurantId,
+        createKitchenStatusChangedPayload(
+          orderId,
+          previousKitchenOrder.status,
+          input.status,
+        ),
+      ),
+    );
   } else if (input.station || input.priority || input.assignedTo) {
-    events.push({
-      tenantId,
-      restaurantId,
-      payload: {
-        type: "order.updated",
-        orderId,
-      },
-    });
+    events.push(
+      buildKitchenEventInput(
+        tenantId,
+        restaurantId,
+        createKitchenOrderUpdatedPayload(orderId),
+      ),
+    );
   }
 
   return events;
@@ -150,7 +144,7 @@ export async function updateKitchenOrder(
   actorName?: string,
   formatOptions?: OrderFormatOptions,
 ): Promise<KitchenOrder> {
-  const restaurant = await getRestaurantContext(restaurantId);
+  const restaurant = await getRestaurantOrderContext(restaurantId);
 
   if (!restaurant) {
     throw new Error("Restaurant not found");
@@ -225,14 +219,14 @@ export async function updateKitchenOrder(
 
   nextDetails.kitchen = nextKitchen;
 
-  const pendingEvents = buildKitchenUpdateEvents(
-    existing,
-    input,
-    restaurant,
-    formatOptions,
-  );
+  const order = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents = buildKitchenUpdateEvents(
+      existing,
+      input,
+      restaurant,
+      formatOptions,
+    );
 
-  const { order, eventLogs } = await prisma.$transaction(async (tx) => {
     const updatedOrder = await tx.order.update({
       where: {
         restaurantId_orderNumber: {
@@ -248,19 +242,8 @@ export async function updateKitchenOrder(
       include: orderCustomerInclude,
     });
 
-    const logs = await Promise.all(
-      pendingEvents.map((eventInput) => recordKitchenEventInTx(tx, eventInput)),
-    );
-
-    return { order: updatedOrder, eventLogs: logs };
+    return { value: updatedOrder, pendingEvents };
   });
-
-  await Promise.all(
-    eventLogs.map((log, index) => {
-      const event = buildKitchenRealtimeEvent(pendingEvents[index]!, log.id);
-      return publishKitchenEventAfterCommit(event, log.id);
-    }),
-  );
 
   return mapDbOrderToKitchen(order, {
     timezone: restaurant.timezone,

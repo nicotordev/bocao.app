@@ -74,6 +74,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     },
     statuses: {
       all: t("statuses.all"),
+      draft: t("statuses.draft"),
       received: t("statuses.received"),
       confirmed: t("statuses.confirmed"),
       preparing: t("statuses.preparing"),
@@ -88,6 +89,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       dineIn: t("channels.dineIn"),
       uberEats: t("channels.uberEats"),
       rappi: t("channels.rappi"),
+      pos: t("channels.pos"),
     },
     tabs: {
       orders: t("tabs.orders"),

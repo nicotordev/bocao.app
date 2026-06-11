@@ -162,12 +162,33 @@ model Membership {
 }
 
 enum OrderStatus {
+  DRAFT
   PENDING
   CONFIRMED
   PREPARING
   READY
   COMPLETED
   CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+  QR
+  OTHER
+  MANUAL_PENDING
+}
+
+enum PaymentProvider {
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
 enum OrderType {
@@ -593,11 +614,33 @@ model Order {
 
   restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   customers  OrderCustomer[]
+  payments   Payment[]
 
   @@unique([restaurantId, orderNumber])
   @@index([restaurantId])
   @@index([status])
   @@index([createdAt])
+}
+
+/// Payment record for an order. Provider-agnostic; adapters map external PSP events later.
+model Payment {
+  id             String          @id @default(cuid())
+  orderId        String
+  method         PaymentMethod
+  provider       PaymentProvider @default(MANUAL)
+  status         PaymentStatus   @default(PENDING)
+  amountCents    Int
+  currency       String
+  /// External reference from a future PSP adapter (optional).
+  externalRef    String?
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status])
 }
 
 model Reservation {

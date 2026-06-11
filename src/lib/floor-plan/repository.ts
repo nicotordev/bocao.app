@@ -6,14 +6,8 @@ import type {
   TableOccupancy,
 } from "@/lib/floor-plan/types";
 import type { SaveFloorPlanInput } from "@/lib/floor-plan/schemas";
+import { IN_FLIGHT_ORDER_STATUSES } from "@/lib/kitchen/kitchen-queue";
 import { prisma } from "@/lib/prisma";
-
-const ACTIVE_ORDER_STATUSES = [
-  "PENDING",
-  "CONFIRMED",
-  "PREPARING",
-  "READY",
-] as const;
 
 const surfaceInclude = {
   tables: {
@@ -184,7 +178,7 @@ export async function getOccupiedTableNumbers(
     where: {
       restaurantId,
       channel: "dineIn",
-      status: { in: [...ACTIVE_ORDER_STATUSES] },
+      status: { in: [...IN_FLIGHT_ORDER_STATUSES] },
       tableNumber: { not: null },
     },
     select: {

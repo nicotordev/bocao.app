@@ -12,12 +12,14 @@ import type { NewOrderLabels } from "./types";
 type NewOrderNotesSectionProps = {
   labels: NewOrderLabels;
   value: string;
+  error?: string;
   onChange: (value: string) => void;
 };
 
 export function NewOrderNotesSection({
   labels,
   value,
+  error,
   onChange,
 }: NewOrderNotesSectionProps) {
   return (
@@ -35,7 +37,9 @@ export function NewOrderNotesSection({
             onChange={(event) => onChange(event.target.value)}
             placeholder={labels.notes.placeholder}
             rows={4}
+            aria-invalid={Boolean(error)}
           />
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </Field>
       </CardContent>
     </Card>

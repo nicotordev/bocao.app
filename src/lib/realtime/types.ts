@@ -1,6 +1,8 @@
 export type KitchenRealtimePayload =
   | { type: "order.created"; orderId: string }
+  | { type: "order.confirmed"; orderId: string }
   | { type: "order.updated"; orderId: string }
+  | { type: "order.cancelled"; orderId: string }
   | {
       type: "order.status.changed";
       orderId: string;
@@ -12,6 +14,8 @@ export type KitchenRealtimePayload =
       orderId: string;
       reason: "cancelled" | "completed" | "not_kitchen_relevant";
     }
+  | { type: "payment.created"; orderId: string; paymentId: string }
+  | { type: "payment.updated"; orderId: string; paymentId: string }
   | {
       type: "kitchen.sync";
       reason: "reconnect" | "unknown_event" | "manual";

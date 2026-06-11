@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { createPaymentInputSchema } from "@/lib/payments/schemas";
 import { orderLineCustomizationSchema } from "@/lib/product-flow/schemas";
 
 export const orderStatusSchema = z.enum([
+  "draft",
   "received",
   "confirmed",
   "preparing",
@@ -16,7 +18,18 @@ export const orderChannelSchema = z.enum([
   "dineIn",
   "uberEats",
   "rappi",
+  "pos",
 ]);
+
+export const orderKindSchema = z.enum([
+  "dineIn",
+  "takeout",
+  "delivery",
+  "whatsapp",
+  "pos",
+]);
+
+export const createOrderIntentSchema = z.enum(["draft", "confirm"]);
 
 export const updateOrderStatusBodySchema = z.object({
   status: orderStatusSchema,
@@ -41,28 +54,44 @@ export const createOrderCustomerSchema = z.object({
   notes: z.string().trim().optional(),
 });
 
-export const createOrderBodySchema = z
-  .object({
-    customers: z.array(createOrderCustomerSchema).default([]),
-    tableNumber: z.string().trim().optional(),
-    channel: orderChannelSchema,
-    notes: z.string().trim().optional(),
-    items: z.array(createOrderLineItemSchema).min(1),
-  })
-  .superRefine((data, ctx) => {
-    if (data.channel === "dineIn" && !data.tableNumber?.trim()) {
+const createOrderBaseSchema = z.object({
+  customers: z.array(createOrderCustomerSchema).default([]),
+  tableNumber: z.string().trim().optional(),
+  kind: orderKindSchema,
+  notes: z.string().trim().min(1),
+  items: z.array(createOrderLineItemSchema).min(1),
+  paymentMethod: createPaymentInputSchema.shape.method,
+  intent: createOrderIntentSchema.default("confirm"),
+});
+
+export const createOrderBodySchema = createOrderBaseSchema.superRefine(
+  (data, ctx) => {
+    if (data.kind === "dineIn" && !data.tableNumber?.trim()) {
       ctx.addIssue({
         code: "custom",
         path: ["tableNumber"],
         message: "Table number is required for dine-in orders",
       });
     }
+  },
+);
 
-    if (data.channel !== "dineIn" && data.customers.length === 0) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["customers"],
-        message: "At least one customer is required",
-      });
-    }
-  });
+export const updateOrderBodySchema = z
+  .object({
+    customers: z.array(createOrderCustomerSchema).optional(),
+    tableNumber: z.string().trim().optional(),
+    kind: orderKindSchema.optional(),
+    notes: z.string().trim().min(1).optional(),
+    items: z.array(createOrderLineItemSchema).min(1).optional(),
+    paymentMethod: createPaymentInputSchema.shape.method.optional(),
+  })
+  .refine(
+    (data) =>
+      data.customers !== undefined ||
+      data.tableNumber !== undefined ||
+      data.kind !== undefined ||
+      data.notes !== undefined ||
+      data.items !== undefined ||
+      data.paymentMethod !== undefined,
+    { message: "At least one field must be provided" },
+  );
