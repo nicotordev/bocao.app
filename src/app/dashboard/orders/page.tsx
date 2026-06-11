@@ -7,7 +7,10 @@ import {
   parseOrdersListSearchParams,
   toOrdersKpiFilters,
 } from "@/lib/orders/filters";
+import { getOrderFormatOptions } from "@/lib/orders/format-options";
+import { getOrder } from "@/lib/orders/repository";
 import { getQueryClient } from "@/lib/query/get-query-client";
+import { orderDetailQueryOptions } from "@/lib/query/orders/orders.queries";
 import {
   ordersBoardQueryOptions,
   ordersKpiQueryOptions,
@@ -27,7 +30,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
   const queryClient = getQueryClient();
   const resolvedSearchParams = searchParamsToRecord(await searchParams);
+  const orderId = Array.isArray(resolvedSearchParams.orderId)
+    ? resolvedSearchParams.orderId[0]
+    : resolvedSearchParams.orderId;
   const filters = parseOrdersListSearchParams(resolvedSearchParams, timezone);
+  const orderFormatOptions = await getOrderFormatOptions();
 
   if (restaurantId) {
     await Promise.all([
@@ -36,8 +43,20 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       queryClient.prefetchQuery(
         ordersKpiQueryOptions(restaurantId, toOrdersKpiFilters(filters)),
       ),
+      ...(orderId
+        ? [
+            queryClient.prefetchQuery(
+              orderDetailQueryOptions(restaurantId, orderId),
+            ),
+          ]
+        : []),
     ]);
   }
+
+  const initialOrder =
+    restaurantId && orderId
+      ? await getOrder(restaurantId, orderId, orderFormatOptions)
+      : null;
 
   const labels: OrdersLabels = {
     actions: {
@@ -181,12 +200,14 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <OrdersPageClient
+        key={orderId ?? "list"}
         labels={labels}
         restaurantId={restaurantId}
         timezone={timezone}
         restaurants={
           context?.restaurants.map((restaurant) => restaurant.name) ?? []
         }
+        initialOrder={initialOrder}
       />
     </HydrationBoundary>
   );

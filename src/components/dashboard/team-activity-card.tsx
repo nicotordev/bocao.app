@@ -1,7 +1,13 @@
 import { TbUsers } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
-import { DashboardSectionEmpty } from "@/components/dashboard/home/dashboard-section-empty";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -43,11 +49,17 @@ export async function TeamActivityCard({ members }: TeamActivityCardProps) {
       </CardHeader>
       <CardContent>
         {members.length === 0 ? (
-          <DashboardSectionEmpty
-            icon={<TbUsers aria-hidden />}
-            title={t("empty.title")}
-            description={t("empty.description")}
-          />
+          <Empty className="border border-dashed border-border/70 bg-muted/10 py-10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <TbUsers aria-hidden />
+              </EmptyMedia>
+              <EmptyTitle>{t("empty.title")}</EmptyTitle>
+              <EmptyDescription className="max-w-sm">
+                {t("empty.description")}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <ul className="space-y-3">
             {members.map((member) => (

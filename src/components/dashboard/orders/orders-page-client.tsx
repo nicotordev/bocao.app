@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
@@ -42,6 +42,7 @@ type OrdersPageClientProps = {
   restaurantId: string;
   restaurants: string[];
   timezone: string;
+  initialOrder?: DashboardOrder | null;
 };
 
 export function OrdersPageClient({
@@ -49,12 +50,23 @@ export function OrdersPageClient({
   restaurantId,
   restaurants,
   timezone,
+  initialOrder = null,
 }: OrdersPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedOrder, setSelectedOrder] = useState<DashboardOrder | null>(
-    null,
-  );
+  const openedViaDeepLink = useRef(Boolean(initialOrder));
+  const urlOrderId = searchParams.get("orderId");
+
+  const deepLinkOrder = useMemo(() => {
+    if (!urlOrderId || !initialOrder) {
+      return null;
+    }
+
+    return initialOrder.id === urlOrderId ? initialOrder : null;
+  }, [initialOrder, urlOrderId]);
+
+  const [manualOrder, setManualOrder] = useState<DashboardOrder | null>(null);
+  const selectedOrder = manualOrder ?? deepLinkOrder;
   const [activeTab, setActiveTab] = useState("orders");
   const filters = useMemo(
     () =>
@@ -82,16 +94,46 @@ export function OrdersPageClient({
     totalPages: 1,
   };
 
-  const urlParams = useMemo(
-    () => ({
+  const urlParams = useMemo(() => {
+    const params: Record<string, string | undefined> = {
       search: filters.search,
       status: filters.status === "all" ? undefined : filters.status,
       channel: filters.channel === "all" ? undefined : filters.channel,
       from: filters.from,
       to: filters.to,
-    }),
-    [filters],
-  );
+    };
+
+    const orderId = searchParams.get("orderId");
+    if (orderId) {
+      params.orderId = orderId;
+    }
+
+    return params;
+  }, [filters, searchParams]);
+
+  const clearDeepLinkFromUrl = useCallback(() => {
+    if (!searchParams.get("orderId")) {
+      return;
+    }
+
+    openedViaDeepLink.current = false;
+    router.replace(
+      buildListUrl(
+        "/dashboard/orders",
+        {
+          search: filters.search,
+          status: filters.status === "all" ? undefined : filters.status,
+          channel: filters.channel === "all" ? undefined : filters.channel,
+          from: filters.from,
+          to: filters.to,
+        },
+        {
+          page: filters.page,
+          pageSize: filters.pageSize,
+        },
+      ),
+    );
+  }, [filters, router, searchParams]);
 
   const kpiValues = useMemo(() => {
     const kpiOrders = kpiQuery.data?.orders ?? [];
@@ -267,7 +309,10 @@ export function OrdersPageClient({
                       <OrdersTable
                         labels={labels}
                         orders={listOrders}
-                        onSelectOrder={setSelectedOrder}
+                        onSelectOrder={(order) => {
+                          openedViaDeepLink.current = false;
+                          setManualOrder(order);
+                        }}
                       />
                       <ListPagination
                         basePath="/dashboard/orders"
@@ -280,7 +325,10 @@ export function OrdersPageClient({
                       <OrdersKanban
                         labels={labels}
                         orders={boardOrders}
-                        onSelectOrder={setSelectedOrder}
+                        onSelectOrder={(order) => {
+                          openedViaDeepLink.current = false;
+                          setManualOrder(order);
+                        }}
                         isMoving={updateOrderStatusMutation.isPending}
                         showDragGuide={activeTab === "kanban"}
                         onMoveOrder={(orderId, status) =>
@@ -292,7 +340,10 @@ export function OrdersPageClient({
                       <OrdersTimeline
                         labels={labels}
                         orders={boardOrders}
-                        onSelectOrder={setSelectedOrder}
+                        onSelectOrder={(order) => {
+                          openedViaDeepLink.current = false;
+                          setManualOrder(order);
+                        }}
                       />
                     </TabsContent>
                   </Tabs>
@@ -305,7 +356,15 @@ export function OrdersPageClient({
               order={selectedOrder}
               open={selectedOrder !== null}
               onOpenChange={(open) => {
-                if (!open) setSelectedOrder(null);
+                if (open) {
+                  return;
+                }
+
+                setManualOrder(null);
+
+                if (openedViaDeepLink.current) {
+                  clearDeepLinkFromUrl();
+                }
               }}
             />
           </main>

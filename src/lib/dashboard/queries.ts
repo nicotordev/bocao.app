@@ -8,7 +8,11 @@ import {
 import { enUS, es } from "date-fns/locale";
 import { computeDashboardInsights } from "@/lib/dashboard/compute-insights";
 import type { DashboardInsightLabels } from "@/lib/dashboard/compute-insights";
-import type { DashboardHomeData, DashboardMetric } from "@/lib/dashboard/data";
+import type {
+  DashboardHomeData,
+  DashboardMetric,
+  DashboardOrderPreview,
+} from "@/lib/dashboard/data";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
 import {
   formatOrderCustomerLabel,
@@ -116,21 +120,6 @@ function formatPrepTimeChange(
     change: template.replace("{change}", signedChange),
     trend: delta < 0 ? "up" : delta > 0 ? "down" : "neutral",
   };
-}
-
-function mapOrderStatusToPreview(
-  status: ReturnType<typeof mapDbStatusToUi>,
-): "pending" | "preparing" | "ready" | "completed" {
-  switch (status) {
-    case "preparing":
-      return "preparing";
-    case "ready":
-      return "ready";
-    case "delivered":
-      return "completed";
-    default:
-      return "pending";
-  }
 }
 
 export async function getDashboardHomeData(
@@ -387,7 +376,9 @@ export async function getDashboardHomeData(
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: customerLabel.customerName,
-        status: mapOrderStatusToPreview(mapDbStatusToUi(order.status)),
+        status: mapDbStatusToUi(order.status),
+        channel: (order.channel ?? "web") as DashboardOrderPreview["channel"],
+        tableNumber: order.tableNumber ?? undefined,
         total: formatCurrency(order.totalCents, restaurant.currency, locale),
         createdAt: formatRelativeMinutes(
           order.createdAt,

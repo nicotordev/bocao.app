@@ -346,6 +346,11 @@
       "recentOrders": {
         "title": "Pedidos recientes",
         "description": "Últimos movimientos del salón y delivery",
+        "viewAll": "Ver todos los pedidos",
+        "newOrder": "Nuevo pedido",
+        "viewDetail": "Ver detalle del pedido",
+        "viewOrder": "Seleccionar pedido {id}",
+        "table": "Mesa {number}",
         "status": {
           "pending": "Pendiente",
           "preparing": "En cocina",

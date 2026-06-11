@@ -1,7 +1,13 @@
 import { TbCalendar } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
-import { DashboardSectionEmpty } from "@/components/dashboard/home/dashboard-section-empty";
 import { UpcomingReservationItem } from "@/components/dashboard/upcoming-reservation-item";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
 import type { ReservationStatus } from "@/lib/reservations/types";
 import {
@@ -52,12 +58,17 @@ export async function UpcomingReservationsList({
       </CardHeader>
       <CardContent>
         {reservations.length === 0 ? (
-          <DashboardSectionEmpty
-            icon={<TbCalendar aria-hidden />}
-            title={t("empty.title")}
-            description={t("empty.description")}
-            cta={{ label: t("empty.cta"), href: "/dashboard/reservations" }}
-          />
+          <Empty className="border border-dashed border-border/70 bg-muted/10 py-10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <TbCalendar aria-hidden />
+              </EmptyMedia>
+              <EmptyTitle>{t("empty.title")}</EmptyTitle>
+              <EmptyDescription className="max-w-sm">
+                {t("empty.description")}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <ul className="space-y-3">
             {reservations.map((reservation) => (

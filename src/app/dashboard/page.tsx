@@ -80,7 +80,7 @@ export default async function DashboardPage() {
           </section>
 
           <section className="grid gap-4 lg:grid-cols-2">
-            {await RecentOrdersList({ orders: data.recentOrders })}
+            <RecentOrdersList orders={data.recentOrders} />
             {await UpcomingReservationsList({
               reservations: data.upcomingReservations,
             })}

@@ -1,3 +1,4 @@
+import type { OrderChannel, OrderStatus } from "@/lib/orders/types";
 import type { ReservationStatus } from "@/lib/reservations/types";
 
 export type DashboardMetric = {
@@ -12,7 +13,9 @@ export type DashboardOrderPreview = {
   id: string;
   orderNumber: string;
   customerName: string;
-  status: "pending" | "preparing" | "ready" | "completed";
+  status: OrderStatus;
+  channel: OrderChannel;
+  tableNumber?: string;
   total: string;
   createdAt: string;
 };

@@ -346,6 +346,11 @@
       "recentOrders": {
         "title": "Recent orders",
         "description": "Latest floor and delivery activity",
+        "viewAll": "View all orders",
+        "newOrder": "New order",
+        "viewDetail": "View order detail",
+        "viewOrder": "Select order {id}",
+        "table": "Table {number}",
         "status": {
           "pending": "Pending",
           "preparing": "In kitchen",
