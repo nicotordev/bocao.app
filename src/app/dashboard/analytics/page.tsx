@@ -182,30 +182,11 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       locale,
     );
 
-    const channelLabels = {
-      pos: t("channels.pos"),
-      whatsapp: t("channels.whatsapp"),
-      web: t("channels.web"),
-      delivery: t("channels.delivery"),
-      manual: t("channels.manual"),
-    };
-
     await queryClient.prefetchQuery({
       ...analyticsDashboardQueryOptions(restaurantId, listFilters),
       queryFn: () =>
-        getAnalyticsDashboardData(filters, {
-          restaurantName: context?.activeRestaurant?.name ?? "",
-          channelLabels,
+        getAnalyticsDashboardData(filters, listFilters, {
           kitchenStationLabels,
-          fallbackInsightLabels: {
-            revenueUp: t.raw("insights.revenueUp"),
-            revenueDown: t.raw("insights.revenueDown"),
-            topChannel: t.raw("insights.topChannel"),
-            topProduct: t.raw("insights.topProduct"),
-            peakHours: t.raw("insights.peakHours"),
-            cancellationHigh: t.raw("insights.cancellationHigh"),
-            channelLabels,
-          },
         }),
     });
   }

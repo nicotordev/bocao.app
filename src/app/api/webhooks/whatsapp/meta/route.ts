@@ -35,13 +35,21 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const appSecret = process.env.META_WHATSAPP_APP_SECRET?.trim();
 
-  if (appSecret) {
-    const signature = request.headers.get("x-hub-signature-256");
-    const valid = verifyMetaWebhookSignature(rawBody, signature, appSecret);
+  if (!appSecret) {
+    console.error(
+      "[whatsapp-webhook] META_WHATSAPP_APP_SECRET is not configured",
+    );
+    return NextResponse.json(
+      { error: "Webhook not configured" },
+      { status: 503 },
+    );
+  }
 
-    if (!valid) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  const signature = request.headers.get("x-hub-signature-256");
+  const valid = verifyMetaWebhookSignature(rawBody, signature, appSecret);
+
+  if (!valid) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let payload: unknown;

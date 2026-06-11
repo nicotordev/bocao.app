@@ -1,7 +1,10 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import { SYSTEM_ROLE_DEFINITIONS } from "@/lib/rbac/permissions";
 
-type Db = Pick<PrismaClient, "permission" | "role" | "rolePermission">;
+type Db = Pick<
+  PrismaClient,
+  "permission" | "role" | "rolePermission" | "organization"
+>;
 
 export async function seedOrganizationRoles(db: Db, organizationId: string) {
   const permissions = await db.permission.findMany({
@@ -59,4 +62,16 @@ export async function seedOrganizationRoles(db: Db, organizationId: string) {
   }
 
   return rolesBySlug;
+}
+
+export async function syncAllOrganizationRoles(db: Db) {
+  const organizations = await db.organization.findMany({
+    select: { id: true },
+  });
+
+  for (const organization of organizations) {
+    await seedOrganizationRoles(db, organization.id);
+  }
+
+  return organizations.length;
 }

@@ -1,4 +1,7 @@
-import type { AnalyticsDashboardData } from "@/lib/analytics/types";
+import type {
+  AnalyticsChannel,
+  AnalyticsDashboardData,
+} from "@/lib/analytics/types";
 
 function escapeCsvValue(value: string | number): string {
   const raw = String(value);
@@ -8,7 +11,15 @@ function escapeCsvValue(value: string | number): string {
   return raw;
 }
 
-export function buildAnalyticsCsv(data: AnalyticsDashboardData): string {
+type BuildAnalyticsCsvOptions = {
+  channelLabels?: Partial<Record<AnalyticsChannel, string>>;
+};
+
+export function buildAnalyticsCsv(
+  data: AnalyticsDashboardData,
+  options?: BuildAnalyticsCsvOptions,
+): string {
+  const channelLabels = options?.channelLabels;
   const lines: string[] = [
     "section,key,value",
     `overview,totalRevenue,${data.overview.totalRevenue}`,
@@ -27,7 +38,7 @@ export function buildAnalyticsCsv(data: AnalyticsDashboardData): string {
     "channelBreakdown,channel,orders,revenue",
     ...data.channelBreakdown.map(
       (row) =>
-        `channelBreakdown,${row.channel},${row.orders},${row.revenue}`,
+        `channelBreakdown,${escapeCsvValue(channelLabels?.[row.channel] ?? row.channel)},${row.orders},${row.revenue}`,
     ),
     "",
     "topProducts,name,quantity,revenue,sharePercent",

@@ -33,6 +33,11 @@ type GenerateAnalyticsInsightsInput = {
   fallbackLabels: InsightTemplateLabels;
 };
 
+export type GeneratedAnalyticsInsights = {
+  insights: AnalyticsInsight[];
+  source: "ai" | "rules";
+};
+
 function buildSystemPrompt(locale: string): string {
   const language = locale === "es" ? "Spanish" : "English";
 
@@ -79,13 +84,15 @@ function hasInsightData(dashboard: Omit<AnalyticsDashboardData, "insights">): bo
 
 export async function generateAnalyticsInsights(
   input: GenerateAnalyticsInsightsInput,
-): Promise<AnalyticsInsight[]> {
+): Promise<GeneratedAnalyticsInsights> {
   if (!hasInsightData(input.dashboard)) {
-    return [];
+    return { insights: [], source: "rules" };
   }
 
-  const fallback = () =>
-    computeAnalyticsInsights(input.dashboard, input.fallbackLabels);
+  const fallback = (): GeneratedAnalyticsInsights => ({
+    insights: computeAnalyticsInsights(input.dashboard, input.fallbackLabels),
+    source: "rules",
+  });
 
   try {
     const client = getOpenAIClient();
@@ -104,7 +111,7 @@ export async function generateAnalyticsInsights(
     const parsed = response.output_parsed;
 
     if (parsed?.insights?.length) {
-      return parsed.insights;
+      return { insights: parsed.insights, source: "ai" };
     }
 
     const fallbackText = response.output_text?.trim();
@@ -113,7 +120,7 @@ export async function generateAnalyticsInsights(
         const json = JSON.parse(fallbackText) as unknown;
         const validated = analyticsInsightsResponseSchema.safeParse(json);
         if (validated.success) {
-          return validated.data.insights;
+          return { insights: validated.data.insights, source: "ai" };
         }
       } catch {
         // use rule-based fallback below

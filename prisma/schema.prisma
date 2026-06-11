@@ -356,10 +356,31 @@ model Restaurant {
   productFlowTemplates  ProductFlowTemplate[]
   productPurchaseFlows  ProductPurchaseFlow[]
   kitchenStations       KitchenStation[]
-  marketingCampaigns    MarketingCampaign[]
-  conversations         Conversation[]
+  marketingCampaigns        MarketingCampaign[]
+  conversations             Conversation[]
+  analyticsInsightSnapshots AnalyticsInsightSnapshot[]
 
   @@index([organizationId])
+}
+
+/// Pre-generated AI analytics insights refreshed by a background cron job.
+model AnalyticsInsightSnapshot {
+  id           String   @id @default(cuid())
+  restaurantId String
+  locale       String
+  preset       String
+  channel      String   @default("all")
+  status       String   @default("all")
+  /// ai | rules
+  source       String   @default("ai")
+  insights     Json
+  generatedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, locale, preset, channel, status])
+  @@index([restaurantId, generatedAt])
 }
 
 /// AI-generated marketing campaign draft or saved copy for a restaurant.

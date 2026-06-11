@@ -1,7 +1,7 @@
 import "server-only";
 
-import { generateAnalyticsInsights } from "@/lib/analytics/ai/generate-analytics-insights";
-import type { AnalyticsChannel } from "@/lib/analytics/types";
+import type { AnalyticsListFilters } from "@/lib/analytics/filters";
+import { resolveAnalyticsInsights } from "@/lib/analytics/insights/resolve-insights";
 import { getPreviousAnalyticsPeriod } from "@/lib/analytics/filters";
 import { computeChangePercent, safeAverage, safeRate } from "@/lib/analytics/math";
 import { buildKitchenPerformanceMetrics } from "@/lib/analytics/kitchen-performance";
@@ -22,24 +22,16 @@ import type {
 import { formatDateInputValue } from "@/lib/orders/date";
 
 type GetAnalyticsDashboardOptions = {
-  restaurantName: string;
-  channelLabels: Record<AnalyticsChannel, string>;
   kitchenStationLabels: Record<string, string>;
-  fallbackInsightLabels: {
-    revenueUp: string;
-    revenueDown: string;
-    topChannel: string;
-    topProduct: string;
-    peakHours: string;
-    cancellationHigh: string;
-    channelLabels: Record<AnalyticsChannel, string>;
-  };
 };
 
-export async function getAnalyticsDashboardData(
+export async function getAnalyticsDashboardMetrics(
   filters: AnalyticsFilters,
-  options: GetAnalyticsDashboardOptions,
-): Promise<AnalyticsDashboardData> {
+  options: Pick<
+    GetAnalyticsDashboardOptions,
+    "kitchenStationLabels"
+  >,
+): Promise<Omit<AnalyticsDashboardData, "insights">> {
   const previousPeriod = getPreviousAnalyticsPeriod(filters.from, filters.to);
 
   const [rows, overviewMetrics, stationLabelMap] = await Promise.all([
@@ -76,30 +68,22 @@ export async function getAnalyticsDashboardData(
     ),
   };
 
-  const revenueSeries = buildRevenueSeries(rows, filters);
-  const channelBreakdown = buildChannelBreakdown(rows);
-  const topProducts = buildTopProducts(rows);
-  const peakHours = buildPeakHours(rows, filters);
-  const kitchenPerformance = await buildKitchenPerformanceMetrics(
-    filters,
-    rows,
-    stationLabelMap,
-  );
-  const customerInsights = buildCustomerInsights({
-    uniqueCustomers: overviewMetrics.uniqueCustomers,
-    customersWithOrders: overviewMetrics.customersWithOrders,
-    reservationCount: overviewMetrics.reservationCount,
-  });
-
-  const dashboard: AnalyticsDashboardData = {
+  return {
     overview,
-    revenueSeries,
-    channelBreakdown,
-    topProducts,
-    peakHours,
-    kitchenPerformance,
-    customerInsights,
-    insights: [],
+    revenueSeries: buildRevenueSeries(rows, filters),
+    channelBreakdown: buildChannelBreakdown(rows),
+    topProducts: buildTopProducts(rows),
+    peakHours: buildPeakHours(rows, filters),
+    kitchenPerformance: await buildKitchenPerformanceMetrics(
+      filters,
+      rows,
+      stationLabelMap,
+    ),
+    customerInsights: buildCustomerInsights({
+      uniqueCustomers: overviewMetrics.uniqueCustomers,
+      customersWithOrders: overviewMetrics.customersWithOrders,
+      reservationCount: overviewMetrics.reservationCount,
+    }),
     filters: {
       from: formatDateInputValue(filters.from, filters.timezone),
       to: formatDateInputValue(filters.to, filters.timezone),
@@ -108,14 +92,27 @@ export async function getAnalyticsDashboardData(
     },
     updatedAt: new Date().toISOString(),
   };
+}
 
-  dashboard.insights = await generateAnalyticsInsights({
-    restaurantName: options.restaurantName,
-    locale: filters.locale,
-    currency: filters.currency,
-    dashboard,
-    fallbackLabels: options.fallbackInsightLabels,
+export async function getAnalyticsDashboardData(
+  filters: AnalyticsFilters,
+  listFilters: Pick<AnalyticsListFilters, "preset" | "channel" | "status">,
+  options: GetAnalyticsDashboardOptions,
+): Promise<AnalyticsDashboardData> {
+  const dashboard = await getAnalyticsDashboardMetrics(filters, {
+    kitchenStationLabels: options.kitchenStationLabels,
   });
 
-  return dashboard;
+  const insights = await resolveAnalyticsInsights({
+    restaurantId: filters.restaurantId,
+    locale: filters.locale,
+    preset: listFilters.preset,
+    channel: listFilters.channel,
+    status: listFilters.status,
+  });
+
+  return {
+    ...dashboard,
+    insights,
+  };
 }

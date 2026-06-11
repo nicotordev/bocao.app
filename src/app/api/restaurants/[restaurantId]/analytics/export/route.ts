@@ -1,3 +1,4 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { requireAnalyticsAccess } from "@/lib/analytics/api-auth";
 import {
@@ -50,13 +51,15 @@ export async function GET(request: Request, { params }: RouteContext) {
     activeRestaurant.timezone,
   );
 
+  const locale = await getLocale();
+
   const filters = toAnalyticsFilters(
     restaurantId,
     activeRestaurant.organizationId,
     listFilters,
     activeRestaurant.timezone,
     activeRestaurant.currency,
-    "en",
+    locale,
   );
 
   const parsed = analyticsQuerySchema.safeParse({
@@ -73,37 +76,29 @@ export async function GET(request: Request, { params }: RouteContext) {
     );
   }
 
-  const channelLabels = {
-    pos: "POS",
-    whatsapp: "WhatsApp",
-    web: "Web",
-    delivery: "Delivery",
-    manual: "Manual",
-  };
+  const t = await getTranslations("dashboard.analytics");
+  const tKitchen = await getTranslations("dashboard.kitchen");
 
-  const data = await getAnalyticsDashboardData(filters, {
-    restaurantName: activeRestaurant.name,
-    channelLabels,
+  const data = await getAnalyticsDashboardData(filters, listFilters, {
     kitchenStationLabels: {
-      grill: "Grill",
-      fryer: "Fryer",
-      sushi: "Sushi",
-      bar: "Bar",
-      desserts: "Desserts",
-      delivery_station: "Delivery",
-    },
-    fallbackInsightLabels: {
-      revenueUp: "",
-      revenueDown: "",
-      topChannel: "",
-      topProduct: "",
-      peakHours: "",
-      cancellationHigh: "",
-      channelLabels,
+      grill: tKitchen("stationTypes.grill"),
+      fryer: tKitchen("stationTypes.fryer"),
+      sushi: tKitchen("stationTypes.sushi"),
+      bar: tKitchen("stationTypes.bar"),
+      desserts: tKitchen("stationTypes.desserts"),
+      delivery_station: tKitchen("stationTypes.delivery"),
     },
   });
 
-  const csv = buildAnalyticsCsv(data);
+  const csv = buildAnalyticsCsv(data, {
+    channelLabels: {
+      pos: t("channels.pos"),
+      whatsapp: t("channels.whatsapp"),
+      web: t("channels.web"),
+      delivery: t("channels.delivery"),
+      manual: t("channels.manual"),
+    },
+  });
   const filename = buildAnalyticsCsvFilename(listFilters.from, listFilters.to);
 
   return new NextResponse(csv, {

@@ -12,6 +12,11 @@ import type {
   ConversationsListResponse,
 } from "@/lib/messaging/types";
 import { prisma } from "@/lib/prisma";
+import {
+  getMembershipWithPermissions,
+  membershipHasPermission,
+} from "@/lib/rbac/can";
+import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 function buildConversationWhere(
   restaurantId: string,
@@ -97,6 +102,7 @@ export async function getConversationMessages(
 }
 
 export async function updateConversation(
+  tenantId: string,
   restaurantId: string,
   conversationId: string,
   input: {
@@ -108,6 +114,7 @@ export async function updateConversation(
     where: {
       id: conversationId,
       restaurantId,
+      tenantId,
     },
   });
 
@@ -116,16 +123,20 @@ export async function updateConversation(
   }
 
   if (input.assignedToId) {
-    const membership = await prisma.membership.findFirst({
-      where: {
-        userId: input.assignedToId,
-        organizationId: existing.tenantId,
-      },
-      select: { id: true },
-    });
+    const membership = await getMembershipWithPermissions(
+      prisma,
+      input.assignedToId,
+      tenantId,
+    );
 
-    if (!membership) {
-      throw new Error("Assigned user is not a member of this organization");
+    if (
+      !membership ||
+      membership.status !== "active" ||
+      !membershipHasPermission(membership, PERMISSIONS.WHATSAPP_READ)
+    ) {
+      throw new Error(
+        "Assigned user is not eligible to handle WhatsApp conversations",
+      );
     }
   }
 

@@ -66,15 +66,16 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     );
   }
 
-  if (!parsed.data.status && parsed.data.assignedToId === undefined) {
-    return NextResponse.json(
-      { error: "No updates provided" },
-      { status: 400 },
-    );
+  if (
+    parsed.data.status === undefined &&
+    parsed.data.assignedToId === undefined
+  ) {
+    return NextResponse.json({ error: "No updates provided" }, { status: 400 });
   }
 
   try {
     const conversation = await updateConversation(
+      access.context.organization.id,
       restaurantId,
       conversationId,
       parsed.data,

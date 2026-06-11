@@ -11,4 +11,7 @@ export {
   getMembershipWithPermissions,
   membershipHasPermission,
 } from "@/lib/rbac/can";
-export { seedOrganizationRoles } from "@/lib/rbac/seed-organization-roles";
+export {
+  seedOrganizationRoles,
+  syncAllOrganizationRoles,
+} from "@/lib/rbac/seed-organization-roles";

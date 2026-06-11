@@ -126,7 +126,9 @@ export function AnalyticsPageClient({
       return;
     }
 
-    const csv = buildAnalyticsCsv(analyticsQuery.data);
+    const csv = buildAnalyticsCsv(analyticsQuery.data, {
+      channelLabels: labels.channels,
+    });
     const filename = buildAnalyticsCsvFilename(filters.from, filters.to);
     downloadAnalyticsCsv(csv, filename);
     toast.success(labels.actions.exportSuccess);
