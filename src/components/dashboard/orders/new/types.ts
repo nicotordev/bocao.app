@@ -114,6 +114,7 @@ export type NewOrderLabels = {
     floorDown: string;
     switchFloor: string;
     selectSurface: string;
+    unconfiguredFloor: string;
     surfaceNameBasement: string;
     surfaceNameGround: string;
     surfaceNameFloor: string;

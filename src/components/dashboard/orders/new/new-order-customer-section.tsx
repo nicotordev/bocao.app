@@ -134,7 +134,7 @@ export function NewOrderCustomerSection({
     floorDown: labels.table.floorDown,
     switchFloor: labels.table.switchFloor,
     selectSurface: labels.table.selectSurface,
-    unconfiguredFloor: labels.table.selectSurface,
+    unconfiguredFloor: labels.table.unconfiguredFloor,
   };
 
   const floorNameLabels = {

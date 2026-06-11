@@ -73,6 +73,8 @@ export const queryKeys = {
     details: () => [...queryKeys.customers.all, "detail"] as const,
     detail: (restaurantId: string, customerId: string) =>
       [...queryKeys.customers.details(), restaurantId, customerId] as const,
+    options: (restaurantId: string) =>
+      [...queryKeys.customers.all, "options", restaurantId] as const,
     importable: (restaurantId: string) =>
       [...queryKeys.customers.all, "importable", restaurantId] as const,
     tags: () => [...queryKeys.customers.all, "tags"] as const,

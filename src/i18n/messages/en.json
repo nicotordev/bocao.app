@@ -579,6 +579,7 @@
           "floorDown": "Lower floor",
           "switchFloor": "Switch floor",
           "selectSurface": "Select surface",
+          "unconfiguredFloor": "Floor {floor} not configured",
           "surfaceNameBasement": "Basement {level}",
           "surfaceNameGround": "Ground floor",
           "surfaceNameFloor": "Floor {floor}"

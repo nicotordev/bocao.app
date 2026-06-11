@@ -26,10 +26,12 @@ export function customersPageQueryOptions(
 
 export function customerOptionsQueryOptions(restaurantId: string) {
   return queryOptions({
-    queryKey: [...queryKeys.customers.all, "options", restaurantId] as const,
+    queryKey: queryKeys.customers.options(restaurantId),
     queryFn: () => fetchCustomerOptions(restaurantId),
     enabled: restaurantId.length > 0,
     staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 

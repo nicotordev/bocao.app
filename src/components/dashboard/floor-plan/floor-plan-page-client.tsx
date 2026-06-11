@@ -509,16 +509,34 @@ export function FloorPlanPageClient({
       const configuredFloors = [
         ...new Set(surfaces.map((surface) => surface.floor)),
       ].sort((left, right) => left - right);
+
+      if (configuredFloors.length === 0) {
+        return;
+      }
+
       const currentIndex = configuredFloors.indexOf(currentFloor);
-      const targetIndex =
-        direction === "up" ? currentIndex + 1 : currentIndex - 1;
-      const targetFloor = configuredFloors[targetIndex];
+      let targetFloor: number | undefined;
+
+      if (currentIndex === -1) {
+        targetFloor =
+          direction === "up"
+            ? configuredFloors.find((floor) => floor > currentFloor)
+            : [...configuredFloors]
+                .reverse()
+                .find((floor) => floor < currentFloor);
+      } else {
+        const targetIndex =
+          direction === "up" ? currentIndex + 1 : currentIndex - 1;
+        targetFloor = configuredFloors[targetIndex];
+      }
 
       if (targetFloor === undefined) {
         return;
       }
 
-      const existing = surfaces.find((surface) => surface.floor === targetFloor);
+      const existing = surfaces.find(
+        (surface) => surface.floor === targetFloor,
+      );
 
       if (existing) {
         selectSurface(existing.id);
@@ -561,11 +579,14 @@ export function FloorPlanPageClient({
 
   const canFloorUp = canEdit
     ? currentFloor < FLOOR_PLAN_FLOOR_MAX
-    : configuredFloorIndex >= 0 &&
-      configuredFloorIndex < configuredFloors.length - 1;
+    : configuredFloorIndex >= 0
+      ? configuredFloorIndex < configuredFloors.length - 1
+      : configuredFloors.some((floor) => floor > currentFloor);
   const canFloorDown = canEdit
     ? currentFloor > FLOOR_PLAN_FLOOR_MIN
-    : configuredFloorIndex > 0;
+    : configuredFloorIndex >= 0
+      ? configuredFloorIndex > 0
+      : configuredFloors.some((floor) => floor < currentFloor);
   const isUnconfiguredFloor =
     isEditing && !surfaces.some((surface) => surface.floor === currentFloor);
 

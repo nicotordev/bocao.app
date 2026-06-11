@@ -204,7 +204,6 @@ export function CustomersTable({
                 }
                 onClick={() => onSelectCustomer(customer)}
                 onMouseEnter={() => onPrefetchCustomer?.(customer.id)}
-                onFocus={() => onPrefetchCustomer?.(customer.id)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     onSelectCustomer(customer);

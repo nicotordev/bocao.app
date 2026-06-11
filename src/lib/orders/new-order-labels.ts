@@ -71,6 +71,7 @@ export async function getNewOrderLabels(): Promise<NewOrderLabels> {
       floorDown: t("table.floorDown"),
       switchFloor: t("table.switchFloor"),
       selectSurface: t("table.selectSurface"),
+      unconfiguredFloor: t.raw("table.unconfiguredFloor"),
       surfaceNameBasement: t.raw("table.surfaceNameBasement"),
       surfaceNameGround: t.raw("table.surfaceNameGround"),
       surfaceNameFloor: t.raw("table.surfaceNameFloor"),
