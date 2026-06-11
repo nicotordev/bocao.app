@@ -151,14 +151,67 @@ model Membership {
   userId         String
   organizationId String
   roleId         String
+  /// active | inactive | removed
+  status            String @default("active")
+  /// Optional custom TeamPermission overrides (JSON string array)
+  customPermissions Json?
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   role         Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
+  restaurantMemberships RestaurantMembership[]
+  sentInvitations       TeamInvitation[]       @relation("InvitationInvitedBy")
+  acceptedInvitations   TeamInvitation[]       @relation("InvitationAcceptedBy")
+
   @@unique([userId, organizationId])
   @@index([organizationId])
   @@index([roleId])
+  @@index([organizationId, status])
+}
+
+/// Restricts a membership to specific restaurant locations.
+model RestaurantMembership {
+  id             String   @id @default(cuid())
+  organizationId String
+  restaurantId   String
+  membershipId   String
+  role           String?
+  permissions    Json?
+  createdAt      DateTime @default(now())
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, membershipId])
+  @@index([organizationId, restaurantId])
+  @@index([membershipId])
+}
+
+/// Pending email invitation to join an organization (and optionally a restaurant).
+model TeamInvitation {
+  id             String    @id @default(cuid())
+  organizationId String
+  restaurantId   String?
+  email          String
+  role           String
+  permissions    Json?
+  tokenHash      String
+  /// pending | accepted | revoked | expired
+  status         String    @default("pending")
+  invitedById    String?
+  acceptedById   String?
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  invitedBy  Membership? @relation("InvitationInvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  acceptedBy Membership? @relation("InvitationAcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([email])
+  @@index([tokenHash])
 }
 
 enum OrderStatus {

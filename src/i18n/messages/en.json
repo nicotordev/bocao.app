@@ -2279,6 +2279,144 @@
       }
     }
   },
+  "team": {
+    "title": "Team",
+    "description": "Manage members, roles, and invitations for your restaurant.",
+    "inviteMember": "Invite member",
+    "viewPermissions": "View permissions",
+    "activeMembers": "Active members",
+    "pendingInvitations": "Pending invitations",
+    "managers": "Managers",
+    "kitchenStaff": "Kitchen staff",
+    "cashiers": "Cashiers",
+    "inactiveMembers": "Inactive members",
+    "role": "Role",
+    "permissionLabels": {
+      "team": {
+        "read": "View team",
+        "invite": "Invite members",
+        "update": "Edit members",
+        "remove": "Remove members"
+      },
+      "orders": {
+        "read": "View orders",
+        "create": "Create orders",
+        "update": "Update orders",
+        "cancel": "Cancel orders"
+      },
+      "payments": {
+        "read": "View payments",
+        "create": "Record payments"
+      },
+      "kitchen": {
+        "read": "View kitchen",
+        "update": "Update kitchen"
+      },
+      "reservations": {
+        "read": "View reservations",
+        "update": "Manage reservations"
+      },
+      "customers": {
+        "read": "View customers",
+        "update": "Edit customers"
+      },
+      "marketing": {
+        "read": "View marketing",
+        "update": "Manage marketing"
+      },
+      "analytics": {
+        "read": "View analytics"
+      },
+      "settings": {
+        "read": "View settings",
+        "update": "Edit settings"
+      }
+    },
+    "restaurants": "Restaurants",
+    "status": "Status",
+    "lastActivity": "Last activity",
+    "joinedAt": "Joined",
+    "actions": "Actions",
+    "editRole": "Edit role",
+    "editPermissions": "Edit permissions",
+    "assignRestaurants": "Assign restaurants",
+    "removeMember": "Remove member",
+    "resendInvitation": "Resend invitation",
+    "cancelInvitation": "Cancel invitation",
+    "email": "Email",
+    "sendInvitation": "Send invitation",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyTitle": "No members yet",
+    "emptyDescription": "Invite your team to start collaborating.",
+    "emptyCta": "Invite member",
+    "table": {
+      "user": "User",
+      "email": "Email"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "manager": "Manager",
+      "cashier": "Cashier",
+      "kitchen": "Kitchen",
+      "waiter": "Waiter",
+      "marketing": "Marketing",
+      "viewer": "Viewer",
+      "staff": "Staff"
+    },
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "removed": "Removed",
+      "pending": "Pending",
+      "expired": "Expired",
+      "revoked": "Cancelled"
+    },
+    "invitations": {
+      "title": "Pending invitations",
+      "description": "Manage sent invitations that have not been accepted yet.",
+      "restaurant": "Restaurant",
+      "invitedBy": "Invited by",
+      "expiresAt": "Expires",
+      "empty": "No pending invitations."
+    },
+    "dialogs": {
+      "inviteTitle": "Invite member",
+      "inviteDescription": "Send an email invitation to join your organization.",
+      "editRoleTitle": "Edit role",
+      "editRoleDescription": "Change the member role and assigned restaurants.",
+      "permissionsTitle": "Permissions",
+      "permissionsDescription": "Reference of permissions included per role.",
+      "removeTitle": "Remove member",
+      "removeDescription": "This action will revoke the member's access to the organization.",
+      "customPermissions": "Use custom permissions",
+      "allRestaurants": "If no locations are selected, access applies to the whole organization."
+    },
+    "feedback": {
+      "inviteSuccess": "Invitation sent successfully.",
+      "inviteError": "Could not send the invitation.",
+      "updateSuccess": "Member updated successfully.",
+      "updateError": "Could not update the member.",
+      "removeSuccess": "Member removed successfully.",
+      "removeError": "Could not remove the member.",
+      "resendSuccess": "Invitation resent.",
+      "resendError": "Could not resend the invitation.",
+      "cancelSuccess": "Invitation cancelled.",
+      "cancelError": "Could not cancel the invitation."
+    },
+    "activity": {
+      "title": "Team activity",
+      "description": "Recent changes and team actions.",
+      "comingSoon": "Team activity history will be available soon."
+    },
+    "acceptInvitation": {
+      "title": "Accept invitation",
+      "description": "You are about to join a team on Bocao.",
+      "missingToken": "The invitation link is invalid or incomplete.",
+      "comingSoon": "Invitation acceptance will be available soon. Save this link."
+    }
+  },
   "actions": {
     "onboarding": {
       "mustSignIn": "You must sign in to continue",

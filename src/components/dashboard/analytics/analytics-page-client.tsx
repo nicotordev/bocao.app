@@ -82,17 +82,21 @@ export function AnalyticsPageClient({
 
   const updateUrl = useCallback(
     (nextFilters: typeof filters) => {
-      const range =
-        nextFilters.preset === "custom"
-          ? { from: nextFilters.from, to: nextFilters.to }
-          : resolveAnalyticsDateRange(nextFilters.preset, timezone);
+      const range = resolveAnalyticsDateRange(
+        nextFilters.preset,
+        timezone,
+        nextFilters.from,
+        nextFilters.to,
+      );
 
       router.replace(
         buildListUrl("/dashboard/analytics", {
-          preset: nextFilters.preset === "last7days" ? undefined : nextFilters.preset,
+          preset:
+            nextFilters.preset === "last7days" ? undefined : nextFilters.preset,
           from: nextFilters.preset === "custom" ? range.from : undefined,
           to: nextFilters.preset === "custom" ? range.to : undefined,
-          channel: nextFilters.channel === "all" ? undefined : nextFilters.channel,
+          channel:
+            nextFilters.channel === "all" ? undefined : nextFilters.channel,
           status: nextFilters.status === "all" ? undefined : nextFilters.status,
         }),
       );

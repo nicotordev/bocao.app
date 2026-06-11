@@ -2279,6 +2279,144 @@
       }
     }
   },
+  "team": {
+    "title": "Equipo",
+    "description": "Administra miembros, roles e invitaciones de tu restaurante.",
+    "inviteMember": "Invitar miembro",
+    "viewPermissions": "Ver permisos",
+    "activeMembers": "Miembros activos",
+    "pendingInvitations": "Invitaciones pendientes",
+    "managers": "Managers",
+    "kitchenStaff": "Personal de cocina",
+    "cashiers": "Cajeros",
+    "inactiveMembers": "Sin actividad reciente",
+    "role": "Rol",
+    "permissionLabels": {
+      "team": {
+        "read": "Ver equipo",
+        "invite": "Invitar miembros",
+        "update": "Editar miembros",
+        "remove": "Remover miembros"
+      },
+      "orders": {
+        "read": "Ver pedidos",
+        "create": "Crear pedidos",
+        "update": "Actualizar pedidos",
+        "cancel": "Cancelar pedidos"
+      },
+      "payments": {
+        "read": "Ver pagos",
+        "create": "Registrar pagos"
+      },
+      "kitchen": {
+        "read": "Ver cocina",
+        "update": "Actualizar cocina"
+      },
+      "reservations": {
+        "read": "Ver reservas",
+        "update": "Gestionar reservas"
+      },
+      "customers": {
+        "read": "Ver clientes",
+        "update": "Editar clientes"
+      },
+      "marketing": {
+        "read": "Ver marketing",
+        "update": "Gestionar marketing"
+      },
+      "analytics": {
+        "read": "Ver analítica"
+      },
+      "settings": {
+        "read": "Ver configuración",
+        "update": "Editar configuración"
+      }
+    },
+    "restaurants": "Restaurantes",
+    "status": "Estado",
+    "lastActivity": "Última actividad",
+    "joinedAt": "Fecha de ingreso",
+    "actions": "Acciones",
+    "editRole": "Editar rol",
+    "editPermissions": "Editar permisos",
+    "assignRestaurants": "Asignar restaurantes",
+    "removeMember": "Remover miembro",
+    "resendInvitation": "Reenviar invitación",
+    "cancelInvitation": "Cancelar invitación",
+    "email": "Email",
+    "sendInvitation": "Enviar invitación",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "emptyTitle": "Todavía no hay miembros",
+    "emptyDescription": "Invita a tu equipo para empezar a colaborar.",
+    "emptyCta": "Invitar miembro",
+    "table": {
+      "user": "Usuario",
+      "email": "Email"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "manager": "Manager",
+      "cashier": "Cajero",
+      "kitchen": "Cocina",
+      "waiter": "Mesero",
+      "marketing": "Marketing",
+      "viewer": "Solo lectura",
+      "staff": "Staff"
+    },
+    "statuses": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "removed": "Removido",
+      "pending": "Pendiente",
+      "expired": "Expirada",
+      "revoked": "Cancelada"
+    },
+    "invitations": {
+      "title": "Invitaciones pendientes",
+      "description": "Gestiona invitaciones enviadas que aún no han sido aceptadas.",
+      "restaurant": "Restaurante",
+      "invitedBy": "Invitado por",
+      "expiresAt": "Expira",
+      "empty": "No hay invitaciones pendientes."
+    },
+    "dialogs": {
+      "inviteTitle": "Invitar miembro",
+      "inviteDescription": "Envía una invitación por email para unirse a tu organización.",
+      "editRoleTitle": "Editar rol",
+      "editRoleDescription": "Cambia el rol y los restaurantes asignados del miembro.",
+      "permissionsTitle": "Permisos",
+      "permissionsDescription": "Referencia de permisos incluidos por rol.",
+      "removeTitle": "Remover miembro",
+      "removeDescription": "Esta acción revocará el acceso del miembro a la organización.",
+      "customPermissions": "Usar permisos personalizados",
+      "allRestaurants": "Si no seleccionas locales, el acceso será a toda la organización."
+    },
+    "feedback": {
+      "inviteSuccess": "Invitación enviada correctamente.",
+      "inviteError": "No se pudo enviar la invitación.",
+      "updateSuccess": "Miembro actualizado correctamente.",
+      "updateError": "No se pudo actualizar el miembro.",
+      "removeSuccess": "Miembro removido correctamente.",
+      "removeError": "No se pudo remover el miembro.",
+      "resendSuccess": "Invitación reenviada.",
+      "resendError": "No se pudo reenviar la invitación.",
+      "cancelSuccess": "Invitación cancelada.",
+      "cancelError": "No se pudo cancelar la invitación."
+    },
+    "activity": {
+      "title": "Actividad del equipo",
+      "description": "Historial de cambios y acciones recientes.",
+      "comingSoon": "El historial de actividad del equipo estará disponible pronto."
+    },
+    "acceptInvitation": {
+      "title": "Aceptar invitación",
+      "description": "Estás a punto de unirte a un equipo en Bocao.",
+      "missingToken": "El enlace de invitación no es válido o está incompleto.",
+      "comingSoon": "La aceptación de invitaciones estará disponible pronto. Guarda este enlace."
+    }
+  },
   "actions": {
     "onboarding": {
       "mustSignIn": "Debes iniciar sesión para continuar",

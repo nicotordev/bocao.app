@@ -32,7 +32,10 @@ export async function GET(request: Request, { params }: RouteContext) {
     ) ?? access.context.activeRestaurant;
 
   if (!activeRestaurant) {
-    return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Restaurant not found" },
+      { status: 404 },
+    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -47,9 +50,18 @@ export async function GET(request: Request, { params }: RouteContext) {
     activeRestaurant.timezone,
   );
 
+  const filters = toAnalyticsFilters(
+    restaurantId,
+    activeRestaurant.organizationId,
+    listFilters,
+    activeRestaurant.timezone,
+    activeRestaurant.currency,
+    "en",
+  );
+
   const parsed = analyticsQuerySchema.safeParse({
-    from: listFilters.from,
-    to: listFilters.to,
+    from: filters.from,
+    to: filters.to,
     channel: listFilters.channel,
     status: listFilters.status,
   });
@@ -60,15 +72,6 @@ export async function GET(request: Request, { params }: RouteContext) {
       { status: 400 },
     );
   }
-
-  const filters = toAnalyticsFilters(
-    restaurantId,
-    activeRestaurant.organizationId,
-    listFilters,
-    activeRestaurant.timezone,
-    activeRestaurant.currency,
-    "en",
-  );
 
   const channelLabels = {
     pos: "POS",

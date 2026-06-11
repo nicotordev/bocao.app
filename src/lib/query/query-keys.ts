@@ -90,6 +90,13 @@ export const queryKeys = {
         filters ?? {},
       ] as const,
   },
+  team: {
+    all: ["team"] as const,
+    members: (organizationId: string) =>
+      [...queryKeys.team.all, "members", organizationId] as const,
+    invitations: (organizationId: string) =>
+      [...queryKeys.team.all, "invitations", organizationId] as const,
+  },
   customers: {
     all: ["customers"] as const,
     pages: () => [...queryKeys.customers.all, "page"] as const,
