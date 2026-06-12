@@ -1,8 +1,10 @@
-import { TbSparkles } from "react-icons/tb";
+import Link from "next/link";
+import { TbArrowRight, TbSparkles } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
 import type { DashboardInsight } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyDescription,
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/empty";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -29,14 +32,64 @@ const priorityStyles: Record<DashboardInsight["priority"], string> = {
   low: "text-muted-foreground",
 };
 
+function InsightItem({
+  insight,
+  priorityLabel,
+  viewActionLabel,
+}: {
+  insight: DashboardInsight;
+  priorityLabel: string;
+  viewActionLabel: string;
+}) {
+  const content = (
+    <>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-sm font-medium">{insight.title}</p>
+        <Badge
+          variant="outline"
+          className={cn("shrink-0", priorityStyles[insight.priority])}
+        >
+          {priorityLabel}
+        </Badge>
+      </div>
+      <p className="text-sm text-muted-foreground">{insight.description}</p>
+      {insight.href ? (
+        <p className="mt-3 flex items-center gap-1 text-xs font-medium text-primary">
+          {viewActionLabel}
+          <TbArrowRight className="size-3.5" aria-hidden />
+        </p>
+      ) : null}
+    </>
+  );
+
+  if (!insight.href) {
+    return (
+      <li className="rounded-2xl border border-border/60 bg-background/40 p-4">
+        {content}
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <Link
+        href={insight.href}
+        className="block rounded-2xl border border-border/60 bg-background/40 p-4 transition-colors hover:border-primary/30 hover:bg-background/70"
+      >
+        {content}
+      </Link>
+    </li>
+  );
+}
+
 export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
   const t = await getTranslations("dashboard.home.insights");
 
   return (
-    <Card className="border-border/60 bg-gradient-to-br from-card via-card to-primary/5">
+    <Card className="flex h-full flex-col border-border/60 bg-gradient-to-br from-card via-card to-primary/5">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <span className="flex shrink-0 size-8 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
             <TbSparkles className="size-4" aria-hidden />
           </span>
           <div>
@@ -44,8 +97,16 @@ export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
             <CardDescription>{t("description")}</CardDescription>
           </div>
         </div>
+        <CardAction>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/analytics">
+              {t("viewAll")}
+              <TbArrowRight className="size-4" aria-hidden />
+            </Link>
+          </Button>
+        </CardAction>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {insights.length === 0 ? (
           <Empty className="border border-dashed border-border/70 bg-muted/10 py-10">
             <EmptyHeader>
@@ -62,26 +123,12 @@ export async function AiInsightsCard({ insights }: AiInsightsCardProps) {
           <ScrollArea className="h-[280px] pr-3">
             <ul className="space-y-3">
               {insights.map((insight) => (
-                <li
+                <InsightItem
                   key={insight.id}
-                  className="rounded-2xl border border-border/60 bg-background/40 p-4"
-                >
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium">{insight.title}</p>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "shrink-0",
-                        priorityStyles[insight.priority],
-                      )}
-                    >
-                      {t(`priority.${insight.priority}`)}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {insight.description}
-                  </p>
-                </li>
+                  insight={insight}
+                  priorityLabel={t(`priority.${insight.priority}`)}
+                  viewActionLabel={t("viewAction")}
+                />
               ))}
             </ul>
           </ScrollArea>

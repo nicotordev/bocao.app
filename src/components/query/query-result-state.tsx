@@ -6,8 +6,6 @@ import type { ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StaleDataBanner } from "@/components/query/stale-data-banner";
-
 type QueryResultStateProps<TData> = {
   query: UseQueryResult<TData, Error>;
   isEmpty?: (data: TData) => boolean;
@@ -71,14 +69,5 @@ export function QueryResultState<TData>({
     return <>{emptyFallback ?? null}</>;
   }
 
-  return (
-    <>
-      <StaleDataBanner
-        isFetching={query.isFetching}
-        isPending={query.isPending}
-        isStale={query.isStale}
-      />
-      {children(query.data)}
-    </>
-  );
+  return <>{children(query.data)}</>;
 }

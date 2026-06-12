@@ -1,4 +1,5 @@
-import { TbArrowDownRight, TbArrowUpRight } from "react-icons/tb";
+import Link from "next/link";
+import { TbArrowDownRight, TbArrowRight, TbArrowUpRight } from "react-icons/tb";
 import type { DashboardMetric } from "@/lib/dashboard/data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +13,21 @@ import {
 
 type MetricCardProps = {
   metric: DashboardMetric;
+  viewLabel?: string;
 };
 
-export function MetricCard({ metric }: MetricCardProps) {
+export function MetricCard({ metric, viewLabel }: MetricCardProps) {
   const TrendIcon =
     metric.trend === "down" ? TbArrowDownRight : TbArrowUpRight;
 
-  return (
-    <Card className="border-border/60 bg-card/80 backdrop-blur-sm">
+  const card = (
+    <Card
+      className={cn(
+        "h-full border-border/60 bg-card/80 backdrop-blur-sm",
+        metric.href &&
+          "transition-colors hover:border-primary/30 hover:bg-card group-hover/metric:border-primary/30 group-hover/metric:bg-card",
+      )}
+    >
       <CardHeader className="pb-2">
         <CardDescription>{metric.label}</CardDescription>
         <CardTitle className="text-2xl font-semibold tracking-tight">
@@ -43,8 +51,27 @@ export function MetricCard({ metric }: MetricCardProps) {
           ) : null}
           {metric.change}
         </Badge>
+        {metric.href && viewLabel ? (
+          <p className="mt-3 flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover/metric:opacity-100 group-focus-visible/metric:opacity-100">
+            {viewLabel}
+            <TbArrowRight className="size-3.5" aria-hidden />
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );
-}
 
+  if (!metric.href) {
+    return card;
+  }
+
+  return (
+    <Link
+      href={metric.href}
+      aria-label={`${metric.label}: ${metric.value}. ${viewLabel ?? ""}`}
+      className="group/metric block rounded-4xl outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+    >
+      {card}
+    </Link>
+  );
+}

@@ -19,6 +19,8 @@ export const TEAM_PERMISSION_MESSAGE_KEYS = {
   "customers.update": "permissionLabels.customers.update",
   "marketing.read": "permissionLabels.marketing.read",
   "marketing.update": "permissionLabels.marketing.update",
+  "whatsapp.read": "permissionLabels.whatsapp.read",
+  "whatsapp.update": "permissionLabels.whatsapp.update",
   "analytics.read": "permissionLabels.analytics.read",
   "settings.read": "permissionLabels.settings.read",
   "settings.update": "permissionLabels.settings.update",

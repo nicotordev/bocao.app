@@ -57,6 +57,7 @@ export function ReservationsPageClient({
 
   const urlSearch = filters.search ?? "";
   const urlReservationId = searchParams.get("reservationId");
+  const urlCreateReservation = searchParams.get("new") === "1";
 
   // Derived from props + URL (not useState) so deep-link updates when
   // `initialReservation` changes after mount without manual sync effects.
@@ -72,7 +73,9 @@ export function ReservationsPageClient({
 
   const [manualReservation, setManualReservation] =
     useState<Reservation | null>(null);
-  const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
+  const [isManualDialogOpen, setIsManualDialogOpen] = useState(
+    urlCreateReservation,
+  );
 
   const dialogReservation = isManualDialogOpen
     ? manualReservation
@@ -189,6 +192,29 @@ export function ReservationsPageClient({
     );
   }, [filters, router, searchParams]);
 
+  const clearCreateFromUrl = useCallback(() => {
+    if (searchParams.get("new") !== "1") {
+      return;
+    }
+
+    router.replace(
+      buildListUrl(
+        "/dashboard/reservations",
+        {
+          search: filters.search,
+          status: filters.status === "all" ? undefined : filters.status,
+          from: filters.from,
+          to: filters.to,
+          reservationId: searchParams.get("reservationId") ?? undefined,
+        },
+        {
+          page: filters.page,
+          pageSize: filters.pageSize,
+        },
+      ),
+    );
+  }, [filters, router, searchParams]);
+
   const handleCreate = () => {
     clearDeepLinkFromUrl();
     setManualReservation(null);
@@ -206,6 +232,10 @@ export function ReservationsPageClient({
 
     setIsManualDialogOpen(false);
     setManualReservation(null);
+
+    if (closingManualDialog && urlCreateReservation) {
+      clearCreateFromUrl();
+    }
 
     // Only strip `reservationId` when dismissing the deep-link dialog.
     // `deepLinkReservation` stays truthy while the URL param exists, so it

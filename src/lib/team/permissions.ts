@@ -29,6 +29,8 @@ export type TeamPermission =
   | "customers.update"
   | "marketing.read"
   | "marketing.update"
+  | "whatsapp.read"
+  | "whatsapp.update"
   | "analytics.read"
   | "settings.read"
   | "settings.update";
@@ -63,6 +65,8 @@ export const TEAM_PERMISSIONS = [
   "customers.update",
   "marketing.read",
   "marketing.update",
+  "whatsapp.read",
+  "whatsapp.update",
   "analytics.read",
   "settings.read",
   "settings.update",
@@ -78,6 +82,7 @@ const READ_ONLY_PERMISSIONS: readonly TeamPermission[] = [
   "reservations.read",
   "customers.read",
   "marketing.read",
+  "whatsapp.read",
   "analytics.read",
   "settings.read",
 ];
@@ -93,6 +98,8 @@ const MANAGER_PERMISSIONS: readonly TeamPermission[] = [
   "reservations.update",
   "customers.update",
   "marketing.read",
+  "whatsapp.read",
+  "whatsapp.update",
   "settings.read",
 ];
 
@@ -136,6 +143,8 @@ export const TEAM_ROLE_DEFINITIONS: ReadonlyArray<{
       "payments.read",
       "payments.create",
       "customers.read",
+      "whatsapp.read",
+      "whatsapp.update",
       "settings.read",
     ],
   },
@@ -156,6 +165,8 @@ export const TEAM_ROLE_DEFINITIONS: ReadonlyArray<{
       "reservations.read",
       "reservations.update",
       "customers.read",
+      "whatsapp.read",
+      "whatsapp.update",
     ],
   },
   {
@@ -167,6 +178,8 @@ export const TEAM_ROLE_DEFINITIONS: ReadonlyArray<{
       "customers.update",
       "marketing.read",
       "marketing.update",
+      "whatsapp.read",
+      "whatsapp.update",
       "analytics.read",
     ],
   },
@@ -305,6 +318,8 @@ const TEAM_TO_RBAC_PERMISSION: Record<TeamPermission, PermissionKey | null> = {
   "customers.update": PERMISSIONS.CUSTOMERS_WRITE,
   "marketing.read": PERMISSIONS.MARKETING_READ,
   "marketing.update": PERMISSIONS.MARKETING_WRITE,
+  "whatsapp.read": PERMISSIONS.WHATSAPP_READ,
+  "whatsapp.update": PERMISSIONS.WHATSAPP_WRITE,
   "analytics.read": PERMISSIONS.ANALYTICS_READ,
   "settings.read": PERMISSIONS.SETTINGS_READ,
   "settings.update": PERMISSIONS.SETTINGS_WRITE,

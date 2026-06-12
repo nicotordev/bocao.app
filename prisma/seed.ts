@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PERMISSION_CATALOG } from "../src/lib/rbac/permissions";
 import { syncAllOrganizationRoles } from "../src/lib/rbac/seed-organization-roles";
+import { syncAllTeamRoles } from "../src/lib/team/sync-roles";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -31,6 +32,9 @@ async function main() {
 
   const organizationCount = await syncAllOrganizationRoles(prisma);
   console.log(`Synced roles for ${organizationCount} organizations`);
+
+  const teamOrganizationCount = await syncAllTeamRoles(prisma);
+  console.log(`Synced team roles for ${teamOrganizationCount} organizations`);
 }
 
 main()

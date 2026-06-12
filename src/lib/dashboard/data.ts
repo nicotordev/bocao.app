@@ -7,6 +7,7 @@ export type DashboardMetric = {
   value: string;
   change: string;
   trend: "up" | "down" | "neutral";
+  href?: string;
 };
 
 export type DashboardOrderPreview = {
@@ -38,6 +39,7 @@ export type DashboardInsight = {
   title: string;
   description: string;
   priority: "high" | "medium" | "low";
+  href?: string;
 };
 
 export type DashboardTeamMember = {

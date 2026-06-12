@@ -45,6 +45,7 @@ export function computeDashboardInsights(
         open: input.openOrdersCount,
       }),
       priority: input.preparingCount >= 4 ? "high" : "medium",
+      href: "/dashboard/kitchen",
     });
   }
 
@@ -57,6 +58,7 @@ export function computeDashboardInsights(
         hours: 3,
       }),
       priority: input.reservationsNextThreeHours >= 3 ? "medium" : "low",
+      href: "/dashboard/reservations",
     });
   }
 
@@ -68,6 +70,7 @@ export function computeDashboardInsights(
         count: input.pendingReservationsCount,
       }),
       priority: "medium",
+      href: "/dashboard/reservations?status=PENDING",
     });
   }
 
@@ -86,6 +89,7 @@ export function computeDashboardInsights(
           percent,
         }),
         priority: "low",
+        href: "/dashboard/analytics",
       });
     } else if (percent <= -15) {
       insights.push({
@@ -95,6 +99,7 @@ export function computeDashboardInsights(
           percent: Math.abs(percent),
         }),
         priority: "high",
+        href: "/dashboard/analytics",
       });
     }
   }
@@ -113,6 +118,7 @@ export function computeDashboardInsights(
         current: input.avgPrepCurrent,
       }),
       priority: delta >= 10 ? "high" : "medium",
+      href: "/dashboard/kitchen",
     });
   }
 

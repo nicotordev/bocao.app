@@ -9,7 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buildListUrl } from "@/lib/list-url";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
 import { computeOrdersKpiTrends } from "@/lib/orders/compute-kpi-trends";
-import { createDefaultOrdersDateRange } from "@/lib/orders/date";
+import {
+  createDefaultOrdersDateRange,
+  isOrdersDefaultDateRange,
+} from "@/lib/orders/date";
 import {
   parseOrdersListSearchParams,
   toOrdersKpiFilters,
@@ -21,6 +24,7 @@ import {
   downloadCsvFile,
 } from "@/lib/orders/export-orders-csv";
 import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
+import { useOrdersRealtime } from "@/lib/query/orders/use-orders-realtime";
 import {
   useOrdersBoardQuery,
   useOrdersKpiQuery,
@@ -80,9 +84,24 @@ export function OrdersPageClient({
   const urlSearch = filters.search ?? "";
 
   const kpiFilters = useMemo(() => toOrdersKpiFilters(filters), [filters]);
+  const isViewingToday = isOrdersDefaultDateRange(
+    filters.from ?? "",
+    filters.to ?? "",
+    timezone,
+  );
   const ordersQuery = useOrdersListQuery(restaurantId, filters);
   const boardQuery = useOrdersBoardQuery(restaurantId, filters);
   const kpiQuery = useOrdersKpiQuery(restaurantId, kpiFilters);
+  const { connectionState } = useOrdersRealtime({
+    restaurantId,
+    listFilters: filters,
+    boardFilters: filters,
+    kpiFilters,
+    enabled:
+      restaurantId.length > 0 &&
+      !ordersQuery.isError &&
+      isViewingToday,
+  });
   const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
 
   const listOrders = ordersQuery.data?.orders ?? [];
@@ -245,6 +264,7 @@ export function OrdersPageClient({
           <main className="flex flex-col gap-6 p-4 md:p-6">
             <OrdersHeader
               labels={labels}
+              connectionState={connectionState}
               onExport={handleExport}
               onRefresh={() => {
                 void Promise.all([

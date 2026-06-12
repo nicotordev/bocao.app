@@ -30,9 +30,7 @@
   "query": {
     "errorTitle": "Could not load data",
     "errorDescription": "Something went wrong while fetching. Please try again.",
-    "retry": "Try again",
-    "refreshing": "Refreshing data…",
-    "stale": "Showing cached data — it will refresh shortly."
+    "retry": "Try again"
   },
   "home": {
     "title": "Welcome to Bocao",
@@ -221,6 +219,7 @@
       "openOrders": "Open orders",
       "upcomingReservations": "Upcoming reservations",
       "avgPrepTime": "Average prep time",
+      "viewDetail": "View details",
       "relativeMinutes": "{minutes} min ago",
       "inKitchen": "{count} in kitchen",
       "minutesShort": "{minutes} min",
@@ -285,6 +284,10 @@
       }
     },
     "home": {
+      "quickActions": {
+        "newOrder": "New order",
+        "newReservation": "New reservation"
+      },
       "noRestaurant": {
         "title": "No active restaurant",
         "description": "Select a location from the switcher or set up a new restaurant to see your operational summary.",
@@ -294,6 +297,8 @@
       "insights": {
         "title": "AI insights",
         "description": "Real-time recommendations for your operation",
+        "viewAll": "View analytics",
+        "viewAction": "View details",
         "priority": {
           "high": "High",
           "medium": "Medium",
@@ -333,6 +338,8 @@
       "whatsapp": {
         "title": "WhatsApp",
         "description": "Service and orders channel",
+        "viewAll": "View WhatsApp inbox",
+        "connect": "Connect WhatsApp",
         "connected": "Connected",
         "disconnected": "Disconnected",
         "unread": "Unread",
@@ -340,7 +347,8 @@
         "lastMessage": "Last message {time}",
         "empty": {
           "title": "WhatsApp not connected",
-          "description": "Connect your Meta WhatsApp Business account to receive messages and orders in Bocao."
+          "description": "Connect your Meta WhatsApp Business account to receive messages and orders in Bocao.",
+          "cta": "Go to WhatsApp"
         }
       },
       "recentOrders": {
@@ -349,7 +357,7 @@
         "viewAll": "View all orders",
         "newOrder": "New order",
         "viewDetail": "View order detail",
-        "viewOrder": "Select order {id}",
+        "viewOrder": "View order {id}",
         "table": "Table {number}",
         "status": {
           "pending": "Pending",
@@ -366,6 +374,7 @@
       "reservations": {
         "title": "Upcoming reservations",
         "description": "Schedule for the next few hours",
+        "viewAll": "View all reservations",
         "guestCount": "{count} guests",
         "viewReservation": "View reservation for {name}",
         "guestButton": {
@@ -385,6 +394,7 @@
       "teamActivity": {
         "title": "Team activity",
         "description": "Current on-shift staff status",
+        "viewAll": "View team",
         "status": {
           "online": "Online",
           "busy": "Busy",
@@ -392,7 +402,8 @@
         },
         "empty": {
           "title": "No team members",
-          "description": "Invite staff to your organization to see who is online."
+          "description": "Invite staff to your organization to see who is online.",
+          "cta": "Manage team"
         }
       }
     },
@@ -440,6 +451,11 @@
       "header": {
         "title": "Orders",
         "subtitle": "Manage and monitor every order in real time."
+      },
+      "realtime": {
+        "connected": "Live",
+        "connecting": "Connecting",
+        "disconnected": "Offline"
       },
       "actions": {
         "newOrder": "New order",
@@ -2323,6 +2339,10 @@
       "marketing": {
         "read": "View marketing",
         "update": "Manage marketing"
+      },
+      "whatsapp": {
+        "read": "View WhatsApp",
+        "update": "Manage WhatsApp"
       },
       "analytics": {
         "read": "View analytics"

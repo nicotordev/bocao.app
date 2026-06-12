@@ -77,6 +77,11 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       title: t("header.title"),
       subtitle: t("header.subtitle"),
     },
+    realtime: {
+      connected: t("realtime.connected"),
+      connecting: t("realtime.connecting"),
+      disconnected: t("realtime.disconnected"),
+    },
     filters: {
       search: t("filters.search"),
       searchPlaceholder: t("filters.searchPlaceholder"),

@@ -333,6 +333,7 @@ export async function getDashboardHomeData(
       value: formatCurrency(revenueTodayCents, restaurant.currency, locale),
       change: revenueTrend.change,
       trend: revenueTrend.trend,
+      href: "/dashboard/analytics",
     },
     {
       id: "open-orders",
@@ -340,6 +341,7 @@ export async function getDashboardHomeData(
       value: String(openOrdersCount),
       change: openOrdersTrend.change,
       trend: openOrdersTrend.trend,
+      href: "/dashboard/orders",
     },
     {
       id: "upcoming-reservations",
@@ -347,6 +349,7 @@ export async function getDashboardHomeData(
       value: String(reservations.length),
       change: reservationsTrend.change,
       trend: reservationsTrend.trend,
+      href: "/dashboard/reservations",
     },
     {
       id: "avg-prep-time",
@@ -360,6 +363,7 @@ export async function getDashboardHomeData(
           : notAvailable,
       change: avgPrepTrend.change,
       trend: avgPrepTrend.trend,
+      href: "/dashboard/kitchen",
     },
   ];
 

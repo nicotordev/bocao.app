@@ -4,11 +4,10 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   isTeamRole,
-  TEAM_ROLE_DEFINITIONS,
-  teamPermissionsToRbacKeys,
   type TeamPermission,
   type TeamRole,
 } from "@/lib/team/permissions";
+import { syncTeamRolesForOrganization } from "@/lib/team/sync-roles";
 import type { InvitationStatus, MembershipStatus } from "@/lib/team/types";
 
 const membershipInclude = {
@@ -39,62 +38,7 @@ const membershipInclude = {
 } satisfies Prisma.MembershipInclude;
 
 export async function ensureTeamRolesForOrganization(organizationId: string) {
-  const permissions = await prisma.permission.findMany({
-    select: { id: true, key: true },
-  });
-
-  const permissionByKey = new Map(
-    permissions.map((permission) => [permission.key, permission.id]),
-  );
-
-  const rolesBySlug: Record<string, string> = {};
-
-  for (const definition of TEAM_ROLE_DEFINITIONS) {
-    const role = await prisma.role.upsert({
-      where: {
-        organizationId_slug: {
-          organizationId,
-          slug: definition.slug,
-        },
-      },
-      update: {
-        name: definition.name,
-        description: definition.description,
-        isSystem: true,
-      },
-      create: {
-        organizationId,
-        slug: definition.slug,
-        name: definition.name,
-        description: definition.description,
-        isSystem: true,
-      },
-      select: { id: true, slug: true },
-    });
-
-    rolesBySlug[role.slug] = role.id;
-
-    const rbacKeys = teamPermissionsToRbacKeys(definition.permissions);
-    const permissionIds = rbacKeys
-      .map((key) => permissionByKey.get(key))
-      .filter((id): id is string => id !== undefined);
-
-    await prisma.rolePermission.deleteMany({
-      where: { roleId: role.id },
-    });
-
-    if (permissionIds.length > 0) {
-      await prisma.rolePermission.createMany({
-        data: permissionIds.map((permissionId) => ({
-          roleId: role.id,
-          permissionId,
-        })),
-        skipDuplicates: true,
-      });
-    }
-  }
-
-  return rolesBySlug;
+  return syncTeamRolesForOrganization(prisma, organizationId);
 }
 
 export async function findRoleIdBySlug(

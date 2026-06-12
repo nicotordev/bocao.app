@@ -26,6 +26,11 @@ export type OrdersLabels = {
     title: string;
     subtitle: string;
   };
+  realtime: {
+    connected: string;
+    connecting: string;
+    disconnected: string;
+  };
   filters: {
     search: string;
     searchPlaceholder: string;

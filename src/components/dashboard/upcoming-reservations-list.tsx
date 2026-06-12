@@ -1,8 +1,10 @@
-import { TbCalendar } from "react-icons/tb";
+import Link from "next/link";
+import { TbArrowRight, TbCalendar } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
 import { UpcomingReservationItem } from "@/components/dashboard/upcoming-reservation-item";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -10,8 +12,10 @@ import {
 } from "@/components/ui/empty";
 import type { DashboardReservationPreview } from "@/lib/dashboard/data";
 import type { ReservationStatus } from "@/lib/reservations/types";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -51,12 +55,20 @@ export async function UpcomingReservationsList({
   };
 
   return (
-    <Card className="border-border/60">
+    <Card className="flex h-full flex-col border-border/60">
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
+        <CardAction>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/reservations">
+              {t("viewAll")}
+              <TbArrowRight className="size-4" aria-hidden />
+            </Link>
+          </Button>
+        </CardAction>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {reservations.length === 0 ? (
           <Empty className="border border-dashed border-border/70 bg-muted/10 py-10">
             <EmptyHeader>
@@ -68,6 +80,11 @@ export async function UpcomingReservationsList({
                 {t("empty.description")}
               </EmptyDescription>
             </EmptyHeader>
+            <EmptyContent>
+              <Button asChild>
+                <Link href="/dashboard/reservations">{t("empty.cta")}</Link>
+              </Button>
+            </EmptyContent>
           </Empty>
         ) : (
           <ul className="space-y-3">

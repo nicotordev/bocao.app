@@ -1,5 +1,4 @@
-"use client";
-
+import Link from "next/link";
 import { TbArmchair } from "react-icons/tb";
 import { OrderChannelBadge } from "@/components/dashboard/orders/order-channel-badge";
 import { OrderStatusBadge } from "@/components/dashboard/orders/order-status-badge";
@@ -17,30 +16,18 @@ export type RecentOrderItemLabels = {
 
 type RecentOrderItemProps = {
   order: DashboardOrderPreview;
-  selected: boolean;
-  onSelect: () => void;
   labels: RecentOrderItemLabels;
 };
 
-export function RecentOrderItem({
-  order,
-  selected,
-  onSelect,
-  labels,
-}: RecentOrderItemProps) {
+export function RecentOrderItem({ order, labels }: RecentOrderItemProps) {
   return (
     <li>
-      <button
-        type="button"
-        role="option"
-        aria-selected={selected}
+      <Link
+        href={`/dashboard/orders?orderId=${encodeURIComponent(order.orderNumber)}`}
         aria-label={labels.viewOrder.replace("{id}", order.orderNumber)}
-        onClick={onSelect}
         className={cn(
-          "flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-colors",
-          selected
-            ? "border-primary/40 bg-primary/10 ring-1 ring-primary/20"
-            : "border-border/50 bg-muted/20 hover:border-border hover:bg-muted/35",
+          "flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-muted/20 px-4 py-3 transition-colors",
+          "hover:border-border hover:bg-muted/35",
         )}
       >
         <div className="min-w-0 flex-1">
@@ -69,7 +56,7 @@ export function RecentOrderItem({
           <span className="text-sm font-medium">{order.total}</span>
           <OrderStatusBadge status={order.status} labels={labels.statuses} />
         </div>
-      </button>
+      </Link>
     </li>
   );
 }

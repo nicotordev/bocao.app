@@ -30,9 +30,7 @@
   "query": {
     "errorTitle": "No se pudieron cargar los datos",
     "errorDescription": "Ocurrió un problema al obtener la información. Intenta nuevamente.",
-    "retry": "Reintentar",
-    "refreshing": "Actualizando datos…",
-    "stale": "Mostrando datos en caché — se actualizarán en breve."
+    "retry": "Reintentar"
   },
   "home": {
     "title": "Bienvenido a Bocao",
@@ -221,6 +219,7 @@
       "openOrders": "Pedidos abiertos",
       "upcomingReservations": "Reservas próximas",
       "avgPrepTime": "Tiempo promedio de preparación",
+      "viewDetail": "Ver detalle",
       "relativeMinutes": "Hace {minutes} min",
       "inKitchen": "{count} en cocina",
       "minutesShort": "{minutes} min",
@@ -285,6 +284,10 @@
       }
     },
     "home": {
+      "quickActions": {
+        "newOrder": "Nuevo pedido",
+        "newReservation": "Nueva reserva"
+      },
       "noRestaurant": {
         "title": "Sin restaurante activo",
         "description": "Selecciona una ubicación en el selector o configura un nuevo restaurante para ver el resumen operativo.",
@@ -294,6 +297,8 @@
       "insights": {
         "title": "Insights IA",
         "description": "Recomendaciones en tiempo real para tu operación",
+        "viewAll": "Ver analítica",
+        "viewAction": "Ver detalle",
         "priority": {
           "high": "Alta",
           "medium": "Media",
@@ -333,6 +338,8 @@
       "whatsapp": {
         "title": "WhatsApp",
         "description": "Canal de atención y pedidos",
+        "viewAll": "Ver bandeja de WhatsApp",
+        "connect": "Conectar WhatsApp",
         "connected": "Conectado",
         "disconnected": "Desconectado",
         "unread": "Sin leer",
@@ -340,7 +347,8 @@
         "lastMessage": "Último mensaje {time}",
         "empty": {
           "title": "WhatsApp no conectado",
-          "description": "Conecta tu cuenta de WhatsApp Business de Meta para recibir mensajes y pedidos en Bocao."
+          "description": "Conecta tu cuenta de WhatsApp Business de Meta para recibir mensajes y pedidos en Bocao.",
+          "cta": "Ir a WhatsApp"
         }
       },
       "recentOrders": {
@@ -349,7 +357,7 @@
         "viewAll": "Ver todos los pedidos",
         "newOrder": "Nuevo pedido",
         "viewDetail": "Ver detalle del pedido",
-        "viewOrder": "Seleccionar pedido {id}",
+        "viewOrder": "Ver pedido {id}",
         "table": "Mesa {number}",
         "status": {
           "pending": "Pendiente",
@@ -366,6 +374,7 @@
       "reservations": {
         "title": "Próximas reservas",
         "description": "Agenda de las próximas horas",
+        "viewAll": "Ver todas las reservas",
         "guestCount": "{count} personas",
         "viewReservation": "Ver reserva de {name}",
         "guestButton": {
@@ -385,6 +394,7 @@
       "teamActivity": {
         "title": "Actividad del equipo",
         "description": "Estado actual del staff en turno",
+        "viewAll": "Ver equipo",
         "status": {
           "online": "En línea",
           "busy": "Ocupado",
@@ -392,7 +402,8 @@
         },
         "empty": {
           "title": "Sin miembros del equipo",
-          "description": "Invita personal a tu organización para ver quién está en línea."
+          "description": "Invita personal a tu organización para ver quién está en línea.",
+          "cta": "Gestionar equipo"
         }
       }
     },
@@ -440,6 +451,11 @@
       "header": {
         "title": "Pedidos",
         "subtitle": "Administra y monitorea todos los pedidos en tiempo real."
+      },
+      "realtime": {
+        "connected": "En vivo",
+        "connecting": "Conectando",
+        "disconnected": "Sin conexión"
       },
       "actions": {
         "newOrder": "Nuevo pedido",
@@ -2323,6 +2339,10 @@
       "marketing": {
         "read": "Ver marketing",
         "update": "Gestionar marketing"
+      },
+      "whatsapp": {
+        "read": "Ver WhatsApp",
+        "update": "Gestionar WhatsApp"
       },
       "analytics": {
         "read": "Ver analítica"

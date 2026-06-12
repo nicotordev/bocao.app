@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
 import { getTranslations } from "next-intl/server";
 import { AiInsightsCard } from "@/components/dashboard/ai-insights-card";
+import { DashboardHomeHeader } from "@/components/dashboard/home/dashboard-home-header";
 import { DashboardNoRestaurant } from "@/components/dashboard/home/dashboard-no-restaurant";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { RecentOrdersList } from "@/components/dashboard/recent-orders-list";
@@ -35,12 +36,22 @@ export default async function DashboardPage() {
     context?.user.name.split(" ").filter(Boolean)[0] ?? t("greetingFallback");
 
   const hasRestaurant = Boolean(context?.activeRestaurant);
+  const tMetrics = await getTranslations("dashboard.metrics");
 
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge variant="outline" className="mb-2 capitalize">
+      {hasRestaurant ? (
+        <DashboardHomeHeader
+          todayLabel={todayLabel}
+          firstName={firstName}
+          restaurantName={
+            context?.activeRestaurant?.name ?? t("summaryFallback")
+          }
+          permissions={context?.membership.permissions ?? []}
+        />
+      ) : (
+        <section className="flex flex-col gap-3">
+          <Badge variant="outline" className="mb-2 w-fit capitalize">
             {todayLabel}
           </Badge>
           <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
@@ -48,12 +59,11 @@ export default async function DashboardPage() {
           </h2>
           <p className="text-sm text-muted-foreground md:text-base">
             {t("summary", {
-              restaurant:
-                context?.activeRestaurant?.name ?? t("summaryFallback"),
+              restaurant: t("summaryFallback"),
             })}
           </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       {!hasRestaurant ? (
         <section>{await DashboardNoRestaurant()}</section>
@@ -63,11 +73,15 @@ export default async function DashboardPage() {
         <>
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {data.metrics.map((metric) => (
-              <MetricCard key={metric.id} metric={metric} />
+              <MetricCard
+                key={metric.id}
+                metric={metric}
+                viewLabel={tMetrics("viewDetail")}
+              />
             ))}
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-3">
+          <section className="grid items-stretch gap-4 xl:grid-cols-3">
             <div className="xl:col-span-2">
               {await AiInsightsCard({ insights: data.insights })}
             </div>
@@ -79,7 +93,7 @@ export default async function DashboardPage() {
             })}
           </section>
 
-          <section className="grid gap-4 lg:grid-cols-2">
+          <section className="grid items-stretch gap-4 lg:grid-cols-2">
             <RecentOrdersList orders={data.recentOrders} />
             {await UpcomingReservationsList({
               reservations: data.upcomingReservations,
