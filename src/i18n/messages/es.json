@@ -2435,6 +2435,15 @@
       "description": "Estás a punto de unirte a un equipo en Bocao.",
       "missingToken": "El enlace de invitación no es válido o está incompleto.",
       "comingSoon": "La aceptación de invitaciones estará disponible pronto. Guarda este enlace."
+    },
+    "invitationEmail": {
+      "preview": "Invitación a {organizationName}",
+      "title": "Invitación a {organizationName}",
+      "heading": "Te invitaron a {organizationName}",
+      "body": "Has sido invitado a colaborar en Bocao con el rol {role}.",
+      "acceptButton": "Aceptar invitación",
+      "footer": "Este enlace expira en 7 días. Si no esperabas esta invitación, puedes ignorar este correo.",
+      "subject": "Invitación a {organizationName} en Bocao"
     }
   },
   "actions": {

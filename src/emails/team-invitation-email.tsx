@@ -1,39 +1,40 @@
 import { Button, Heading, Text } from "@react-email/components";
 import { EmailLayout } from "@/emails/components/email-layout";
-import type { TeamRole } from "@/lib/team/permissions";
+import type { Locale } from "@/i18n/locales";
+
+export type TeamInvitationEmailLabels = {
+  preview: string;
+  title: string;
+  heading: string;
+  body: string;
+  acceptButton: string;
+  footer: string;
+};
 
 type TeamInvitationEmailProps = {
-  organizationName: string;
-  role: TeamRole;
+  locale: Locale;
   acceptUrl: string;
+  labels: TeamInvitationEmailLabels;
 };
 
 export function TeamInvitationEmail({
-  organizationName,
-  role,
+  locale,
   acceptUrl,
+  labels,
 }: TeamInvitationEmailProps) {
   return (
-    <EmailLayout
-      preview={`Invitación a ${organizationName}`}
-      title={`Invitación a ${organizationName}`}
-    >
+    <EmailLayout preview={labels.preview} title={labels.title} lang={locale}>
       <Heading className="text-xl font-semibold text-slate-900">
-        Te invitaron a {organizationName}
+        {labels.heading}
       </Heading>
-      <Text className="text-slate-600">
-        Has sido invitado a colaborar en Bocao con el rol <strong>{role}</strong>.
-      </Text>
+      <Text className="text-slate-600">{labels.body}</Text>
       <Button
         href={acceptUrl}
         className="rounded-lg bg-slate-900 px-5 py-3 text-white"
       >
-        Aceptar invitación
+        {labels.acceptButton}
       </Button>
-      <Text className="text-sm text-slate-500">
-        Este enlace expira en 7 días. Si no esperabas esta invitación, puedes
-        ignorar este correo.
-      </Text>
+      <Text className="text-sm text-slate-500">{labels.footer}</Text>
     </EmailLayout>
   );
 }

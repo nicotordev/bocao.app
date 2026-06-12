@@ -2435,6 +2435,15 @@
       "description": "You are about to join a team on Bocao.",
       "missingToken": "The invitation link is invalid or incomplete.",
       "comingSoon": "Invitation acceptance will be available soon. Save this link."
+    },
+    "invitationEmail": {
+      "preview": "Invitation to {organizationName}",
+      "title": "Invitation to {organizationName}",
+      "heading": "You were invited to {organizationName}",
+      "body": "You have been invited to collaborate on Bocao with the {role} role.",
+      "acceptButton": "Accept invitation",
+      "footer": "This link expires in 7 days. If you did not expect this invitation, you can ignore this email.",
+      "subject": "Invitation to {organizationName} on Bocao"
     }
   },
   "actions": {

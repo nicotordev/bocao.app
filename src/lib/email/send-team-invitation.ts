@@ -1,6 +1,8 @@
 import { render } from "@react-email/render";
+import { getLocale } from "next-intl/server";
 import { Resend } from "resend";
 import { TeamInvitationEmail } from "@/emails/team-invitation-email";
+import { getTeamInvitationEmailLabels } from "@/lib/email/team-invitation-labels";
 import type { TeamRole } from "@/lib/team/permissions";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -35,7 +37,17 @@ export async function sendTeamInvitationEmail({
     return;
   }
 
-  const react = TeamInvitationEmail({ organizationName, role, acceptUrl });
+  const locale = await getLocale();
+  const {
+    locale: resolvedLocale,
+    subject,
+    ...emailLabels
+  } = getTeamInvitationEmailLabels(locale, organizationName, role);
+  const react = TeamInvitationEmail({
+    locale: resolvedLocale,
+    acceptUrl,
+    labels: emailLabels,
+  });
   const [html, text] = await Promise.all([
     render(react),
     render(react, { plainText: true }),
@@ -44,7 +56,7 @@ export async function sendTeamInvitationEmail({
   await resend.emails.send({
     from: getFromAddress(),
     to: email,
-    subject: `Invitación a ${organizationName} en Bocao`,
+    subject,
     html,
     text,
   });

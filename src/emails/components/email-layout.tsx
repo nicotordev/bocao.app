@@ -18,12 +18,18 @@ const borderColor = "#e5e7eb";
 type EmailLayoutProps = {
   preview: string;
   title: string;
+  lang?: string;
   children: ReactNode;
 };
 
-export function EmailLayout({ preview, title, children }: EmailLayoutProps) {
+export function EmailLayout({
+  preview,
+  title,
+  lang = "es",
+  children,
+}: EmailLayoutProps) {
   return (
-    <Html lang="es">
+    <Html lang={lang}>
       <Head />
       <Preview>{preview}</Preview>
       <Body style={body}>
