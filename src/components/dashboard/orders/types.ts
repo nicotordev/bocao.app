@@ -18,6 +18,7 @@ export type OrdersLabels = {
     edit: string;
     print: string;
     duplicate: string;
+    delete: string;
     changeStatus: string;
     cancel: string;
     clearFilters: string;
@@ -110,6 +111,9 @@ export type OrdersLabels = {
     subtotal: string;
     taxes: string;
     total: string;
+    confirmDelete: string;
+    confirmCancel: string;
+    confirmDuplicate: string;
   };
   insights: {
     title: string;

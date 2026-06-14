@@ -630,3 +630,144 @@ export async function createOrder(
     customerLabels: formatOptions?.customerLabels,
   });
 }
+
+export async function duplicateOrder(
+  restaurantId: string,
+  orderId: string,
+  assignedTo: string,
+  formatOptions?: OrderFormatOptions,
+): Promise<Order> {
+  const restaurant = await getRestaurantOrderContext(restaurantId);
+
+  if (!restaurant) {
+    throw new Error("Restaurant not found");
+  }
+
+  const original = await prisma.order.findUnique({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    include: {
+      customers: true,
+      payments: true,
+    },
+  });
+
+  if (!original) {
+    throw new Error("Order not found");
+  }
+
+  const orderNumber = await generateOrderNumber(restaurantId);
+  const status = original.status === "DRAFT" ? "DRAFT" : "PENDING";
+
+  const originalDetails =
+    original.details && typeof original.details === "object"
+      ? (original.details as Record<string, unknown>)
+      : {};
+
+  const details = {
+    ...originalDetails,
+    timeline: [
+      {
+        time: "Now",
+        titleKey: "eventReceived",
+      },
+    ],
+  };
+
+  const eventCtx = buildOrderEventContext(
+    restaurant,
+    restaurantId,
+    orderNumber,
+  );
+
+  const newOrder = await executeOrderMutationWithEvents(async (tx) => {
+    const pendingEvents: RecordKitchenEventInput[] = [
+      ...buildOrderCreatedEvents(eventCtx, status, status === "DRAFT" ? "draft" : "confirm"),
+    ];
+
+    const createdOrder = await tx.order.create({
+      data: {
+        restaurantId,
+        orderNumber,
+        tableNumber: original.tableNumber,
+        status,
+        type: original.type,
+        channel: original.channel,
+        assignedTo,
+        totalCents: original.totalCents,
+        preparationMins: original.preparationMins,
+        notes: original.notes,
+        details,
+        customers: {
+          create: original.customers.map((c) => ({
+            customerId: c.customerId,
+          })),
+        },
+      },
+      include: orderWithPaymentsInclude,
+    });
+
+    if (original.payments[0]) {
+      const originalPayment = original.payments[0];
+      const payment = await tx.payment.create({
+        data: {
+          orderId: createdOrder.id,
+          method: originalPayment.method,
+          provider: originalPayment.provider,
+          status: originalPayment.status,
+          amountCents: originalPayment.amountCents,
+          currency: originalPayment.currency,
+        },
+      });
+      pendingEvents.push(buildPaymentCreatedEvent(eventCtx, payment.id));
+    }
+
+    return {
+      value: createdOrder,
+      pendingEvents,
+    };
+  });
+
+  const refreshed = await prisma.order.findUnique({
+    where: { id: newOrder.id },
+    include: orderWithPaymentsInclude,
+  });
+
+  return mapDbOrderToUi(refreshed ?? newOrder, {
+    currency: restaurant.currency,
+    timezone: restaurant.timezone,
+    locale: formatOptions?.locale,
+    customerLabels: formatOptions?.customerLabels,
+  });
+}
+
+export async function deleteOrder(
+  restaurantId: string,
+  orderId: string,
+): Promise<void> {
+  const existing = await prisma.order.findUnique({
+    where: {
+      restaurantId_orderNumber: {
+        restaurantId,
+        orderNumber: orderId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!existing) {
+    throw new Error("Order not found");
+  }
+
+  await prisma.order.delete({
+    where: {
+      id: existing.id,
+    },
+  });
+}

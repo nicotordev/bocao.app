@@ -14,6 +14,20 @@ import type { SystemRoleSlug } from "@/lib/rbac/permissions";
 
 const restaurantCookieSchema = z.string().cuid();
 
+function resolveUserDisplayName(name: string | null | undefined, email: string) {
+  const trimmedName = name?.trim();
+  if (trimmedName && trimmedName.length > 0) {
+    return trimmedName;
+  }
+
+  const trimmedEmail = email.trim();
+  if (trimmedEmail.length > 0) {
+    return trimmedEmail;
+  }
+
+  return "System";
+}
+
 function mapRestaurant(
   restaurant: {
     id: string;
@@ -125,7 +139,7 @@ export async function getDashboardContext(): Promise<DashboardContext | null> {
   return {
     user: {
       id: session.user.id,
-      name: session.user.name,
+      name: resolveUserDisplayName(session.user.name, session.user.email),
       email: session.user.email,
       image: session.user.image ?? null,
     },

@@ -30,9 +30,15 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const timezone = context?.activeRestaurant?.timezone ?? "America/Santiago";
   const queryClient = getQueryClient();
   const resolvedSearchParams = searchParamsToRecord(await searchParams);
-  const orderId = Array.isArray(resolvedSearchParams.orderId)
-    ? resolvedSearchParams.orderId[0]
-    : resolvedSearchParams.orderId;
+  const orderId = (
+    Array.isArray(resolvedSearchParams.orderId)
+      ? resolvedSearchParams.orderId[0]
+      : resolvedSearchParams.orderId
+  ) || (
+    Array.isArray(resolvedSearchParams.created)
+      ? resolvedSearchParams.created[0]
+      : resolvedSearchParams.created
+  );
   const filters = parseOrdersListSearchParams(resolvedSearchParams, timezone);
   const orderFormatOptions = await getOrderFormatOptions();
 
@@ -69,6 +75,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       edit: t("actions.edit"),
       print: t("actions.print"),
       duplicate: t("actions.duplicate"),
+      delete: t("actions.delete"),
       changeStatus: t("actions.changeStatus"),
       cancel: t("actions.cancel"),
       clearFilters: t("actions.clearFilters"),
@@ -178,6 +185,9 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       subtotal: t("drawer.subtotal"),
       taxes: t("drawer.taxes"),
       total: t("drawer.total"),
+      confirmDelete: t("drawer.confirmDelete"),
+      confirmCancel: t("drawer.confirmCancel"),
+      confirmDuplicate: t("drawer.confirmDuplicate"),
     },
     insights: {
       title: t("insights.title"),

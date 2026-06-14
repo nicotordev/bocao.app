@@ -29,6 +29,8 @@ export type OrderItem = {
   name: string;
   quantity: number;
   price: string;
+  priceCents?: number;
+  menuItemId?: string;
   imageUrls?: string[];
   customization?: OrderLineCustomization;
 };

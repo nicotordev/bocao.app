@@ -3,12 +3,12 @@
 import Link from "next/link";
 import {
   TbCopy,
+  TbCircleX,
   TbPencil,
   TbEye,
   TbDots,
   TbPrinter,
-  TbRefresh,
-  TbCircleX,
+  TbTrash,
 } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { printOrder } from "@/lib/orders/print-order";
 import { OrderChannelBadge } from "./order-channel-badge";
 import { OrderStatusBadge } from "./order-status-badge";
 import type { DashboardOrder, OrdersLabels } from "./types";
@@ -41,13 +42,19 @@ import {
 type OrdersTableProps = {
   labels: OrdersLabels;
   orders: DashboardOrder[];
-  onSelectOrder: (order: DashboardOrder) => void;
+  onSelectOrder: (order: DashboardOrder, edit?: boolean) => void;
+  onDuplicateOrder?: (orderId: string) => void;
+  onCancelOrder?: (orderId: string) => void;
+  onDeleteOrder?: (orderId: string) => void;
 };
 
 export function OrdersTable({
   labels,
   orders,
   onSelectOrder,
+  onDuplicateOrder,
+  onCancelOrder,
+  onDeleteOrder,
 }: OrdersTableProps) {
   if (orders.length === 0) {
     return <OrdersEmptyState labels={labels} />;
@@ -114,7 +121,13 @@ export function OrdersTable({
                 <TableCell className="text-right">
                   <OrderActions
                     labels={labels}
-                    onSelect={() => onSelectOrder(order)}
+                    onSelect={() => onSelectOrder(order, false)}
+                    onEdit={() => onSelectOrder(order, true)}
+                    onPrint={() => printOrder(order, labels)}
+                    onDuplicate={() => onDuplicateOrder?.(order.id)}
+                    onCancel={() => onCancelOrder?.(order.id)}
+                    onDelete={() => onDeleteOrder?.(order.id)}
+                    canCancel={order.status !== "cancelled"}
                   />
                 </TableCell>
               </TableRow>
@@ -164,9 +177,21 @@ export function OrdersTable({
 function OrderActions({
   labels,
   onSelect,
+  onEdit,
+  onPrint,
+  onDuplicate,
+  onCancel,
+  onDelete,
+  canCancel = true,
 }: {
   labels: OrdersLabels;
   onSelect: () => void;
+  onEdit: () => void;
+  onPrint: () => void;
+  onDuplicate: () => void;
+  onCancel: () => void;
+  onDelete: () => void;
+  canCancel?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -188,26 +213,30 @@ function OrderActions({
           <TbEye className="size-4" aria-hidden />
           {labels.actions.viewDetail}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={onEdit}>
           <TbPencil className="size-4" aria-hidden />
           {labels.actions.edit}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={onPrint}>
           <TbPrinter className="size-4" aria-hidden />
           {labels.actions.print}
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={onDuplicate}>
           <TbCopy className="size-4" aria-hidden />
           {labels.actions.duplicate}
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <TbRefresh className="size-4" aria-hidden />
-          {labels.actions.changeStatus}
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
+        <DropdownMenuItem
+          variant="destructive"
+          onSelect={onCancel}
+          disabled={!canCancel}
+        >
           <TbCircleX className="size-4" aria-hidden />
           {labels.actions.cancel}
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+          <TbTrash className="size-4" aria-hidden />
+          {labels.actions.delete}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

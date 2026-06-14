@@ -3,8 +3,15 @@ import type {
   CreateOrderInput,
   OrderStatus,
   OrdersListResponse,
+  UpdateOrderInput,
 } from "@/lib/orders/types";
-import { patchOrderStatus, postOrder } from "@/lib/query/orders/orders.api";
+import {
+  deleteOrderApi,
+  duplicateOrderApi,
+  patchOrderStatus,
+  postOrder,
+  updateOrderApi,
+} from "@/lib/query/orders/orders.api";
 import { queryKeys } from "@/lib/query/query-keys";
 
 type UpdateOrderStatusVariables = {
@@ -67,6 +74,49 @@ export function useCreateOrderMutation(restaurantId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
       queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
+    },
+  });
+}
+
+export function useDuplicateOrderMutation(restaurantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId: string) => duplicateOrderApi(restaurantId, orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
+    },
+  });
+}
+
+export function useUpdateOrderMutation(restaurantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ orderId, input }: { orderId: string; input: UpdateOrderInput }) =>
+      updateOrderApi(restaurantId, orderId, input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.orders.detail(restaurantId, variables.orderId),
+      });
+    },
+  });
+}
+
+export function useDeleteOrderMutation(restaurantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId: string) => deleteOrderApi(restaurantId, orderId),
+    onSuccess: (_data, orderId) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.kitchen.lists() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.orders.detail(restaurantId, orderId),
+      });
     },
   });
 }

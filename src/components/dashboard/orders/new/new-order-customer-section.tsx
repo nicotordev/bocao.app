@@ -31,6 +31,7 @@ import {
   ComboboxList,
   useComboboxAnchor,
 } from "@/components/ui/combobox";
+import { playUiSound } from "@/lib/ui-sounds";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -395,6 +396,7 @@ function ExistingCustomerPicker({
         items={customers}
         value={selectedExisting}
         onValueChange={(nextValue) => {
+          playUiSound("select");
           onAddExistingCustomers(nextValue ?? []);
         }}
         itemToStringLabel={(customer) => customer.name}

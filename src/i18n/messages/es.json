@@ -467,6 +467,7 @@
         "edit": "Editar",
         "print": "Imprimir",
         "duplicate": "Duplicar",
+        "delete": "Eliminar",
         "changeStatus": "Cambiar estado",
         "cancel": "Cancelar",
         "clearFilters": "Limpiar"
@@ -571,7 +572,10 @@
         "manualOrderHistory": "Pedido manual",
         "fallbackCustomer": "Cliente",
         "tableOnly": "Mesa {number}",
-        "tableWithCustomers": "Mesa {number} · {names}"
+        "tableWithCustomers": "Mesa {number} · {names}",
+        "confirmDelete": "¿Estás seguro de que deseas eliminar este pedido?",
+        "confirmCancel": "¿Estás seguro de que deseas cancelar este pedido?",
+        "confirmDuplicate": "¿Estás seguro de que deseas duplicar este pedido?"
       },
       "insights": {
         "title": "Insights IA",
@@ -1773,6 +1777,191 @@
       "permissions": {
         "deniedTitle": "Se requiere acceso a analítica",
         "deniedDescription": "No tienes permiso para ver analítica de este restaurante."
+      }
+    },
+    "settings": {
+      "header": {
+        "title": "Configuración",
+        "subtitle": "Administra la información, preferencias y operación de tu restaurante.",
+        "activeRestaurant": "Restaurante activo"
+      },
+      "nav": {
+        "profile": "Perfil del restaurante",
+        "hours": "Horarios y operación",
+        "whatsapp": "WhatsApp e IA",
+        "team": "Equipo y permisos",
+        "billing": "Facturación",
+        "appearance": "Apariencia e idioma",
+        "security": "Seguridad"
+      },
+      "sections": {
+        "profile": {
+          "title": "Perfil del restaurante",
+          "description": "Información pública y de contacto de tu local.",
+          "fields": {
+            "name": "Nombre del restaurante",
+            "businessType": "Tipo de negocio",
+            "email": "Email de contacto",
+            "emailHint": "Muestra el email de tu cuenta. El contacto del restaurante se gestiona por teléfono.",
+            "phone": "Teléfono",
+            "address": "Dirección",
+            "addressHint": "Próximamente editable — requiere ampliar el esquema.",
+            "city": "Ciudad",
+            "country": "País",
+            "timezone": "Zona horaria",
+            "currency": "Moneda"
+          },
+          "businessTypes": {
+            "restaurant": "Restaurante",
+            "cafe": "Café",
+            "sushi": "Sushi",
+            "dark_kitchen": "Dark kitchen",
+            "food_truck": "Food truck",
+            "bar": "Bar",
+            "bakery": "Panadería"
+          }
+        },
+        "hours": {
+          "title": "Horarios y operación",
+          "description": "Controla cuándo aceptas pedidos, reservas y cómo opera tu local.",
+          "acceptOrders": "Aceptar pedidos",
+          "acceptOrdersHint": "Permite que los clientes realicen pedidos en línea.",
+          "acceptReservations": "Aceptar reservas",
+          "acceptReservationsHint": "Habilita reservas desde WhatsApp y canales digitales.",
+          "weeklySchedule": "Horario semanal",
+          "weeklyScheduleHint": "Vista previa del horario configurado para cada día.",
+          "averagePrep": "Tiempo promedio de preparación (min)",
+          "averagePrepHint": "Se usa para estimar tiempos de entrega y avisos a clientes.",
+          "tableCapacity": "Capacidad de mesas",
+          "tableCapacityHint": "Cantidad total de mesas o cubiertos disponibles.",
+          "tableCapacityFromFloorPlan": "Calculado desde las mesas del plano de sala.",
+          "closedMessage": "Mensaje cuando el restaurante está cerrado",
+          "closedMessageHint": "Se muestra a clientes que intentan pedir o reservar fuera de horario.",
+          "closed": "Cerrado",
+          "openTime": "Apertura",
+          "closeTime": "Cierre",
+          "statusOpen": "Abierto",
+          "day": "Día",
+          "days": {
+            "monday": "Lunes",
+            "tuesday": "Martes",
+            "wednesday": "Miércoles",
+            "thursday": "Jueves",
+            "friday": "Viernes",
+            "saturday": "Sábado",
+            "sunday": "Domingo"
+          }
+        },
+        "whatsapp": {
+          "title": "WhatsApp e IA",
+          "description": "Configura la conexión de WhatsApp y el comportamiento del asistente.",
+          "connection": "Estado de conexión",
+          "statusConnected": "Conectado",
+          "statusPending": "Pendiente",
+          "connectedNumber": "Número conectado",
+          "autoReply": "Responder automáticamente con IA",
+          "autoReplyHint": "El asistente responde mensajes entrantes de forma automática.",
+          "humanApproval": "Solicitar aprobación humana antes de enviar",
+          "humanApprovalHint": "Las respuestas de IA requieren confirmación del equipo.",
+          "tone": "Tono del asistente",
+          "toneHint": "Define cómo suena el asistente con tus clientes.",
+          "tones": {
+            "friendly": "Amable",
+            "professional": "Profesional",
+            "casual": "Casual"
+          },
+          "instructions": "Instrucciones del asistente",
+          "instructionsHint": "Contexto y reglas personalizadas para tu restaurante.",
+          "testAssistant": "Probar asistente",
+          "mockHint": "La conexión usa configuración del servidor. Las preferencias de IA se guardarán en una próxima versión."
+        },
+        "team": {
+          "title": "Equipo y permisos",
+          "description": "Gestiona quién tiene acceso y qué puede hacer en tu restaurante.",
+          "inviteMember": "Invitar miembro",
+          "manageTeam": "Gestionar equipo",
+          "securityNote": "Los permisos se asignan por rol. Solo owners y managers pueden invitar miembros o cambiar roles sensibles.",
+          "columns": {
+            "member": "Miembro",
+            "role": "Rol",
+            "email": "Email",
+            "status": "Estado"
+          },
+          "roles": {
+            "owner": "Owner",
+            "manager": "Manager",
+            "staff": "Staff"
+          },
+          "statuses": {
+            "active": "Activo",
+            "pending": "Pendiente",
+            "inactive": "Inactivo"
+          }
+        },
+        "billing": {
+          "title": "Facturación",
+          "description": "Revisa tu plan, uso del período y opciones de administración.",
+          "currentPlan": "Plan actual",
+          "plans": {
+            "starter": "Starter",
+            "growth": "Growth",
+            "enterprise": "Enterprise"
+          },
+          "usage": {
+            "whatsapp": "Mensajes WhatsApp",
+            "aiCredits": "Créditos IA",
+            "reservations": "Reservas"
+          },
+          "managePlan": "Administrar plan",
+          "viewHistory": "Ver historial",
+          "mockHint": "El plan y el uso mostrados son referenciales hasta integrar facturación."
+        },
+        "appearance": {
+          "title": "Apariencia e idioma",
+          "description": "Personaliza idioma, tema visual y color de marca de tu restaurante.",
+          "language": "Idioma del panel",
+          "languageHint": "El idioma se guarda en tu sesión y aplica a todo el dashboard.",
+          "theme": "Preferencia visual",
+          "themeHint": "Elige entre modo claro, oscuro o seguir el sistema.",
+          "themes": {
+            "system": "Sistema",
+            "light": "Claro",
+            "dark": "Oscuro"
+          },
+          "brandColor": "Color de marca del restaurante",
+          "brandColorHint": "Se usa en vistas para clientes, botones y detalles de marca.",
+          "previewTitle": "Vista previa de marca",
+          "previewSubtitle": "Así se verá tu restaurante en experiencias digitales.",
+          "previewCta": "Ver menú",
+          "brandColorMockHint": "El color de marca se persistirá cuando se agregue al esquema del restaurante."
+        },
+        "security": {
+          "title": "Seguridad",
+          "description": "Protege el acceso a tu cuenta y administra acciones sensibles.",
+          "twoFactor": "Autenticación de dos factores (2FA)",
+          "twoFactorEnabled": "Activada",
+          "twoFactorDisabled": "No configurada",
+          "changePassword": "Cambiar contraseña",
+          "signOutSessions": "Cerrar sesiones",
+          "sessionsHint": "Tienes {count} sesiones activas en otros dispositivos.",
+          "dangerZone": "Zona peligrosa",
+          "dangerDescription": "Estas acciones afectan la operación del restaurante y no se pueden deshacer fácilmente.",
+          "deactivateRestaurant": "Desactivar restaurante",
+          "deleteRestaurant": "Eliminar restaurante"
+        }
+      },
+      "actions": {
+        "save": "Guardar cambios",
+        "saving": "Guardando...",
+        "comingSoon": "Esta acción estará disponible pronto",
+        "testAssistantSuccess": "Prueba del asistente iniciada. Revisa la bandeja de WhatsApp.",
+        "saveSuccess": "Configuración del restaurante guardada.",
+        "saveError": "No se pudo guardar la configuración.",
+        "readOnly": "Solo lectura — no tienes permiso para editar la configuración."
+      },
+      "empty": {
+        "title": "Sin restaurante activo",
+        "description": "Selecciona un restaurante en el selector para ver y editar su configuración."
       }
     },
     "whatsappInbox": {

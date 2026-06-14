@@ -2,6 +2,24 @@ import { z } from "zod";
 import { createPaymentInputSchema } from "@/lib/payments/schemas";
 import { orderLineCustomizationSchema } from "@/lib/product-flow/schemas";
 
+const orderLineImageSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => {
+      if (value.length === 0) {
+        return false;
+      }
+
+      if (value.startsWith("/")) {
+        return true;
+      }
+
+      return z.string().url().safeParse(value).success;
+    },
+    { message: "Invalid image URL" },
+  );
+
 export const orderStatusSchema = z.enum([
   "draft",
   "received",
@@ -36,16 +54,16 @@ export const updateOrderStatusBodySchema = z.object({
 });
 
 export const createOrderLineItemSchema = z.object({
-  menuItemId: z.string().cuid().optional(),
+  menuItemId: z.string().trim().min(1).optional(),
   name: z.string().trim().min(1),
   quantity: z.number().int().min(1).max(99),
   priceCents: z.number().int().min(0),
-  imageUrls: z.array(z.string().url()).max(8).optional(),
+  imageUrls: z.array(orderLineImageSchema).max(8).optional(),
   customization: orderLineCustomizationSchema.optional(),
 });
 
 export const createOrderCustomerSchema = z.object({
-  id: z.string().cuid().optional(),
+  id: z.string().trim().min(1).optional(),
   name: z.string().trim().min(1),
   phone: z.string().trim().optional(),
   email: z.string().trim().optional(),
@@ -58,7 +76,7 @@ const createOrderBaseSchema = z.object({
   customers: z.array(createOrderCustomerSchema).default([]),
   tableNumber: z.string().trim().optional(),
   kind: orderKindSchema,
-  notes: z.string().trim().min(1),
+  notes: z.string().trim(),
   items: z.array(createOrderLineItemSchema).min(1),
   paymentMethod: createPaymentInputSchema.shape.method,
   intent: createOrderIntentSchema.default("confirm"),
@@ -81,7 +99,7 @@ export const updateOrderBodySchema = z
     customers: z.array(createOrderCustomerSchema).optional(),
     tableNumber: z.string().trim().optional(),
     kind: orderKindSchema.optional(),
-    notes: z.string().trim().min(1).optional(),
+    notes: z.string().trim().optional(),
     items: z.array(createOrderLineItemSchema).min(1).optional(),
     paymentMethod: createPaymentInputSchema.shape.method.optional(),
   })

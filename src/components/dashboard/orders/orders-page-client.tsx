@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buildListUrl } from "@/lib/list-url";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
@@ -23,7 +24,11 @@ import {
   buildOrdersCsvFilename,
   downloadCsvFile,
 } from "@/lib/orders/export-orders-csv";
-import { useUpdateOrderStatusMutation } from "@/lib/query/orders/orders.mutations";
+import {
+  useDeleteOrderMutation,
+  useDuplicateOrderMutation,
+  useUpdateOrderStatusMutation,
+} from "@/lib/query/orders/orders.mutations";
 import { useOrdersRealtime } from "@/lib/query/orders/use-orders-realtime";
 import {
   useOrdersBoardQuery,
@@ -32,7 +37,7 @@ import {
 } from "@/lib/query/orders/orders.queries";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
 import { AiOrderInsights } from "./ai-order-insights";
-import { OrderDetailsDrawer } from "./order-details-drawer";
+import { OrderDetailsDialog } from "./order-details-dialog";
 import { OrdersFilters, type OrdersFiltersState } from "./orders-filters";
 import { OrdersHeader } from "./orders-header";
 import { OrdersKanban } from "./orders-kanban";
@@ -59,7 +64,11 @@ export function OrdersPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const openedViaDeepLink = useRef(Boolean(initialOrder));
-  const urlOrderId = searchParams.get("orderId");
+  const urlOrderId = searchParams.get("orderId") || searchParams.get("created");
+
+  const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
+  const duplicateOrderMutation = useDuplicateOrderMutation(restaurantId);
+  const deleteOrderMutation = useDeleteOrderMutation(restaurantId);
 
   const deepLinkOrder = useMemo(() => {
     if (!urlOrderId || !initialOrder) {
@@ -70,7 +79,70 @@ export function OrdersPageClient({
   }, [initialOrder, urlOrderId]);
 
   const [manualOrder, setManualOrder] = useState<DashboardOrder | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [pendingDuplicateOrderId, setPendingDuplicateOrderId] = useState<string | null>(
+    null,
+  );
+  const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(
+    null,
+  );
+  const [pendingDeleteOrderId, setPendingDeleteOrderId] = useState<string | null>(
+    null,
+  );
   const selectedOrder = manualOrder ?? deepLinkOrder;
+
+  const handleSelectOrder = useCallback((order: DashboardOrder, edit?: boolean) => {
+    openedViaDeepLink.current = false;
+    setManualOrder(order);
+    setIsEditMode(!!edit);
+  }, []);
+
+  const handleDuplicateOrder = useCallback(
+    async (orderId: string) => {
+      try {
+        const result = await duplicateOrderMutation.mutateAsync(orderId);
+        toast.success(labels.realtime.connected ? "Order duplicated" : "Pedido duplicado");
+        setPendingDuplicateOrderId((current) => (current === orderId ? null : current));
+        if (result.order) {
+          router.push(`/dashboard/orders?created=${encodeURIComponent(result.order.id)}`);
+        }
+      } catch {
+        toast.error("Error duplicating order");
+      }
+    },
+    [duplicateOrderMutation, router, labels],
+  );
+
+  const handleDeleteOrder = useCallback(
+    async (orderId: string) => {
+      try {
+        await deleteOrderMutation.mutateAsync(orderId);
+        toast.success("Order deleted");
+        setManualOrder((current) => (current?.id === orderId ? null : current));
+        setPendingDeleteOrderId((current) => (current === orderId ? null : current));
+      } catch {
+        toast.error("Error deleting order");
+      }
+    },
+    [deleteOrderMutation],
+  );
+
+  const handleCancelOrder = useCallback(
+    async (orderId: string) => {
+      try {
+        await updateOrderStatusMutation.mutateAsync({
+          orderId,
+          status: "cancelled",
+        });
+        toast.success("Order cancelled");
+        setPendingCancelOrderId((current) => (current === orderId ? null : current));
+      } catch {
+        toast.error("Error cancelling order");
+      }
+    },
+    [updateOrderStatusMutation],
+  );
+
   const [activeTab, setActiveTab] = useState("orders");
   const filters = useMemo(
     () =>
@@ -102,7 +174,6 @@ export function OrdersPageClient({
       !ordersQuery.isError &&
       isViewingToday,
   });
-  const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
 
   const listOrders = ordersQuery.data?.orders ?? [];
   const boardOrders = boardQuery.data?.orders ?? [];
@@ -131,7 +202,7 @@ export function OrdersPageClient({
   }, [filters, searchParams]);
 
   const clearDeepLinkFromUrl = useCallback(() => {
-    if (!searchParams.get("orderId")) {
+    if (!searchParams.get("orderId") && !searchParams.get("created")) {
       return;
     }
 
@@ -329,10 +400,10 @@ export function OrdersPageClient({
                       <OrdersTable
                         labels={labels}
                         orders={listOrders}
-                        onSelectOrder={(order) => {
-                          openedViaDeepLink.current = false;
-                          setManualOrder(order);
-                        }}
+                        onSelectOrder={handleSelectOrder}
+                        onDuplicateOrder={setPendingDuplicateOrderId}
+                        onCancelOrder={setPendingCancelOrderId}
+                        onDeleteOrder={setPendingDeleteOrderId}
                       />
                       <ListPagination
                         basePath="/dashboard/orders"
@@ -345,10 +416,7 @@ export function OrdersPageClient({
                       <OrdersKanban
                         labels={labels}
                         orders={boardOrders}
-                        onSelectOrder={(order) => {
-                          openedViaDeepLink.current = false;
-                          setManualOrder(order);
-                        }}
+                        onSelectOrder={handleSelectOrder}
                         isMoving={updateOrderStatusMutation.isPending}
                         showDragGuide={activeTab === "kanban"}
                         onMoveOrder={(orderId, status) =>
@@ -360,10 +428,7 @@ export function OrdersPageClient({
                       <OrdersTimeline
                         labels={labels}
                         orders={boardOrders}
-                        onSelectOrder={(order) => {
-                          openedViaDeepLink.current = false;
-                          setManualOrder(order);
-                        }}
+                        onSelectOrder={handleSelectOrder}
                       />
                     </TabsContent>
                   </Tabs>
@@ -371,21 +436,79 @@ export function OrdersPageClient({
               )}
             </QueryResultState>
 
-            <OrderDetailsDrawer
+            <OrderDetailsDialog
               labels={labels}
+              restaurantId={restaurantId}
               order={selectedOrder}
               open={selectedOrder !== null}
+              isEditMode={isEditMode}
+              onEditModeChange={setIsEditMode}
               onOpenChange={(open) => {
                 if (open) {
                   return;
                 }
 
                 setManualOrder(null);
+                setIsEditMode(false);
 
                 if (openedViaDeepLink.current) {
                   clearDeepLinkFromUrl();
                 }
               }}
+            />
+            <ConfirmDialog
+              open={pendingDuplicateOrderId !== null}
+              onOpenChange={(open) => {
+                if (!open && !duplicateOrderMutation.isPending) {
+                  setPendingDuplicateOrderId(null);
+                }
+              }}
+              title={labels.actions.duplicate}
+              description={labels.drawer.confirmDuplicate}
+              confirmLabel={labels.actions.duplicate}
+              cancelLabel={labels.actions.cancel}
+              onConfirm={() => {
+                if (pendingDuplicateOrderId) {
+                  void handleDuplicateOrder(pendingDuplicateOrderId);
+                }
+              }}
+              isPending={duplicateOrderMutation.isPending}
+            />
+            <ConfirmDialog
+              open={pendingCancelOrderId !== null}
+              onOpenChange={(open) => {
+                if (!open && !updateOrderStatusMutation.isPending) {
+                  setPendingCancelOrderId(null);
+                }
+              }}
+              title={labels.actions.cancel}
+              description={labels.drawer.confirmCancel}
+              confirmLabel={labels.actions.cancel}
+              cancelLabel={labels.actions.cancel}
+              onConfirm={() => {
+                if (pendingCancelOrderId) {
+                  void handleCancelOrder(pendingCancelOrderId);
+                }
+              }}
+              isPending={updateOrderStatusMutation.isPending}
+            />
+            <ConfirmDialog
+              open={pendingDeleteOrderId !== null}
+              onOpenChange={(open) => {
+                if (!open && !deleteOrderMutation.isPending) {
+                  setPendingDeleteOrderId(null);
+                }
+              }}
+              title={labels.actions.delete}
+              description={labels.drawer.confirmDelete}
+              confirmLabel={labels.actions.delete}
+              cancelLabel={labels.actions.cancel}
+              onConfirm={() => {
+                if (pendingDeleteOrderId) {
+                  void handleDeleteOrder(pendingDeleteOrderId);
+                }
+              }}
+              isPending={deleteOrderMutation.isPending}
             />
           </main>
         );

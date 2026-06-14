@@ -6,6 +6,8 @@ import {
 import { getOrderFormatOptions } from "@/lib/orders/format-options";
 import {
   confirmOrder,
+  deleteOrder,
+  duplicateOrder,
   getOrder,
   updateOrder,
   updateOrderStatus,
@@ -121,19 +123,54 @@ export async function POST(request: Request, { params }: RouteContext) {
     action?: string;
   } | null;
 
-  if (body?.action !== "confirm") {
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  if (body?.action === "confirm") {
+    try {
+      const formatOptions = await getOrderFormatOptions();
+      const order = await confirmOrder(
+        restaurantId,
+        decodeURIComponent(orderId),
+        formatOptions,
+      );
+
+      return NextResponse.json({ order });
+    } catch {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+  }
+
+  if (body?.action === "duplicate") {
+    try {
+      const formatOptions = await getOrderFormatOptions();
+      const order = await duplicateOrder(
+        restaurantId,
+        decodeURIComponent(orderId),
+        access.context.user.name,
+        formatOptions,
+      );
+
+      return NextResponse.json({ order }, { status: 201 });
+    } catch {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+  }
+
+  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+}
+
+export async function DELETE(_request: Request, { params }: RouteContext) {
+  const { restaurantId, orderId } = await params;
+  const access = await requireRestaurantWriteAccess(restaurantId);
+
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
   }
 
   try {
-    const formatOptions = await getOrderFormatOptions();
-    const order = await confirmOrder(
-      restaurantId,
-      decodeURIComponent(orderId),
-      formatOptions,
-    );
-
-    return NextResponse.json({ order });
+    await deleteOrder(restaurantId, decodeURIComponent(orderId));
+    return new Response(null, { status: 204 });
   } catch {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }

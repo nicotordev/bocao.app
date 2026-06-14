@@ -56,13 +56,21 @@ function resolvePointerSound(target: HTMLElement): UiSound | null {
   const explicitSound = readSoundAttribute(target);
   if (explicitSound !== undefined) return explicitSound;
 
-  const selectItem = target.closest("[data-slot='select-item']");
-  if (selectItem) return isDisabled(selectItem as HTMLElement) ? "disabled" : "select";
+  const optionItem = target.closest<HTMLElement>(
+    [
+      "[data-slot='select-item']",
+      "[data-slot='combobox-item']",
+      "[data-slot='command-item']",
+      "[role='option']",
+    ].join(","),
+  );
+  if (optionItem) return isDisabled(optionItem) ? "disabled" : "select";
 
   const control = target.closest<HTMLElement>(
     [
       "[data-slot='tabs-trigger']",
       "[data-slot='select-trigger']",
+      "[data-slot='combobox-trigger']",
       "[data-slot='navigation-menu-trigger']",
       "[data-slot='navigation-menu-link']",
       "[role='menuitem']",
@@ -72,21 +80,30 @@ function resolvePointerSound(target: HTMLElement): UiSound | null {
     ].join(","),
   );
 
-  if (!control) return null;
-
-  if (isDisabled(control)) {
+  if (control && isDisabled(control)) {
     return "disabled";
   }
 
   if (
-    control.matches(
-      "[data-slot='tabs-trigger'], [data-slot='select-trigger'], [data-slot='navigation-menu-trigger'], [data-slot='navigation-menu-link'], [role='menuitem']",
+    control?.matches(
+      "[data-slot='tabs-trigger'], [data-slot='select-trigger'], [data-slot='combobox-trigger'], [data-slot='navigation-menu-trigger'], [data-slot='navigation-menu-link'], [role='menuitem']",
     )
   ) {
     return "select";
   }
 
-  return "button";
+  if (control) {
+    return "button";
+  }
+
+  const tableHit = target.closest<HTMLElement>(
+    "[data-slot='table-cell'], [data-slot='table-head'], [data-slot='table-row'], [role='cell'], [role='row']",
+  );
+  if (tableHit) {
+    return "select";
+  }
+
+  return null;
 }
 
 function resolveChangeSound(target: HTMLElement): UiSound | null {
@@ -152,6 +169,20 @@ export function UiSoundProvider() {
       playUiSound(sound, 0.18);
     }
 
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        (event.key !== "Enter" && event.key !== " ") ||
+        !isHTMLElement(event.target) ||
+        isTextEntry(event.target) ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const sound = resolvePointerSound(event.target);
+      if (sound) playUiSound(sound);
+    }
+
     function handleCustomSound(event: Event) {
       const customEvent = event as CustomEvent<{
         sound?: UiSound;
@@ -183,6 +214,7 @@ export function UiSoundProvider() {
     document.addEventListener("pointerdown", handlePointerDown, true);
     document.addEventListener("change", handleChange, true);
     document.addEventListener("input", handleInput, true);
+    document.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener(UI_SOUND_EVENT, handleCustomSound);
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -190,6 +222,7 @@ export function UiSoundProvider() {
       document.removeEventListener("pointerdown", handlePointerDown, true);
       document.removeEventListener("change", handleChange, true);
       document.removeEventListener("input", handleInput, true);
+      document.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener(UI_SOUND_EVENT, handleCustomSound);
       observer.disconnect();
     };

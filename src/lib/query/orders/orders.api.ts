@@ -6,6 +6,8 @@ import type {
   OrdersListResponse,
   OrderStatus,
   UpdateOrderStatusResponse,
+  UpdateOrderInput,
+  UpdateOrderResponse,
 } from "@/lib/orders/types";
 import { apiRequest } from "@/lib/query/api-client";
 
@@ -109,6 +111,45 @@ export async function postOrder(
     {
       method: "POST",
       body: input,
+    },
+  );
+}
+
+export async function duplicateOrderApi(
+  restaurantId: string,
+  orderId: string,
+): Promise<CreateOrderResponse> {
+  return apiRequest<CreateOrderResponse>(
+    `/api/restaurants/${restaurantId}/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "POST",
+      body: { action: "duplicate" },
+    },
+  );
+}
+
+export async function updateOrderApi(
+  restaurantId: string,
+  orderId: string,
+  input: UpdateOrderInput,
+): Promise<UpdateOrderResponse> {
+  return apiRequest<UpdateOrderResponse>(
+    `/api/restaurants/${restaurantId}/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "PATCH",
+      body: input,
+    },
+  );
+}
+
+export async function deleteOrderApi(
+  restaurantId: string,
+  orderId: string,
+): Promise<void> {
+  return apiRequest<void>(
+    `/api/restaurants/${restaurantId}/orders/${encodeURIComponent(orderId)}`,
+    {
+      method: "DELETE",
     },
   );
 }
