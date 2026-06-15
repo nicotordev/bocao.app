@@ -148,9 +148,9 @@ model Membership {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userId         String
-  organizationId String
-  roleId         String
+  userId            String
+  organizationId    String
+  roleId            String
   /// active | inactive | removed
   status            String @default("active")
   /// Optional custom TeamPermission overrides (JSON string array)
@@ -343,22 +343,40 @@ model Restaurant {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  customers             Customer[]
-  customerSavedSegments CustomerSavedSegment[]
-  menuCategories        MenuCategory[]
-  menuItems             MenuItem[]
-  orders                Order[]
-  reservations          Reservation[]
-  diningSurfaces        DiningSurface[]
-  menuCustomTags        MenuCustomTag[]
-  dbTranslations        DbTranslation[]
-  productFlowBlocks     ProductFlowBlock[]
-  productFlowTemplates  ProductFlowTemplate[]
-  productPurchaseFlows  ProductPurchaseFlow[]
-  kitchenStations       KitchenStation[]
+  customers                 Customer[]
+  customerSavedSegments     CustomerSavedSegment[]
+  menuCategories            MenuCategory[]
+  menuItems                 MenuItem[]
+  orders                    Order[]
+  reservations              Reservation[]
+  diningSurfaces            DiningSurface[]
+  menuCustomTags            MenuCustomTag[]
+  dbTranslations            DbTranslation[]
+  productFlowBlocks         ProductFlowBlock[]
+  productFlowTemplates      ProductFlowTemplate[]
+  productPurchaseFlows      ProductPurchaseFlow[]
+  kitchenStations           KitchenStation[]
   marketingCampaigns        MarketingCampaign[]
   conversations             Conversation[]
   analyticsInsightSnapshots AnalyticsInsightSnapshot[]
+  whatsAppConfig            RestaurantWhatsAppConfig?
+
+  @@index([organizationId])
+}
+
+/// Meta WhatsApp Cloud API credentials for a restaurant location.
+model RestaurantWhatsAppConfig {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  restaurantId       String   @unique
+  /// Meta Graph API phone_number_id used to route inbound webhooks.
+  phoneNumberId      String   @unique
+  accessToken        String
+  displayPhoneNumber String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
 }

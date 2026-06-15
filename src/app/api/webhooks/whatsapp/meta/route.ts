@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveWebhookRestaurant } from "@/lib/messaging/config";
+import type { NormalizedIncomingMessage } from "@/lib/messaging/providers/types";
 import {
   extractMetaStatusUpdates,
   normalizeMetaIncomingMessages,
@@ -10,6 +11,30 @@ import {
   processIncomingMessage,
   processMessageStatusUpdates,
 } from "@/lib/messaging/process-incoming";
+
+function groupIncomingMessagesByPhoneNumberId(
+  messages: NormalizedIncomingMessage[],
+) {
+  const grouped = new Map<string, NormalizedIncomingMessage[]>();
+
+  for (const message of messages) {
+    const phoneNumberId = message.providerPhoneNumberId?.trim();
+
+    if (!phoneNumberId) {
+      console.warn(
+        "[whatsapp-webhook] skipped message: missing phone_number_id",
+        { providerMessageId: message.providerMessageId },
+      );
+      continue;
+    }
+
+    const bucket = grouped.get(phoneNumberId) ?? [];
+    bucket.push(message);
+    grouped.set(phoneNumberId, bucket);
+  }
+
+  return grouped;
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -68,27 +93,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const scope = await resolveWebhookRestaurant();
-
-  if (!scope) {
-    console.warn("[whatsapp-webhook] skipped event: restaurant not configured");
-    return NextResponse.json({ ok: true, skipped: true });
-  }
-
   const incomingMessages = normalizeMetaIncomingMessages(parsed);
   const statusUpdates = extractMetaStatusUpdates(parsed);
+  const messagesByPhoneNumberId =
+    groupIncomingMessagesByPhoneNumberId(incomingMessages);
 
   try {
-    await Promise.all([
-      ...incomingMessages.map((message) =>
-        processIncomingMessage({
-          tenantId: scope.tenantId,
-          restaurantId: scope.restaurantId,
-          message,
-        }),
-      ),
+    const processingTasks: Promise<unknown>[] = [
       processMessageStatusUpdates(statusUpdates),
-    ]);
+    ];
+
+    for (const [phoneNumberId, messages] of messagesByPhoneNumberId) {
+      const scope = await resolveWebhookRestaurant({ phoneNumberId });
+
+      if (!scope) {
+        console.warn(
+          "[whatsapp-webhook] skipped messages: restaurant not configured",
+          { phoneNumberId, messageCount: messages.length },
+        );
+        continue;
+      }
+
+      processingTasks.push(
+        ...messages.map((message) =>
+          processIncomingMessage({
+            tenantId: scope.tenantId,
+            restaurantId: scope.restaurantId,
+            message,
+          }),
+        ),
+      );
+    }
+
+    await Promise.all(processingTasks);
   } catch (error) {
     console.error("[whatsapp-webhook] failed to process event", error);
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });

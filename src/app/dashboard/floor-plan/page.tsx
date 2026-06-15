@@ -12,11 +12,12 @@ export default async function FloorPlanPage() {
   const t = await getTranslations("dashboard.floorPlan");
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
+  const permissions = context?.membership.permissions ?? [];
   const canEdit =
-    context?.membership.permissions.includes(PERMISSIONS.RESTAURANT_WRITE) ??
-    false;
+    permissions.includes(PERMISSIONS.RESTAURANT_WRITE) ||
+    permissions.includes(PERMISSIONS.ORDERS_WRITE);
   const canView =
-    context?.membership.permissions.includes(PERMISSIONS.ORDERS_READ) ?? false;
+    permissions.includes(PERMISSIONS.ORDERS_READ);
 
   const floorPlan = restaurantId ? await getFloorPlan(restaurantId) : null;
   const occupiedTableNumbers = restaurantId

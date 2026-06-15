@@ -117,6 +117,16 @@ function defaultSurfaceName(
   return labels.surfaceNameFloor.replace("{floor}", String(floor));
 }
 
+function resolveBuilderToolForSurface(
+  surface: DiningSurfaceRecord | null,
+): BuilderTool {
+  if (!surface) {
+    return "boundary";
+  }
+
+  return "tables";
+}
+
 export function FloorPlanPageClient({
   labels,
   restaurantId,
@@ -352,7 +362,7 @@ export function FloorPlanPageClient({
     setDraft(draftFromSurface(surface, fallbackSurfaceName));
     setSelectedTableId(null);
     setSelectedVertexIndex(null);
-    setBuilderTool("boundary");
+    setBuilderTool(resolveBuilderToolForSurface(surface));
   }
 
   function selectSurface(surfaceId: string) {

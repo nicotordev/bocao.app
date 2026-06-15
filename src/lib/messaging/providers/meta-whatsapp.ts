@@ -130,6 +130,8 @@ export function normalizeMetaIncomingMessages(
       const toPhone = value.metadata?.display_phone_number;
       const contactName = value.contacts?.[0]?.profile?.name;
 
+      const providerPhoneNumberId = value.metadata?.phone_number_id;
+
       for (const message of value.messages ?? []) {
         const receivedAt = message.timestamp
           ? new Date(Number(message.timestamp) * 1000)
@@ -139,6 +141,7 @@ export function normalizeMetaIncomingMessages(
           provider: "meta_whatsapp",
           providerMessageId: message.id,
           providerThreadId: message.from,
+          providerPhoneNumberId,
           fromPhone: message.from,
           toPhone,
           customerName: contactName,
@@ -203,22 +206,6 @@ export function verifyMetaWebhookSignature(
   return timingSafeEqual(Buffer.from(expected), Buffer.from(received));
 }
 
-type MetaCredentials = {
-  accessToken: string;
-  phoneNumberId: string;
-};
-
-function getMetaCredentials(): MetaCredentials | null {
-  const accessToken = process.env.META_WHATSAPP_ACCESS_TOKEN?.trim();
-  const phoneNumberId = process.env.META_WHATSAPP_PHONE_NUMBER_ID?.trim();
-
-  if (!accessToken || !phoneNumberId) {
-    return null;
-  }
-
-  return { accessToken, phoneNumberId };
-}
-
 function normalizePhoneForMeta(phone: string): string {
   return phone.replace(/\D/g, "");
 }
@@ -226,18 +213,12 @@ function normalizePhoneForMeta(phone: string): string {
 export async function sendMetaWhatsAppMessage(
   input: SendOutboundMessageInput,
 ): Promise<SendOutboundMessageResult> {
-  const credentials = getMetaCredentials();
-
-  if (!credentials) {
-    throw new Error("Meta WhatsApp credentials are not configured");
-  }
-
   const response = await fetch(
-    `https://graph.facebook.com/v21.0/${credentials.phoneNumberId}/messages`,
+    `https://graph.facebook.com/v21.0/${input.credentials.phoneNumberId}/messages`,
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${credentials.accessToken}`,
+        Authorization: `Bearer ${input.credentials.accessToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

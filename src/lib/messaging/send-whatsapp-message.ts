@@ -3,7 +3,10 @@ import {
   MessageStatus,
   MessagingProvider,
 } from "@/generated/prisma/client";
-import { getWhatsAppProvider } from "@/lib/messaging/config";
+import {
+  getRestaurantMetaWhatsAppCredentials,
+  getWhatsAppProvider,
+} from "@/lib/messaging/config";
 import { emitMessagingEventsAfterCommit } from "@/lib/messaging/events";
 import { sendMetaWhatsAppMessage } from "@/lib/messaging/providers/meta-whatsapp";
 import { prisma } from "@/lib/prisma";
@@ -30,12 +33,25 @@ export async function sendWhatsAppMessage(input: {
   const provider = getWhatsAppProvider();
 
   if (provider !== "meta") {
-    throw new Error("Only Meta WhatsApp provider is supported in this iteration");
+    throw new Error(
+      "Only Meta WhatsApp provider is supported in this iteration",
+    );
+  }
+
+  const credentials = await getRestaurantMetaWhatsAppCredentials(
+    input.restaurantId,
+  );
+
+  if (!credentials) {
+    throw new Error(
+      "Meta WhatsApp credentials are not configured for this restaurant",
+    );
   }
 
   const sendResult = await sendMetaWhatsAppMessage({
     toPhone: conversation.customerPhone,
     body: input.body,
+    credentials,
   });
 
   const message = await prisma.$transaction(async (tx) => {

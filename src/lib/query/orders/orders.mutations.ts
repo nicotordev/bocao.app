@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   CreateOrderInput,
+  Order,
   OrderStatus,
   OrdersListResponse,
   UpdateOrderInput,
@@ -20,40 +21,97 @@ type UpdateOrderStatusVariables = {
 };
 
 type UpdateOrderStatusContext = {
-  previous?: OrdersListResponse;
+  previousLists: Array<readonly [readonly unknown[], OrdersListResponse | undefined]>;
+  previousBoards: Array<
+    readonly [readonly unknown[], OrdersBoardResponse | undefined]
+  >;
+  previousKpis: Array<
+    readonly [readonly unknown[], OrdersBoardResponse | undefined]
+  >;
 };
+
+type OrdersBoardResponse = {
+  orders: Order[];
+  restaurantId: string;
+  updatedAt: string;
+};
+
+function applyOrderStatusUpdate<T extends { orders: Order[] }>(
+  current: T | undefined,
+  orderId: string,
+  status: OrderStatus,
+) {
+  if (!current) {
+    return current;
+  }
+
+  return {
+    ...current,
+    orders: current.orders.map((order) =>
+      order.id === orderId ? { ...order, status } : order,
+    ),
+  };
+}
 
 export function useUpdateOrderStatusMutation(restaurantId: string) {
   const queryClient = useQueryClient();
-  const listQueryKey = queryKeys.orders.list(restaurantId);
 
   return useMutation({
     mutationFn: ({ orderId, status }: UpdateOrderStatusVariables) =>
       patchOrderStatus(restaurantId, orderId, status),
     onMutate: async ({ orderId, status }) => {
-      await queryClient.cancelQueries({ queryKey: listQueryKey });
+      const listQueryKey = [...queryKeys.orders.lists(), restaurantId] as const;
+      const boardQueryKey = [...queryKeys.orders.boards(), restaurantId] as const;
+      const kpiQueryKey = [...queryKeys.orders.kpis(), restaurantId] as const;
 
-      const previous =
-        queryClient.getQueryData<OrdersListResponse>(listQueryKey);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: listQueryKey }),
+        queryClient.cancelQueries({ queryKey: boardQueryKey }),
+        queryClient.cancelQueries({ queryKey: kpiQueryKey }),
+      ]);
 
-      queryClient.setQueryData<OrdersListResponse>(listQueryKey, (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          orders: current.orders.map((order) =>
-            order.id === orderId ? { ...order, status } : order,
-          ),
-        };
+      const previousLists = queryClient.getQueriesData<OrdersListResponse>({
+        queryKey: listQueryKey,
+      });
+      const previousBoards = queryClient.getQueriesData<OrdersBoardResponse>({
+        queryKey: boardQueryKey,
+      });
+      const previousKpis = queryClient.getQueriesData<OrdersBoardResponse>({
+        queryKey: kpiQueryKey,
       });
 
-      return { previous } satisfies UpdateOrderStatusContext;
+      queryClient.setQueriesData<OrdersListResponse>(
+        { queryKey: listQueryKey },
+        (current) => applyOrderStatusUpdate(current, orderId, status),
+      );
+
+      queryClient.setQueriesData<OrdersBoardResponse>(
+        { queryKey: boardQueryKey },
+        (current) => applyOrderStatusUpdate(current, orderId, status),
+      );
+
+      queryClient.setQueriesData<OrdersBoardResponse>(
+        { queryKey: kpiQueryKey },
+        (current) => applyOrderStatusUpdate(current, orderId, status),
+      );
+
+      return { previousLists, previousBoards, previousKpis } satisfies UpdateOrderStatusContext;
     },
     onError: (_error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(listQueryKey, context.previous);
+      if (!context) {
+        return;
+      }
+
+      for (const [queryKey, data] of context.previousLists) {
+        queryClient.setQueryData(queryKey, data);
+      }
+
+      for (const [queryKey, data] of context.previousBoards) {
+        queryClient.setQueryData(queryKey, data);
+      }
+
+      for (const [queryKey, data] of context.previousKpis) {
+        queryClient.setQueryData(queryKey, data);
       }
     },
     onSettled: (_data, _error, variables) => {

@@ -19,9 +19,9 @@ function requireRestaurantWrite(restaurantId: string) {
       throw new Error("FORBIDDEN");
     }
 
-    const canWrite = context.membership.permissions.includes(
-      PERMISSIONS.RESTAURANT_WRITE,
-    );
+    const canWrite =
+      context.membership.permissions.includes(PERMISSIONS.RESTAURANT_WRITE) ||
+      context.membership.permissions.includes(PERMISSIONS.ORDERS_WRITE);
 
     if (!canWrite) {
       throw new Error("FORBIDDEN");

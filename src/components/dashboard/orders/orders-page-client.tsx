@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
@@ -44,7 +44,7 @@ import { OrdersKanban } from "./orders-kanban";
 import { OrdersKpis } from "./orders-kpis";
 import { OrdersTable } from "./orders-table";
 import { OrdersTimeline } from "./orders-timeline";
-import type { DashboardOrder, OrdersLabels } from "./types";
+import type { DashboardOrder, OrderStatus, OrdersLabels } from "./types";
 
 type OrdersPageClientProps = {
   labels: OrdersLabels;
@@ -89,6 +89,9 @@ export function OrdersPageClient({
   const [pendingDeleteOrderId, setPendingDeleteOrderId] = useState<string | null>(
     null,
   );
+  const [pendingBoardStatuses, setPendingBoardStatuses] = useState<
+    Record<string, OrderStatus>
+  >({});
   const selectedOrder = manualOrder ?? deepLinkOrder;
 
   const handleSelectOrder = useCallback((order: DashboardOrder, edit?: boolean) => {
@@ -177,12 +180,49 @@ export function OrdersPageClient({
 
   const listOrders = ordersQuery.data?.orders ?? [];
   const boardOrders = boardQuery.data?.orders ?? [];
+  const kanbanOrders = useMemo(
+    () =>
+      boardOrders.map((order) => {
+        const optimisticStatus = pendingBoardStatuses[order.id];
+
+        if (!optimisticStatus || optimisticStatus === order.status) {
+          return order;
+        }
+
+        return { ...order, status: optimisticStatus };
+      }),
+    [boardOrders, pendingBoardStatuses],
+  );
   const pagination = ordersQuery.data?.pagination ?? {
     page: filters.page,
     pageSize: filters.pageSize,
     total: 0,
     totalPages: 1,
   };
+
+  useEffect(() => {
+    setPendingBoardStatuses((current) => {
+      const entries = Object.entries(current);
+
+      if (entries.length === 0) {
+        return current;
+      }
+
+      let changed = false;
+      const next = { ...current };
+
+      for (const [orderId, optimisticStatus] of entries) {
+        const boardOrder = boardOrders.find((order) => order.id === orderId);
+
+        if (!boardOrder || boardOrder.status === optimisticStatus) {
+          delete next[orderId];
+          changed = true;
+        }
+      }
+
+      return changed ? next : current;
+    });
+  }, [boardOrders]);
 
   const urlParams = useMemo(() => {
     const params: Record<string, string | undefined> = {
@@ -415,19 +455,38 @@ export function OrdersPageClient({
                     <TabsContent value="kanban" className="mt-4">
                       <OrdersKanban
                         labels={labels}
-                        orders={boardOrders}
+                        orders={kanbanOrders}
                         onSelectOrder={handleSelectOrder}
                         isMoving={updateOrderStatusMutation.isPending}
                         showDragGuide={activeTab === "kanban"}
-                        onMoveOrder={(orderId, status) =>
-                          updateOrderStatusMutation.mutate({ orderId, status })
-                        }
+                        onMoveOrder={(orderId, status) => {
+                          setPendingBoardStatuses((current) => ({
+                            ...current,
+                            [orderId]: status,
+                          }));
+                          updateOrderStatusMutation.mutate(
+                            { orderId, status },
+                            {
+                              onError: () => {
+                                setPendingBoardStatuses((current) => {
+                                  if (!(orderId in current)) {
+                                    return current;
+                                  }
+
+                                  const next = { ...current };
+                                  delete next[orderId];
+                                  return next;
+                                });
+                              },
+                            },
+                          );
+                        }}
                       />
                     </TabsContent>
                     <TabsContent value="timeline" className="mt-4">
                       <OrdersTimeline
                         labels={labels}
-                        orders={boardOrders}
+                        orders={kanbanOrders}
                         onSelectOrder={handleSelectOrder}
                       />
                     </TabsContent>

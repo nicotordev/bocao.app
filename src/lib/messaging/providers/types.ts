@@ -12,6 +12,8 @@ export type NormalizedIncomingMessage = {
   provider: MessagingProviderSlug;
   providerMessageId: string;
   providerThreadId?: string;
+  /** Meta Graph API phone_number_id that received the message. */
+  providerPhoneNumberId?: string;
   fromPhone: string;
   toPhone?: string;
   customerName?: string;
@@ -24,6 +26,10 @@ export type NormalizedIncomingMessage = {
 export type SendOutboundMessageInput = {
   toPhone: string;
   body: string;
+  credentials: {
+    accessToken: string;
+    phoneNumberId: string;
+  };
 };
 
 export type SendOutboundMessageResult = {
