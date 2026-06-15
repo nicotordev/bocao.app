@@ -45,7 +45,9 @@ export const auth = betterAuth({
     }),
   ],
 
-  trustedOrigins: [process.env.BETTER_AUTH_URL ?? "http://localhost:3000"],
+  trustedOrigins: process.env.BETTER_AUTH_URL
+    ? [process.env.BETTER_AUTH_URL]
+    : undefined,
 });
 
 export async function getServerSession() {

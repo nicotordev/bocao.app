@@ -20,7 +20,17 @@ export function getInvitationExpiryDate(now = new Date()): Date {
 }
 
 export function buildInvitationAcceptUrl(token: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    process.env.BETTER_AUTH_URL ??
+    (process.env.NODE_ENV === "development" ? "http://localhost:3000" : null);
+
+  if (!baseUrl) {
+    throw new Error(
+      "Missing app URL. Set NEXT_PUBLIC_APP_URL or BETTER_AUTH_URL in production.",
+    );
+  }
+
   const url = new URL("/accept-invitation", baseUrl);
   url.searchParams.set("token", token);
   return url.toString();

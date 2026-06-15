@@ -15,6 +15,9 @@ COPY prisma ./prisma
 
 ENV DATABASE_URL="postgresql://user:password@localhost:5432/bocao?schema=public"
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_DEFAULT_TIMEZONE
+ARG BETTER_AUTH_URL
 
 RUN bun install --frozen-lockfile
 
