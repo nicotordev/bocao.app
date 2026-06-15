@@ -1,4 +1,6 @@
-# Dockerfile - Production build with Bun + Next.js standalone + Prisma
+# ============================================================================
+# Stage 1: Builder
+# ============================================================================
 
 FROM oven/bun:1 AS builder
 
@@ -11,24 +13,45 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Dependencies first for layer caching
 COPY package.json bun.lock ./
+
+RUN bun install --frozen-lockfile
+
+# Application files
 COPY tsconfig.json ./
 COPY next.config.* ./
+COPY components.json ./
 COPY prisma.config.ts ./
+
 COPY prisma ./prisma
 COPY public ./public
 COPY src ./src
 
-ENV NODE_ENV=development
+# Build env
+ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="postgresql://user:password@localhost:5432/db?schema=public"
 
-RUN bun install --frozen-lockfile
+# Dummy value required only for prisma generate during build
+ENV DATABASE_URL="postgresql://user:password@localhost:5432/bocao?schema=public"
 
+# Debug (remove later if desired)
+RUN bun pm ls tw-animate-css
+RUN bun pm ls shadcn
+
+# Prisma
 RUN bunx prisma generate
 
+# Next.js standalone build
 RUN bun run build
 
+# Verify standalone exists
+RUN test -f .next/standalone/server.js
+
+
+# ============================================================================
+# Stage 2: Runtime
+# ============================================================================
 
 FROM oven/bun:1 AS runtime
 
@@ -40,24 +63,30 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -u 1001 nextjs
+RUN useradd -m -u 1001 bocao
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-COPY --from=builder --chown=nextjs:nextjs /build/.next/standalone ./
-COPY --from=builder --chown=nextjs:nextjs /build/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nextjs /build/public ./public
-COPY --from=builder --chown=nextjs:nextjs /build/prisma ./prisma
+# Standalone output
+COPY --from=builder --chown=bocao:bocao /build/.next/standalone ./
 
-USER nextjs
+# Static assets
+COPY --from=builder --chown=bocao:bocao /build/.next/static ./.next/static
+COPY --from=builder --chown=bocao:bocao /build/public ./public
+
+# Prisma schema (optional but useful for scripts/migrations)
+COPY --from=builder --chown=bocao:bocao /build/prisma ./prisma
+
+USER bocao
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD bun -e "fetch('http://127.0.0.1:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD bun -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3000)).then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
 ENTRYPOINT ["dumb-init", "--"]
 
