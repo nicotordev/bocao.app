@@ -19,6 +19,7 @@ export type CustomersListFilters = {
   tab?: "customers" | "segments" | "activity";
   customerId?: string;
   savedSegmentId?: string;
+  smartSegmentId?: string;
 } & PaginationParams;
 
 const customerSegmentSchema = z.enum([
@@ -60,6 +61,7 @@ export const customersListQuerySchema = z
     tab: customerTabSchema.optional(),
     customerId: z.string().optional(),
     savedSegmentId: z.string().optional(),
+    smartSegmentId: z.string().optional(),
   })
   .merge(paginationQuerySchema);
 
@@ -79,6 +81,7 @@ export function parseCustomersListSearchParams(
     tab: getValue("tab"),
     customerId: getValue("customerId"),
     savedSegmentId: getValue("savedSegmentId"),
+    smartSegmentId: getValue("smartSegmentId"),
     page: getValue("page"),
     pageSize: getValue("pageSize"),
   });
@@ -101,6 +104,7 @@ export function parseCustomersListSearchParams(
     tab: parsed.data.tab ?? "customers",
     customerId: parsed.data.customerId,
     savedSegmentId: parsed.data.savedSegmentId,
+    smartSegmentId: parsed.data.smartSegmentId,
     page: parsed.data.page,
     pageSize: parsed.data.pageSize,
   };
@@ -116,6 +120,7 @@ export type CustomersListFilterPatch = Partial<
     | "tab"
     | "customerId"
     | "savedSegmentId"
+    | "smartSegmentId"
   >
 >;
 
@@ -131,6 +136,7 @@ export function areCustomersListFiltersEqual(
     (left.tab ?? "customers") === (right.tab ?? "customers") &&
     left.customerId === right.customerId &&
     left.savedSegmentId === right.savedSegmentId &&
+    left.smartSegmentId === right.smartSegmentId &&
     left.page === right.page &&
     left.pageSize === right.pageSize
   );
@@ -188,6 +194,7 @@ export function needsComputedCustomerPipeline(
   return (
     (filters.segment !== undefined && filters.segment !== "all") ||
     (filters.channel !== undefined && filters.channel !== "all") ||
+    filters.smartSegmentId !== undefined ||
     (filters.sort !== undefined &&
       filters.sort !== "name" &&
       filters.sort !== "created_at")
@@ -210,7 +217,9 @@ export function buildTargetCustomersListFilters(
     (next.tab !== undefined && next.tab !== (current.tab ?? "customers")) ||
     ("customerId" in next && next.customerId !== current.customerId) ||
     ("savedSegmentId" in next &&
-      next.savedSegmentId !== current.savedSegmentId);
+      next.savedSegmentId !== current.savedSegmentId) ||
+    ("smartSegmentId" in next &&
+      next.smartSegmentId !== current.smartSegmentId);
 
   return {
     search:
@@ -222,6 +231,8 @@ export function buildTargetCustomersListFilters(
     customerId: "customerId" in next ? next.customerId : current.customerId,
     savedSegmentId:
       "savedSegmentId" in next ? next.savedSegmentId : current.savedSegmentId,
+    smartSegmentId:
+      "smartSegmentId" in next ? next.smartSegmentId : current.smartSegmentId,
     page: options?.page ?? (hasFilterChange ? 1 : current.page),
     pageSize: current.pageSize,
   };

@@ -358,8 +358,9 @@ model Restaurant {
   kitchenStations           KitchenStation[]
   marketingCampaigns        MarketingCampaign[]
   conversations             Conversation[]
-  analyticsInsightSnapshots AnalyticsInsightSnapshot[]
-  whatsAppConfig            RestaurantWhatsAppConfig?
+  analyticsInsightSnapshots       AnalyticsInsightSnapshot[]
+  customerSmartSegmentSnapshots   CustomerSmartSegmentSnapshot[]
+  whatsAppConfig                  RestaurantWhatsAppConfig?
 
   @@index([organizationId])
 }
@@ -379,6 +380,23 @@ model RestaurantWhatsAppConfig {
   restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([organizationId])
+}
+
+/// Pre-generated AI customer segments refreshed by a background cron job.
+model CustomerSmartSegmentSnapshot {
+  id           String   @id @default(cuid())
+  restaurantId String
+  locale       String
+  /// ai | rules
+  source       String   @default("ai")
+  segments     Json
+  generatedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, locale])
+  @@index([restaurantId, generatedAt])
 }
 
 /// Pre-generated AI analytics insights refreshed by a background cron job.

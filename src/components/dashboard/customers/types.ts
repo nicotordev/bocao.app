@@ -239,8 +239,6 @@ export type CustomersLabels = {
   savedSegments: {
     title: string;
     subtitle: string;
-    smartTitle: string;
-    smartSubtitle: string;
     create: string;
     createTitle: string;
     createDescription: string;
@@ -273,6 +271,14 @@ export type CustomersLabels = {
     saveError: string;
     nameRequired: string;
     noCustomersSelected: string;
+  };
+  smartSegments: {
+    title: string;
+    subtitle: string;
+    empty: string;
+    updatedAt: string;
+    sourceAi: string;
+    sourceRules: string;
   };
   accessibility: {
     openActions: string;

@@ -150,6 +150,8 @@ export type CustomerSegmentCard = {
   lastActivityRelative: string;
 };
 
+export type { CustomerSmartSegmentCard, CustomerSmartSegmentsMeta } from "@/lib/customers/smart-segments/types";
+
 export type CustomersKpiTrend = {
   change: string;
   trend: "up" | "down" | "neutral";
@@ -182,7 +184,8 @@ export type CustomersListResponse = {
     total: number;
     totalPages: number;
   };
-  segments: CustomerSegmentCard[];
+  segments: CustomerSmartSegmentCard[];
+  smartSegmentsMeta: CustomerSmartSegmentsMeta;
   savedSegments: CustomerSavedSegmentSummary[];
   activity: CustomerActivityEvent[];
   insights: CustomerInsight[];

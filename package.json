@@ -16,6 +16,8 @@
     "db:seed": "prisma db seed",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
     "auth:generate": "auth generate",
+    "cron:analytics-insights": "tsx scripts/cron/analytics-insights.ts",
+    "cron:customer-smart-segments": "tsx scripts/cron/customer-smart-segments.ts",
     "realtime:kitchen": "bun run services/kitchen-realtime/index.ts",
     "dev:realtime": "bun run realtime:kitchen"
   },

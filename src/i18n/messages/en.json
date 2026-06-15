@@ -1605,8 +1605,6 @@
       "savedSegments": {
         "title": "Saved segments",
         "subtitle": "Create custom groups and reuse them for campaigns and filters.",
-        "smartTitle": "Smart segments",
-        "smartSubtitle": "Automatically calculated from customer activity and spend.",
         "create": "Create segment",
         "createTitle": "Create segment",
         "createDescription": "Name a new segment and add customers to it afterwards.",
@@ -1639,6 +1637,14 @@
         "saveError": "We could not save the segment. Please try again.",
         "nameRequired": "Enter a segment name",
         "noCustomersSelected": "Select at least one customer"
+      },
+      "smartSegments": {
+        "title": "AI smart segments",
+        "subtitle": "Audience groups generated from order, reservation, and spend patterns.",
+        "empty": "No segments yet. They refresh daily once your restaurant has customer activity.",
+        "updatedAt": "Last refresh: {date}",
+        "sourceAi": "AI-generated",
+        "sourceRules": "Rule-based"
       },
       "accessibility": {
         "openActions": "Open customer actions",

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runAnalyticsInsightsCron } from "@/lib/analytics/insights/cron";
+import { runCustomerSmartSegmentsCron } from "@/lib/customers/smart-segments/cron";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -8,7 +8,7 @@ function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
 
   if (!secret) {
-    console.error("[cron/analytics-insights] CRON_SECRET is not configured");
+    console.error("[cron/customer-smart-segments] CRON_SECRET is not configured");
     return false;
   }
 
@@ -22,12 +22,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await runAnalyticsInsightsCron();
+    const result = await runCustomerSmartSegmentsCron();
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[cron/analytics-insights] failed", error);
+    console.error("[cron/customer-smart-segments] failed", error);
     return NextResponse.json(
-      { error: "Failed to refresh analytics insights" },
+      { error: "Failed to refresh customer smart segments" },
       { status: 500 },
     );
   }

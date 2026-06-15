@@ -37,7 +37,7 @@ Living task list for the product described in `docs/briefing-materials.md`. Upda
 ## Phase 2 — Growth features
 
 - [ ] **Analytics** — Revenue, orders over time, channel breakdown; export CSV (nav entry exists; no `/dashboard/analytics` page yet).
-- [ ] **AI insights** — Natural-language summaries on aggregates (insights card UI exists; data layer returns empty).
+- [x] **AI insights** — Natural-language summaries on aggregates; cron at `/api/cron/analytics-insights`, snapshots in `AnalyticsInsightSnapshot`, CLI `bun run cron:analytics-insights`.
 - [x] **CRM** — Customer profiles, tags, segments, saved segments, import/export templates, profile drawer.
 - [ ] **Campaigns** — Segment customers, draft WhatsApp/SMS copy; AI promo text with review before send.
 - [x] **Kitchen display** — Realtime queue (Redis + WebSocket gateway + `AppEventLog`), station filters, timers, pause/resume, kanban/cards/timeline, print ticket, new order dialog.

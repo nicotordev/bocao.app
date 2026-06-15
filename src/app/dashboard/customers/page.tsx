@@ -334,8 +334,6 @@ export default async function CustomersPage({
     savedSegments: {
       title: t("savedSegments.title"),
       subtitle: t("savedSegments.subtitle"),
-      smartTitle: t("savedSegments.smartTitle"),
-      smartSubtitle: t("savedSegments.smartSubtitle"),
       create: t("savedSegments.create"),
       createTitle: t("savedSegments.createTitle"),
       createDescription: t("savedSegments.createDescription"),
@@ -370,6 +368,14 @@ export default async function CustomersPage({
       saveError: t("savedSegments.saveError"),
       nameRequired: t("savedSegments.nameRequired"),
       noCustomersSelected: t("savedSegments.noCustomersSelected"),
+    },
+    smartSegments: {
+      title: t("smartSegments.title"),
+      subtitle: t("smartSegments.subtitle"),
+      empty: t("smartSegments.empty"),
+      updatedAt: t("smartSegments.updatedAt"),
+      sourceAi: t("smartSegments.sourceAi"),
+      sourceRules: t("smartSegments.sourceRules"),
     },
     accessibility: {
       openActions: t("accessibility.openActions"),

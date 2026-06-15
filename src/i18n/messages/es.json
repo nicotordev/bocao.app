@@ -1605,8 +1605,6 @@
       "savedSegments": {
         "title": "Segmentos guardados",
         "subtitle": "Crea grupos personalizados y reutilízalos en campañas y filtros.",
-        "smartTitle": "Segmentos inteligentes",
-        "smartSubtitle": "Calculados automáticamente según actividad y gasto de los clientes.",
         "create": "Crear segmento",
         "createTitle": "Crear segmento",
         "createDescription": "Ponle nombre al segmento y agrega clientes después.",
@@ -1639,6 +1637,14 @@
         "saveError": "No pudimos guardar el segmento. Intenta de nuevo.",
         "nameRequired": "Ingresa un nombre para el segmento",
         "noCustomersSelected": "Selecciona al menos un cliente"
+      },
+      "smartSegments": {
+        "title": "Segmentos inteligentes con IA",
+        "subtitle": "Grupos de audiencia generados a partir de pedidos, reservas y patrones de gasto.",
+        "empty": "Aún no hay segmentos. Se actualizan a diario cuando tu restaurante tiene actividad de clientes.",
+        "updatedAt": "Última actualización: {date}",
+        "sourceAi": "Generado con IA",
+        "sourceRules": "Basado en reglas"
       },
       "accessibility": {
         "openActions": "Abrir acciones del cliente",

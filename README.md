@@ -76,20 +76,22 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Script                  | Description                                            |
-| ----------------------- | ------------------------------------------------------ |
-| `bun dev`               | Start the Next.js dev server                           |
-| `bun run build`         | Generate Prisma client and build for production        |
-| `bun start`             | Start the production server after a build              |
-| `bun run lint`          | Run ESLint                                             |
-| `bunx tsc --noEmit`     | Run TypeScript type checking                           |
-| `bun run db:generate`   | Regenerate Prisma client                               |
-| `bun run db:migrate`    | Create/apply development migrations                    |
-| `bun run db:push`       | Push schema without migration files (prototyping only) |
-| `bun run db:studio`     | Open Prisma Studio                                     |
-| `bun run db:seed`       | Run `prisma/seed.ts`                                   |
-| `bun run db:seed:demo`  | Run demo seed with admin emails                        |
-| `bun run auth:generate` | Run Better Auth generation                             |
+| Script                                 | Description                                                           |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| `bun dev`                              | Start the Next.js dev server                                          |
+| `bun run build`                        | Generate Prisma client and build for production                       |
+| `bun start`                            | Start the production server after a build                             |
+| `bun run lint`                         | Run ESLint                                                            |
+| `bunx tsc --noEmit`                    | Run TypeScript type checking                                          |
+| `bun run db:generate`                  | Regenerate Prisma client                                              |
+| `bun run db:migrate`                   | Create/apply development migrations                                   |
+| `bun run db:push`                      | Push schema without migration files (prototyping only)                |
+| `bun run db:studio`                    | Open Prisma Studio                                                    |
+| `bun run db:seed`                      | Run `prisma/seed.ts`                                                  |
+| `bun run db:seed:demo`                 | Run demo seed with admin emails                                       |
+| `bun run auth:generate`                | Run Better Auth generation                                            |
+| `bun run cron:analytics-insights`      | Generate AI analytics insight snapshots (CLI / self-hosted cron)      |
+| `bun run cron:customer-smart-segments` | Generate AI customer smart segment snapshots (CLI / self-hosted cron) |
 
 ## Project Structure
 
@@ -142,12 +144,45 @@ public/
 | Auth     | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`                                       |
 | App      | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_DEFAULT_TIMEZONE`                         |
 | Email    | `RESEND_API_KEY`, `EMAIL_FROM`                                                |
-| AI       | `OPENAI_API_KEY`                                                              |
+| AI       | `OPENAI_API_KEY`, `OPENAI_ANALYTICS_MODEL` (optional)                         |
+| Cron     | `CRON_SECRET`, `APP_URL` (optional; defaults to `NEXT_PUBLIC_APP_URL`)        |
 | WhatsApp | `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`  |
 | Billing  | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`                                  |
 | Storage  | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` |
 
 Never commit `.env`.
+
+## Background cron jobs (Railway)
+
+Two HTTP cron endpoints refresh AI-generated snapshots. Both require `CRON_SECRET`, `DATABASE_URL`, and `OPENAI_API_KEY` (optional — falls back to rule-based output).
+
+| Endpoint                            | Purpose                                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------------- |
+| `/api/cron/analytics-insights`      | AI insights for `/dashboard/analytics` (`AnalyticsInsightSnapshot`)              |
+| `/api/cron/customer-smart-segments` | AI audience segments for `/dashboard/customers` (`CustomerSmartSegmentSnapshot`) |
+
+**Run manually (app must be running):**
+
+```bash
+bun run cron:analytics-insights
+bun run cron:customer-smart-segments
+```
+
+**HTTP trigger:**
+
+```bash
+curl -X GET "$APP_URL/api/cron/analytics-insights" -H "Authorization: Bearer $CRON_SECRET"
+curl -X GET "$APP_URL/api/cron/customer-smart-segments" -H "Authorization: Bearer $CRON_SECRET"
+```
+
+**Scheduling on Railway:**
+
+Create two [Cron Schedules](https://docs.railway.com/reference/cron-jobs) on your web service (or a lightweight cron service in the same project). Set `CRON_SECRET` and `APP_URL` in the service environment.
+
+| Job                     | Schedule (UTC) | Command                                                                                         |
+| ----------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| Analytics insights      | `0 6 * * *`    | `curl -fsS "$APP_URL/api/cron/analytics-insights" -H "Authorization: Bearer $CRON_SECRET"`      |
+| Customer smart segments | `30 6 * * *`   | `curl -fsS "$APP_URL/api/cron/customer-smart-segments" -H "Authorization: Bearer $CRON_SECRET"` |
 
 ## Health Check
 

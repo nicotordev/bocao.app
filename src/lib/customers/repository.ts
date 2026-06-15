@@ -7,30 +7,29 @@ import {
   needsComputedCustomerPipeline,
   type CustomersListFilters,
 } from "@/lib/customers/filters";
-import { formatMoney, formatRelativeDate } from "@/lib/customers/format";
-import {
-  buildSegmentContext,
-  mapCustomerDetail,
-  mapCustomerRecord,
-} from "@/lib/customers/mapper";
-import {
-  customerMatchesSegmentFilter,
-  isReservationFrequentCustomer,
-} from "@/lib/customers/segments";
 import {
   mapCustomerOption,
   mapCustomerOptions,
 } from "@/lib/customers/customer-option";
 import {
+  buildSegmentContext,
+  mapCustomerDetail,
+  mapCustomerRecord,
+} from "@/lib/customers/mapper";
+import { customerMatchesSegmentFilter } from "@/lib/customers/segments";
+import {
   bulkUpdateCustomerTags,
   syncCustomerTagAssignments,
 } from "@/lib/customers/tags.repository";
+import {
+  getSmartSegmentCustomerIds,
+  resolveCustomerSmartSegments,
+} from "@/lib/customers/smart-segments/resolve-smart-segments";
 import type {
   CreateCustomerInput,
   CustomerDetail,
   CustomerListItem,
   CustomerOption,
-  CustomerSegmentCard,
   CustomersListResponse,
   UpdateCustomerInput,
 } from "@/lib/customers/types";
@@ -142,8 +141,16 @@ function sortCustomers(
 function applyCustomerComputedFilters(
   customers: CustomerListItem[],
   filters: CustomersListFilters,
+  smartSegmentCustomerIds: Set<string> | null,
 ): CustomerListItem[] {
   return customers.filter((customer) => {
+    if (
+      smartSegmentCustomerIds &&
+      !smartSegmentCustomerIds.has(customer.id)
+    ) {
+      return false;
+    }
+
     if (
       filters.segment &&
       !customerMatchesSegmentFilter(customer.segments, filters.segment)
@@ -158,102 +165,6 @@ function applyCustomerComputedFilters(
     }
 
     return true;
-  });
-}
-
-function buildSegmentCards(
-  customers: CustomerListItem[],
-  locale: string,
-  neverLabel: string,
-  currency: string,
-): CustomerSegmentCard[] {
-  const segmentDefinitions: Array<{
-    id: CustomerSegmentCard["id"];
-    nameKey: string;
-    descriptionKey: string;
-    matches: (customer: CustomerListItem) => boolean;
-  }> = [
-    {
-      id: "vip",
-      nameKey: "segments.cards.vip.name",
-      descriptionKey: "segments.cards.vip.description",
-      matches: (customer) => customer.segments.includes("vip"),
-    },
-    {
-      id: "frequent",
-      nameKey: "segments.cards.frequent.name",
-      descriptionKey: "segments.cards.frequent.description",
-      matches: (customer) => customer.segments.includes("frequent"),
-    },
-    {
-      id: "new",
-      nameKey: "segments.cards.new.name",
-      descriptionKey: "segments.cards.new.description",
-      matches: (customer) => customer.segments.includes("new"),
-    },
-    {
-      id: "inactive",
-      nameKey: "segments.cards.inactive.name",
-      descriptionKey: "segments.cards.inactive.description",
-      matches: (customer) => customer.segments.includes("inactive"),
-    },
-    {
-      id: "at_risk",
-      nameKey: "segments.cards.atRisk.name",
-      descriptionKey: "segments.cards.atRisk.description",
-      matches: (customer) => customer.segments.includes("at_risk"),
-    },
-    {
-      id: "whatsapp",
-      nameKey: "segments.cards.whatsapp.name",
-      descriptionKey: "segments.cards.whatsapp.description",
-      matches: (customer) => customer.segments.includes("whatsapp"),
-    },
-    {
-      id: "high_value",
-      nameKey: "segments.cards.highValue.name",
-      descriptionKey: "segments.cards.highValue.description",
-      matches: (customer) => customer.segments.includes("high_value"),
-    },
-    {
-      id: "reservation_frequent",
-      nameKey: "segments.cards.reservationFrequent.name",
-      descriptionKey: "segments.cards.reservationFrequent.description",
-      matches: (customer) =>
-        isReservationFrequentCustomer(customer.reservationCount),
-    },
-  ];
-
-  return segmentDefinitions.map((definition) => {
-    const matched = customers.filter(definition.matches);
-    const averageTicketCents =
-      matched.length > 0
-        ? Math.round(
-            matched.reduce(
-              (sum, customer) => sum + customer.averageTicketCents,
-              0,
-            ) / matched.length,
-          )
-        : 0;
-    const lastActivity = matched
-      .map((customer) => customer.lastVisitAt)
-      .filter((value): value is string => Boolean(value))
-      .sort(
-        (left, right) => new Date(right).getTime() - new Date(left).getTime(),
-      )[0];
-
-    return {
-      id: definition.id,
-      nameKey: definition.nameKey,
-      descriptionKey: definition.descriptionKey,
-      customerCount: matched.length,
-      averageTicket: formatMoney(averageTicketCents, currency),
-      lastActivityRelative: formatRelativeDate(
-        lastActivity ? new Date(lastActivity) : null,
-        locale,
-        neverLabel,
-      ),
-    };
   });
 }
 
@@ -459,11 +370,22 @@ export async function listCustomersPage(
   options: ListCustomersOptions,
 ): Promise<CustomersListResponse> {
   const prismaWhere = buildCustomersPrismaWhere(restaurantId, filters);
-  const [allCustomers, savedSegments] = await Promise.all([
-    mapAllCustomers(restaurantId, options),
+  const allCustomers = await mapAllCustomers(restaurantId, options);
+  const [savedSegments, smartSegmentsResolved] = await Promise.all([
     listSavedCustomerSegments(restaurantId),
+    resolveCustomerSmartSegments({
+      restaurantId,
+      locale: options.locale,
+      customers: allCustomers,
+      neverLabel: options.neverLabel,
+      currency: options.currency,
+    }),
   ]);
   const segmentContext = buildSegmentContext(allCustomers);
+  const smartSegmentCustomerIds = getSmartSegmentCustomerIds(
+    smartSegmentsResolved.customerIdsBySegmentId,
+    filters.smartSegmentId,
+  );
 
   let customers: CustomerListItem[];
   let pagination: ReturnType<typeof buildPaginationMeta>;
@@ -473,7 +395,11 @@ export async function listCustomersPage(
     const mapped = records.map((record) =>
       mapCustomerRecord(record, segmentContext, options),
     );
-    const filtered = applyCustomerComputedFilters(mapped, filters);
+    const filtered = applyCustomerComputedFilters(
+      mapped,
+      filters,
+      smartSegmentCustomerIds,
+    );
     const sorted = sortCustomers(filtered, filters.sort);
     pagination = buildPaginationMeta(sorted.length, filters);
     const start = (pagination.page - 1) * pagination.pageSize;
@@ -494,12 +420,8 @@ export async function listCustomersPage(
     );
   }
 
-  const segments = buildSegmentCards(
-    allCustomers,
-    options.locale,
-    options.neverLabel,
-    options.currency,
-  );
+  const segments = smartSegmentsResolved.segments;
+  const smartSegmentsMeta = smartSegmentsResolved.meta;
   const activity = buildCustomersActivityFeed({
     customers: allCustomers,
     limit: 40,
@@ -515,6 +437,7 @@ export async function listCustomersPage(
     customers,
     pagination,
     segments,
+    smartSegmentsMeta,
     savedSegments,
     activity,
     insights,

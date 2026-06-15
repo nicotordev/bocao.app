@@ -21,7 +21,6 @@ import {
 } from "@/lib/customers/filters";
 import type {
   CustomerListItem,
-  CustomerSegmentCard,
 } from "@/lib/customers/types";
 import { useBulkCustomerTagsMutation } from "@/lib/query/customers/customer-tags.mutations";
 import { useCustomerTagsQuery } from "@/lib/query/customers/customer-tags.queries";
@@ -104,20 +103,6 @@ function downloadCsvFile(filename: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-function mapSegmentCardToFilter(
-  segmentId: CustomerSegmentCard["id"],
-): CustomersToolbarState["segment"] {
-  if (segmentId === "reservation_frequent") {
-    return "frequent";
-  }
-
-  if (segmentId === "high_value") {
-    return "high_value";
-  }
-
-  return segmentId;
-}
-
 const EMPTY_CUSTOMERS: CustomerListItem[] = [];
 
 function buildCustomersHref(filters: CustomersListFilters) {
@@ -136,6 +121,7 @@ function buildCustomersHref(filters: CustomersListFilters) {
       tab: tab === "customers" ? undefined : tab,
       customerId: filters.customerId,
       savedSegmentId: filters.savedSegmentId,
+      smartSegmentId: filters.smartSegmentId,
     },
     {
       page: filters.page,
@@ -366,10 +352,11 @@ export function CustomersPageClient({
     }
   };
 
-  const handleViewSegmentCustomers = (segmentId: CustomerSegmentCard["id"]) => {
+  const handleViewSmartSegmentCustomers = (smartSegmentId: string) => {
     navigateFilters({
-      segment: mapSegmentCardToFilter(segmentId),
+      segment: "all",
       savedSegmentId: undefined,
+      smartSegmentId,
       tab: "customers",
     });
   };
@@ -378,6 +365,7 @@ export function CustomersPageClient({
     navigateFilters({
       segment: "all",
       savedSegmentId,
+      smartSegmentId: undefined,
       tab: "customers",
     });
   };
@@ -609,6 +597,7 @@ export function CustomersPageClient({
                       tab: activeTab === "customers" ? undefined : activeTab,
                       customerId: selectedCustomerId ?? undefined,
                       savedSegmentId: filters.savedSegmentId,
+                      smartSegmentId: filters.smartSegmentId,
                     }}
                   />
                 </>
@@ -619,11 +608,17 @@ export function CustomersPageClient({
           <TabsContent value="segments" className="mt-4">
             <CustomersSegments
               labels={labels}
-              segments={pageData?.segments ?? []}
+              smartSegments={pageData?.segments ?? []}
+              smartSegmentsMeta={
+                pageData?.smartSegmentsMeta ?? {
+                  source: "rules",
+                  generatedAt: null,
+                }
+              }
               savedSegments={pageData?.savedSegments ?? []}
               customerOptions={customerOptions}
               restaurantId={restaurantId}
-              onViewCustomers={handleViewSegmentCustomers}
+              onViewSmartSegment={handleViewSmartSegmentCustomers}
               onViewSavedSegment={handleViewSavedSegmentCustomers}
               onImportCustomers={() => setImportCustomersDialogOpen(true)}
               onSegmentsChanged={refreshCustomersPage}
