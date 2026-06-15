@@ -1,5 +1,9 @@
-import type { PermissionKey, SystemRoleSlug } from "@/lib/rbac/permissions";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import {
+  SYSTEM_ROLE_SLUGS,
+  type PermissionKey,
+  type SystemRoleSlug,
+} from "@/lib/rbac/permissions";
 
 export type NavItemId =
   | "dashboard"
@@ -158,11 +162,16 @@ export function getVisibleNavItems(
   permissions: readonly PermissionKey[],
   roleSlug: SystemRoleSlug,
 ): NavItem[] {
+  const isOwner = roleSlug === SYSTEM_ROLE_SLUGS.OWNER;
   const permissionSet = new Set(permissions);
 
   return NAV_ITEMS.filter((item) => {
     if (item.allowedRoles && !item.allowedRoles.includes(roleSlug)) {
       return false;
+    }
+
+    if (isOwner) {
+      return true;
     }
 
     if (!item.permission) {

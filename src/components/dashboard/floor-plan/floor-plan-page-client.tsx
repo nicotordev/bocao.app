@@ -27,6 +27,7 @@ import { FloorPlanBuilderPanel } from "@/components/dashboard/floor-plan/floor-p
 import { FloorPlanTableQuickControls } from "@/components/dashboard/floor-plan/floor-plan-table-quick-controls";
 import { FloorPlanCanvasContextMenu } from "@/components/dashboard/floor-plan/floor-plan-canvas-context-menu";
 import { FloorPlanCanvas } from "@/components/dashboard/floor-plan/floor-plan-canvas-loader";
+import { FloorPlanExpandButton } from "@/components/dashboard/floor-plan/floor-plan-expand-button";
 import { FloorPlanFloorSwitcher } from "@/components/dashboard/floor-plan/floor-plan-floor-switcher";
 import {
   FLOOR_PLAN_TABLE_PALETTE_ID,
@@ -927,11 +928,15 @@ export function FloorPlanPageClient({
                 </Button>
               </>
             ) : null}
+            <FloorPlanExpandButton
+             expandLabel={labels.manager.expandCanvas}
+             collapseLabel={labels.manager.collapseCanvas}
+            />
             <div className="ml-auto flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSave}
+             <Button
+               type="button"
+               size="sm"
+               onClick={handleSave}
                 disabled={isSaving}
               >
                 {isSaving ? labels.builder.saving : labels.builder.save}
