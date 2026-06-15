@@ -1,7 +1,4 @@
-import type {
-  DiningSurfaceRecord,
-  TableOccupancy,
-} from "@/lib/floor-plan/types";
+import type { DiningSurfaceRecord } from "@/lib/floor-plan/types";
 
 export type FloorPlanPageLabels = {
   header: {
@@ -82,6 +79,10 @@ export type FloorPlanPageLabels = {
     deniedTitle: string;
     deniedDescription: string;
   };
+  responsive: {
+    largeScreenOnlyTitle: string;
+    largeScreenOnlyDescription: string;
+  };
   contextMenu: {
     addTable: string;
     floorUp: string;
@@ -98,5 +99,4 @@ export type FloorPlanPageClientProps = {
   restaurantId: string;
   canEdit: boolean;
   initialSurfaces: DiningSurfaceRecord[];
-  occupiedTableNumbers: TableOccupancy;
 };

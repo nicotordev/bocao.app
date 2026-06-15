@@ -4,7 +4,7 @@ import { getDashboardContext } from "@/lib/dashboard/context";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 import { uploadImageToR2 } from "@/lib/upload/image-upload";
 
-function requireRestaurantWrite(restaurantId: string) {
+function requireKitchenStationWrite(restaurantId: string) {
   return getDashboardContext().then((context) => {
     if (!context) {
       throw new Error("UNAUTHORIZED");
@@ -19,7 +19,7 @@ function requireRestaurantWrite(restaurantId: string) {
     }
 
     const canWrite = context.membership.permissions.includes(
-      PERMISSIONS.RESTAURANT_WRITE,
+      PERMISSIONS.ORDERS_WRITE,
     );
 
     if (!canWrite) {
@@ -37,7 +37,7 @@ export async function uploadKitchenStationImageAction(formData: FormData) {
     throw new Error("INVALID_RESTAURANT");
   }
 
-  await requireRestaurantWrite(restaurantId);
+  await requireKitchenStationWrite(restaurantId);
 
   const file = formData.get("file");
 

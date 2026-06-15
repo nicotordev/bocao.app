@@ -14,6 +14,7 @@ export type TeamMemberView = {
   userId: string;
   name: string;
   email: string;
+  image: string | null;
   role: TeamRole | "staff";
   restaurants: TeamRestaurantRef[];
   status: MembershipStatus;

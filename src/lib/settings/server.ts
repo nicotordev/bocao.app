@@ -124,6 +124,7 @@ export async function loadSettingsPageData(
         id: member.id,
         name: member.name,
         email: member.email,
+        image: member.image,
         role: mapTeamRoleToSettingsRole(member.role),
         status: mapMembershipStatusToSettingsStatus(member.status),
       })) ?? [];
@@ -136,6 +137,7 @@ export async function loadSettingsPageData(
         id: invitation.id,
         name: invitation.email.split("@")[0] ?? invitation.email,
         email: invitation.email,
+        image: null,
         role: mapTeamRoleToSettingsRole(invitation.role),
         status: "pending" as const,
       })) ?? [];

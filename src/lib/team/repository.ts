@@ -16,6 +16,7 @@ const membershipInclude = {
       id: true,
       name: true,
       email: true,
+      image: true,
       sessions: {
         select: { updatedAt: true },
         orderBy: { updatedAt: "desc" as const },

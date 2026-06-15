@@ -148,7 +148,8 @@ export function KitchenStationsPageClient({
       ) : stations.length === 0 ? (
         <KitchenStationsEmptyState
           labels={labels.empty}
-          onCreate={canEdit ? openCreateDialog : () => undefined}
+          canEdit={canEdit}
+          onCreate={openCreateDialog}
         />
       ) : (
         <KitchenStationsList

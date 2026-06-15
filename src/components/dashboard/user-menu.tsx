@@ -40,6 +40,7 @@ import { setLocale } from "@/app/actions/locale";
 import { uploadAvatarAction } from "@/app/actions/upload";
 import { locales } from "@/i18n/locales";
 import { localeLabels } from "@/i18n/locale-labels";
+import { resolveUserProfileImage } from "@/lib/user-profile";
 import { cn } from "@/lib/utils";
 
 type UserMenuProps = {
@@ -77,6 +78,8 @@ export function UserMenu({
   const [profilePreview, setProfilePreview] = useState(user.image ?? "");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isPendingLang, startTransitionLang] = useTransition();
+  const displayImage = resolveUserProfileImage(user.image);
+  const profileDisplayImage = profilePreview || displayImage;
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -172,9 +175,7 @@ export function UserMenu({
             aria-label={t("ariaLabel")}
           >
             <Avatar size="sm" className="ring-1 ring-border/50 shrink-0">
-              {user.image ? (
-                <AvatarImage src={user.image} alt={user.name} />
-              ) : null}
+              <AvatarImage src={displayImage} alt={user.name} />
               <AvatarFallback className="bg-gradient-to-br from-primary/10 to-emerald-500/10 text-primary text-xs font-semibold">
                 {getInitials(user.name)}
               </AvatarFallback>
@@ -264,9 +265,7 @@ export function UserMenu({
               <div className="flex flex-col items-center gap-2 py-2">
                 <div className="relative group/avatar cursor-pointer size-20 rounded-full overflow-hidden ring-2 ring-primary/20 transition-all duration-300 hover:ring-primary/45 shadow-sm">
                   <Avatar className="size-full">
-                    {profilePreview ? (
-                      <AvatarImage src={profilePreview} alt={profileName} />
-                    ) : null}
+                    <AvatarImage src={profileDisplayImage} alt={profileName} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/10 to-emerald-500/10 text-primary text-2xl font-bold flex items-center justify-center size-full">
                       {getInitials(profileName)}
                     </AvatarFallback>

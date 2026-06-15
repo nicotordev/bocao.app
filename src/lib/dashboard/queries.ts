@@ -196,6 +196,7 @@ export async function getDashboardHomeData(
           select: {
             id: true,
             name: true,
+            image: true,
             sessions: {
               where: { expiresAt: { gt: now } },
               select: { id: true },
@@ -416,6 +417,7 @@ export async function getDashboardHomeData(
     teamActivity: teamMemberships.map((membership) => ({
       id: membership.user.id,
       name: membership.user.name,
+      image: membership.user.image,
       role: membership.role.name,
       status: membership.user.sessions.length > 0 ? "online" : "offline",
     })),

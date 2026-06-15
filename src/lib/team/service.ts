@@ -100,6 +100,7 @@ function mapMemberView(
     userId: member.user.id,
     name: member.user.name,
     email: member.user.email,
+    image: member.user.image,
     role: resolveDisplayRole(member.role.slug),
     restaurants: restaurantIds
       .map((id) => {
@@ -374,6 +375,7 @@ export async function updateTeamMember(
   }
 
   const currentRole = resolveDisplayRole(member.role.slug);
+  const isSelfUpdate = member.userId === actorUserId;
 
   if (input.role && !canAssignRole(actorRole, input.role)) {
     throw new TeamServiceError(
@@ -384,6 +386,14 @@ export async function updateTeamMember(
   }
 
   if (input.role) {
+    if (isSelfUpdate && input.role !== currentRole) {
+      throw new TeamServiceError(
+        "Cannot change your own role",
+        "SELF_ROLE_UPDATE",
+        409,
+      );
+    }
+
     const owners = await countOwnersInOrganization(organizationId);
     const isLastOwner =
       currentRole === "owner" && owners <= 1 && input.role !== "owner";
@@ -410,6 +420,47 @@ export async function updateTeamMember(
           409,
         );
       }
+    }
+  }
+
+  if (isSelfUpdate && input.customPermissions !== undefined) {
+    throw new TeamServiceError(
+      "Cannot change your own permissions",
+      "SELF_PERMISSIONS_UPDATE",
+      409,
+    );
+  }
+
+  if (isSelfUpdate && input.restaurantIds !== undefined) {
+    throw new TeamServiceError(
+      "Cannot change your own restaurant access",
+      "SELF_RESTAURANTS_UPDATE",
+      409,
+    );
+  }
+
+  if (isSelfUpdate && input.status !== undefined) {
+    throw new TeamServiceError(
+      "Cannot change your own status",
+      "SELF_STATUS_UPDATE",
+      409,
+    );
+  }
+
+  if (
+    input.status &&
+    input.status !== "active" &&
+    currentRole === "owner" &&
+    member.status === "active"
+  ) {
+    const owners = await countOwnersInOrganization(organizationId);
+
+    if (owners <= 1) {
+      throw new TeamServiceError(
+        "Cannot deactivate the last owner",
+        "LAST_OWNER",
+        409,
+      );
     }
   }
 
@@ -489,6 +540,7 @@ export async function updateTeamMember(
             id: true,
             name: true,
             email: true,
+            image: true,
             sessions: {
               select: { updatedAt: true },
               orderBy: { updatedAt: "desc" },
@@ -556,7 +608,7 @@ export async function removeTeamMember(
 
   const currentRole = resolveDisplayRole(member.role.slug);
 
-  if (currentRole === "owner") {
+  if (currentRole === "owner" && member.status === "active") {
     const owners = await countOwnersInOrganization(organizationId);
 
     if (owners <= 1) {

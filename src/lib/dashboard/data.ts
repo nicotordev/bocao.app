@@ -45,6 +45,7 @@ export type DashboardInsight = {
 export type DashboardTeamMember = {
   id: string;
   name: string;
+  image: string | null;
   role: string;
   status: "online" | "busy" | "offline";
 };

@@ -16,11 +16,13 @@ import type { KitchenStationsLabels } from "./types";
 
 type KitchenStationsEmptyStateProps = {
   labels: KitchenStationsLabels["empty"];
+  canEdit: boolean;
   onCreate: () => void;
 };
 
 export function KitchenStationsEmptyState({
   labels,
+  canEdit,
   onCreate,
 }: KitchenStationsEmptyStateProps) {
   return (
@@ -32,9 +34,11 @@ export function KitchenStationsEmptyState({
         <EmptyTitle>{labels.title}</EmptyTitle>
         <EmptyDescription>{labels.description}</EmptyDescription>
       </EmptyHeader>
-      <EmptyContent>
-        <Button onClick={onCreate}>{labels.cta}</Button>
-      </EmptyContent>
+      {canEdit ? (
+        <EmptyContent>
+          <Button onClick={onCreate}>{labels.cta}</Button>
+        </EmptyContent>
+      ) : null}
     </Empty>
   );
 }

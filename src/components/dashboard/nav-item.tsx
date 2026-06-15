@@ -19,11 +19,18 @@ import {
 } from "react-icons/tb";
 import type { IconType } from "react-icons";
 import { cn } from "@/lib/utils";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
 
 type DashboardNavItemProps = {
   item: NavItem;
   isActive: boolean;
+  pathname: string;
 };
 
 const navIcons = {
@@ -41,10 +48,19 @@ const navIcons = {
   settings: TbSettings,
 } satisfies Record<NavItem["icon"], IconType>;
 
-export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
+function isHrefActive(href: string, pathname: string) {
+  return href === "/dashboard" ? pathname === "/dashboard" : pathname === href;
+}
+
+export function DashboardNavItem({
+  item,
+  isActive,
+  pathname,
+}: DashboardNavItemProps) {
   const t = useTranslations("dashboard.shell.navItems");
   const Icon = navIcons[item.icon];
   const label = t(item.id);
+  const children = item.children ?? [];
 
   return (
     <SidebarMenuItem className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
@@ -80,6 +96,35 @@ export function DashboardNavItem({ item, isActive }: DashboardNavItemProps) {
           )}
         </Link>
       </SidebarMenuButton>
+      {children.length > 0 ? (
+        <SidebarMenuSub>
+          {children.map((child) => {
+            const isChildActive = isHrefActive(child.href, pathname);
+
+            return (
+              <SidebarMenuSubItem key={child.id}>
+                <SidebarMenuSubButton
+                  asChild
+                  isActive={isChildActive}
+                  className={cn(
+                    "transition-colors duration-150",
+                    isChildActive
+                      ? "font-medium text-primary"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <Link
+                    href={child.href}
+                    aria-current={isChildActive ? "page" : undefined}
+                  >
+                    <span>{t(child.id)}</span>
+                  </Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            );
+          })}
+        </SidebarMenuSub>
+      ) : null}
     </SidebarMenuItem>
   );
 }

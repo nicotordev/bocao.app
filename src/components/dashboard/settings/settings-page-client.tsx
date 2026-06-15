@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { setLocale } from "@/app/actions/locale";
 import { updateRestaurantProfileAction } from "@/app/actions/settings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +51,7 @@ import {
   CURRENCY_OPTIONS,
   TIMEZONE_OPTIONS,
 } from "@/lib/onboarding/countries";
+import { resolveUserProfileImage } from "@/lib/user-profile";
 import type {
   BusinessType,
   SettingsLabels,
@@ -876,6 +877,10 @@ function TeamSection({
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar className="size-8">
+                      <AvatarImage
+                        src={resolveUserProfileImage(member.image)}
+                        alt={member.name}
+                      />
                       <AvatarFallback className="bg-primary/15 text-xs text-primary">
                         {getInitials(member.name)}
                       </AvatarFallback>

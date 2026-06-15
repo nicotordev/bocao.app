@@ -249,6 +249,8 @@
         "whatsapp": "WhatsApp Inbox",
         "menu": "Menu",
         "kitchen": "Kitchen",
+        "kitchenBoard": "Kitchen view",
+        "kitchenStations": "Stations",
         "customers": "Customers / CRM",
         "marketing": "AI Marketing",
         "analytics": "Analytics",
@@ -1150,6 +1152,10 @@
       "permissions": {
         "deniedTitle": "No floor plan access",
         "deniedDescription": "Your role can't view or edit the table floor plan."
+      },
+      "responsive": {
+        "largeScreenOnlyTitle": "Available on large screens",
+        "largeScreenOnlyDescription": "The floor plan editor needs more room to draw surfaces and place tables. Open it from a laptop or monitor."
       },
       "contextMenu": {
         "addTable": "Add table",

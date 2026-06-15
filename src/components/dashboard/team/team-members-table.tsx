@@ -1,7 +1,7 @@
 "use client";
 
 import { TbDotsVertical } from "react-icons/tb";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { formatTeamDateTime } from "@/lib/team/format";
 import type { TeamMemberView } from "@/lib/team/types";
+import { resolveUserProfileImage } from "@/lib/user-profile";
 import { TeamRoleBadge } from "./team-role-badge";
 import type { TeamLabels } from "./types";
 
@@ -56,6 +57,10 @@ export function TeamMembersTable({
   onEditPermissions,
   onRemove,
 }: TeamMembersTableProps) {
+  const activeOwnerCount = members.filter(
+    (member) => member.role === "owner" && member.status === "active",
+  ).length;
+
   return (
     <div className="overflow-hidden rounded-3xl border border-border/60">
       <Table>
@@ -83,13 +88,27 @@ export function TeamMembersTable({
           {members.map((member) => {
             const roleLabel =
               labels.roles[member.role] ?? labels.roles.viewer;
-            const showActions = canUpdate || canRemove;
+            const isLastActiveOwner =
+              member.role === "owner" &&
+              member.status === "active" &&
+              activeOwnerCount <= 1;
+            const isCurrentUser = member.userId === actorUserId;
+            const canEditRole = canUpdate && !isCurrentUser;
+            const canEditPermissions = canUpdate && !isCurrentUser;
+            const canRemoveMember =
+              canRemove && !isCurrentUser && !isLastActiveOwner;
+            const showActions =
+              canEditRole || canEditPermissions || canRemoveMember;
 
             return (
               <TableRow key={member.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar size="sm">
+                      <AvatarImage
+                        src={resolveUserProfileImage(member.image)}
+                        alt={member.name}
+                      />
                       <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -144,19 +163,25 @@ export function TeamMembersTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {canUpdate ? (
+                        {canEditRole || canEditPermissions ? (
                           <>
-                            <DropdownMenuItem onClick={() => onEditRole(member)}>
-                              {labels.actions.editRole}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => onEditPermissions(member)}
-                            >
-                              {labels.actions.editPermissions}
-                            </DropdownMenuItem>
+                            {canEditRole ? (
+                              <DropdownMenuItem
+                                onClick={() => onEditRole(member)}
+                              >
+                                {labels.actions.editRole}
+                              </DropdownMenuItem>
+                            ) : null}
+                            {canEditPermissions ? (
+                              <DropdownMenuItem
+                                onClick={() => onEditPermissions(member)}
+                              >
+                                {labels.actions.editPermissions}
+                              </DropdownMenuItem>
+                            ) : null}
                           </>
                         ) : null}
-                        {canRemove && member.userId !== actorUserId ? (
+                        {canRemoveMember ? (
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem

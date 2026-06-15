@@ -12,7 +12,7 @@ export default async function KitchenStationsPage() {
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
   const canEdit =
-    context?.membership.permissions.includes(PERMISSIONS.RESTAURANT_WRITE) ??
+    context?.membership.permissions.includes(PERMISSIONS.ORDERS_WRITE) ??
     false;
   const canView =
     context?.membership.permissions.includes(PERMISSIONS.ORDERS_READ) ?? false;

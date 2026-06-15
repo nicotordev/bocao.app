@@ -197,7 +197,7 @@ export function OrdersKanban({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 overflow-x-clip">
       <p className="text-xs text-muted-foreground">{labels.kanban.dragHelp}</p>
 
       <DndContext

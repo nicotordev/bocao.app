@@ -249,6 +249,8 @@
         "whatsapp": "WhatsApp Inbox",
         "menu": "Menú",
         "kitchen": "Cocina",
+        "kitchenBoard": "Vista de cocina",
+        "kitchenStations": "Estaciones",
         "customers": "Clientes / CRM",
         "marketing": "Marketing IA",
         "analytics": "Analítica",
@@ -1150,6 +1152,10 @@
       "permissions": {
         "deniedTitle": "Sin acceso al plano",
         "deniedDescription": "Tu rol no puede ver ni editar el plano de mesas."
+      },
+      "responsive": {
+        "largeScreenOnlyTitle": "Disponible en pantalla grande",
+        "largeScreenOnlyDescription": "El editor del plano necesita más espacio para dibujar superficies y ubicar mesas. Ábrelo desde un notebook o monitor."
       },
       "contextMenu": {
         "addTable": "Agregar mesa",

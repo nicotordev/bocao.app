@@ -2,10 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { FloorPlanPageClient } from "@/components/dashboard/floor-plan/floor-plan-page-client";
 import type { FloorPlanPageLabels } from "@/components/dashboard/floor-plan/types";
 import { getDashboardContext } from "@/lib/dashboard/context";
-import {
-  getFloorPlan,
-  getOccupiedTableNumbers,
-} from "@/lib/floor-plan/repository";
+import { getFloorPlan } from "@/lib/floor-plan/repository";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
 
 export default async function FloorPlanPage() {
@@ -16,13 +13,9 @@ export default async function FloorPlanPage() {
   const canEdit =
     permissions.includes(PERMISSIONS.RESTAURANT_WRITE) ||
     permissions.includes(PERMISSIONS.ORDERS_WRITE);
-  const canView =
-    permissions.includes(PERMISSIONS.ORDERS_READ);
+  const canView = canEdit;
 
   const floorPlan = restaurantId ? await getFloorPlan(restaurantId) : null;
-  const occupiedTableNumbers = restaurantId
-    ? await getOccupiedTableNumbers(restaurantId)
-    : {};
 
   const labels: FloorPlanPageLabels = {
     header: {
@@ -103,6 +96,10 @@ export default async function FloorPlanPage() {
       deniedTitle: t("permissions.deniedTitle"),
       deniedDescription: t("permissions.deniedDescription"),
     },
+    responsive: {
+      largeScreenOnlyTitle: t("responsive.largeScreenOnlyTitle"),
+      largeScreenOnlyDescription: t("responsive.largeScreenOnlyDescription"),
+    },
     contextMenu: {
       addTable: t("contextMenu.addTable"),
       floorUp: t("contextMenu.floorUp"),
@@ -135,7 +132,6 @@ export default async function FloorPlanPage() {
       restaurantId={restaurantId}
       canEdit={canEdit}
       initialSurfaces={floorPlan?.surfaces ?? []}
-      occupiedTableNumbers={occupiedTableNumbers}
     />
   );
 }

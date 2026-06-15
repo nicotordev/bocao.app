@@ -78,6 +78,7 @@ export function MobileSidebar({
                       <DashboardNavItem
                         key={item.id}
                         item={item}
+                        pathname={pathname}
                         isActive={
                           item.href === "/dashboard"
                             ? pathname === "/dashboard"

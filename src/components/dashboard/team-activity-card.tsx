@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TbArrowRight, TbUsers } from "react-icons/tb";
 import { getTranslations } from "next-intl/server";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Empty,
   EmptyContent,
@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { DashboardTeamMember } from "@/lib/dashboard/data";
+import { resolveUserProfileImage } from "@/lib/user-profile";
 import { cn } from "@/lib/utils";
 
 type TeamActivityCardProps = {
@@ -86,6 +87,10 @@ export async function TeamActivityCard({ members }: TeamActivityCardProps) {
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar size="sm">
+                    <AvatarImage
+                      src={resolveUserProfileImage(member.image)}
+                      alt={member.name}
+                    />
                     <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">

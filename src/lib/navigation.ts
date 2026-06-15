@@ -9,11 +9,21 @@ export type NavItemId =
   | "whatsapp"
   | "menu"
   | "kitchen"
+  | "kitchenBoard"
+  | "kitchenStations"
   | "customers"
   | "marketing"
   | "analytics"
   | "team"
   | "settings";
+
+export type NavChildItem = {
+  id: NavItemId;
+  label: string;
+  href: string;
+};
+
+export type NavItemIcon = Exclude<NavItemId, "kitchenBoard" | "kitchenStations">;
 
 export type NavItemGroup =
   | "inicio"
@@ -25,10 +35,11 @@ export type NavItem = {
   id: NavItemId;
   label: string;
   href: string;
-  icon: NavItemId;
+  icon: NavItemIcon;
   group: NavItemGroup;
   permission: PermissionKey | null;
   allowedRoles?: readonly SystemRoleSlug[];
+  children?: readonly NavChildItem[];
 };
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -88,6 +99,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     group: "operaciones",
     permission: PERMISSIONS.ORDERS_READ,
     allowedRoles: ["owner", "manager", "staff"],
+    children: [
+      {
+        id: "kitchenBoard",
+        label: "Vista de cocina",
+        href: "/dashboard/kitchen",
+      },
+      {
+        id: "kitchenStations",
+        label: "Estaciones",
+        href: "/dashboard/kitchen/stations",
+      },
+    ],
   },
   {
     id: "customers",

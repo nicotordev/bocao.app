@@ -24,7 +24,6 @@ import {
   FloorPlanCanvasDropZone,
 } from "@/components/dashboard/floor-plan/floor-plan-canvas-drop-zone";
 import { FloorPlanBuilderPanel } from "@/components/dashboard/floor-plan/floor-plan-builder-panel";
-import { FloorPlanExpandButton } from "@/components/dashboard/floor-plan/floor-plan-expand-button";
 import { FloorPlanTableQuickControls } from "@/components/dashboard/floor-plan/floor-plan-table-quick-controls";
 import { FloorPlanCanvasContextMenu } from "@/components/dashboard/floor-plan/floor-plan-canvas-context-menu";
 import { FloorPlanCanvas } from "@/components/dashboard/floor-plan/floor-plan-canvas-loader";
@@ -66,7 +65,6 @@ import type {
   DiningTableRecord,
   NormalizedPoint,
 } from "@/lib/floor-plan/types";
-import { cn } from "@/lib/utils";
 
 type BuilderTool = "boundary" | "tables";
 
@@ -132,15 +130,12 @@ export function FloorPlanPageClient({
   restaurantId,
   canEdit,
   initialSurfaces,
-  occupiedTableNumbers,
 }: FloorPlanPageClientProps) {
   const [surfaces, setSurfaces] = useState(initialSurfaces);
   const [activeSurfaceId, setActiveSurfaceId] = useState<string | null>(
     initialSurfaces[0]?.id ?? null,
   );
-  const [isEditing, setIsEditing] = useState(
-    initialSurfaces.length === 0 && canEdit,
-  );
+  const isEditing = canEdit;
   const [isSaving, setIsSaving] = useState(false);
   const fallbackSurfaceName = labels.builder.surfaceNamePlaceholder;
   const [draft, setDraft] = useState<EditorDraft>(() =>
@@ -151,9 +146,6 @@ export function FloorPlanPageClient({
     null,
   );
   const [builderTool, setBuilderTool] = useState<BuilderTool>("boundary");
-  const [selectedTableNumber, setSelectedTableNumber] = useState<string | null>(
-    null,
-  );
   const [isPaletteDragging, setIsPaletteDragging] = useState(false);
   const isDndReady = useSyncExternalStore(
     () => () => undefined,
@@ -166,14 +158,38 @@ export function FloorPlanPageClient({
   const draftRef = useRef(draft);
   const selectedTableIdRef = useRef(selectedTableId);
   const { recordHistory, undo, clearHistory } = useFloorPlanUndo<EditorDraft>();
-  const { isFocused, exitFocus } = useDashboardFocusMode();
-  const canvasSize = useFloorPlanCanvasSize(canvasContainerRef, isFocused);
+  const { isFocused, enterFocus, exitFocus } = useDashboardFocusMode();
+  const canvasSize = useFloorPlanCanvasSize(canvasContainerRef, true);
 
   useEffect(() => {
     return () => {
       exitFocus();
     };
   }, [exitFocus]);
+
+  useEffect(() => {
+    if (!canEdit) {
+      exitFocus();
+      return undefined;
+    }
+
+    const query = window.matchMedia("(min-width: 1280px)");
+
+    function syncFocus(event: MediaQueryList | MediaQueryListEvent) {
+      if (event.matches) {
+        enterFocus();
+      } else {
+        exitFocus();
+      }
+    }
+
+    syncFocus(query);
+    query.addEventListener("change", syncFocus);
+
+    return () => {
+      query.removeEventListener("change", syncFocus);
+    };
+  }, [canEdit, enterFocus, exitFocus]);
 
   useEffect(() => {
     if (!isFocused) {
@@ -369,12 +385,6 @@ export function FloorPlanPageClient({
     setActiveSurfaceId(surfaceId);
     const surface = surfaces.find((item) => item.id === surfaceId) ?? null;
     loadDraftForSurface(surface);
-    setSelectedTableNumber(null);
-  }
-
-  function startEditing(surface: DiningSurfaceRecord | null) {
-    loadDraftForSurface(surface);
-    setIsEditing(true);
   }
 
   function startNewSurfaceAtFloor(floor: number) {
@@ -389,7 +399,6 @@ export function FloorPlanPageClient({
     });
     setActiveSurfaceId(null);
     setSelectedTableId(null);
-    setIsEditing(true);
   }
 
   async function handleSave() {
@@ -441,7 +450,6 @@ export function FloorPlanPageClient({
       setActiveSurfaceId(result.surface.id);
       setDraft(draftFromSurface(result.surface, fallbackSurfaceName));
       clearHistory();
-      setIsEditing(false);
       toast.success(labels.feedback.saveSuccess);
     } catch {
       toast.error(labels.feedback.saveError);
@@ -502,12 +510,6 @@ export function FloorPlanPageClient({
       setBuilderTool("tables");
       addTableAtClientPoint(clientX, clientY);
     };
-
-    if (!isEditing) {
-      startEditing(activeSurface);
-      window.setTimeout(placeTable, 0);
-      return;
-    }
 
     placeTable();
   }
@@ -570,11 +572,6 @@ export function FloorPlanPageClient({
 
     if (existing) {
       selectSurface(existing.id);
-
-      if (isEditing) {
-        setIsEditing(true);
-      }
-
       return;
     }
 
@@ -626,17 +623,13 @@ export function FloorPlanPageClient({
     onFloorDown: () => navigateFloor("down"),
     onSelectSurface: (surfaceId: string) => {
       selectSurface(surfaceId);
-
-      if (isEditing) {
-        setIsEditing(true);
-      }
     },
   };
 
   const contextMenuProps = {
     labels: labels.contextMenu,
     enabled: canEdit,
-    elevated: isFocused,
+    elevated: true,
     tablesModeActive: !isEditing || builderTool === "tables",
     boundaryModeActive: isEditing && builderTool === "boundary",
     canRemoveVertex: selectedVertexIndex !== null,
@@ -752,7 +745,6 @@ export function FloorPlanPageClient({
     onSave: handleSave,
     onCancel: () => {
       loadDraftForSurface(activeSurface);
-      setIsEditing(false);
     },
   };
 
@@ -783,112 +775,14 @@ export function FloorPlanPageClient({
     );
   }
 
-  if (isEditing) {
+  if (canEdit) {
     const builderGrid = (
-      <div
-        className={cn(
-          "min-h-0 gap-6",
-          isFocused
-            ? "grid flex-1 grid-cols-[minmax(0,1fr)_min(320px,32vw)] gap-3"
-            : "grid xl:grid-cols-[minmax(0,1fr)_320px]",
-        )}
-      >
-        <Card
-          className={cn(
-            isFocused && "flex min-h-0 flex-1 flex-col border-0 shadow-none",
-          )}
-        >
-          <CardHeader className={cn(isFocused && "hidden")}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <CardTitle>{labels.builder.title}</CardTitle>
-                <CardDescription>{labels.builder.description}</CardDescription>
-              </div>
-              <FloorPlanExpandButton
-                expandLabel={labels.manager.expandCanvas}
-                collapseLabel={labels.manager.collapseCanvas}
-              />
-            </div>
-          </CardHeader>
-          <CardContent
-            className={cn(
-              "space-y-4",
-              isFocused && "flex min-h-0 flex-1 flex-col p-0",
-            )}
-          >
-            {!isFocused ? (
-              <>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant={
-                      builderTool === "boundary" ? "default" : "secondary"
-                    }
-                    onClick={() => setBuilderTool("boundary")}
-                  >
-                    {labels.builder.toolBoundary}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={builderTool === "tables" ? "default" : "secondary"}
-                    data-floor-plan-tool-tables
-                    onClick={() => {
-                      dismissTablesModeOverlay();
-                      dismissFloorPlanTablesModeGuide();
-                      setBuilderTool("tables");
-                      setSelectedVertexIndex(null);
-                    }}
-                  >
-                    {labels.builder.toolTables}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {builderTool === "boundary"
-                    ? labels.builder.boundaryHint
-                    : labels.builder.tablesHint}
-                </p>
-                {builderTool === "boundary" ? (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        recordCurrentHistory();
-                        setDraft((current) => ({
-                          ...current,
-                          boundary: defaultRectangleBoundary(),
-                        }));
-                        setSelectedVertexIndex(null);
-                      }}
-                    >
-                      {labels.builder.resetBoundary}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={removeLastVertex}
-                      disabled={draft.boundary.length === 0}
-                    >
-                      {labels.builder.undoVertex}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={removeSelectedVertex}
-                      disabled={selectedVertexIndex === null}
-                    >
-                      {labels.builder.removeVertex}
-                    </Button>
-                  </div>
-                ) : null}
-              </>
-            ) : null}
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_min(320px,32vw)] gap-3">
+        <Card className="flex min-h-0 flex-1 flex-col border-0 shadow-none">
+          <CardContent className="flex min-h-0 flex-1 flex-col p-0">
             <div
               ref={canvasContainerRef}
-              className={cn(
-                "relative",
-                isFocused ? "min-h-0 flex-1" : undefined,
-              )}
+              className="relative min-h-0 flex-1"
             >
               <FloorPlanCanvasContextMenu {...contextMenuProps}>
                 <FloorPlanCanvasDropZone
@@ -900,7 +794,7 @@ export function FloorPlanPageClient({
                     tables={draft.tables}
                     canvasWidth={canvasSize.width}
                     canvasHeight={canvasSize.height}
-                    fillContainer={isFocused}
+                    fillContainer
                     focusedTableId={selectedTableId}
                     mode={
                       builderTool === "boundary"
@@ -942,291 +836,143 @@ export function FloorPlanPageClient({
           </CardContent>
         </Card>
 
-        {!isFocused ? (
-          <div className="space-y-4">
-            <FloorPlanBuilderPanel
-              labels={labels.builder}
-              managerLabels={labels.manager}
-              {...builderPanelProps}
-            />
-          </div>
-        ) : (
-          <div className="min-h-0 space-y-4 overflow-y-auto border-l border-border pl-3">
-            <h2 className="px-1 text-sm font-semibold tracking-tight">
-              {labels.manager.openSettingsPanel}
-            </h2>
-            <FloorPlanBuilderPanel
-              labels={labels.builder}
-              managerLabels={labels.manager}
-              {...builderPanelProps}
-              showActions={false}
-            />
-          </div>
-        )}
+        <div className="min-h-0 space-y-4 overflow-y-auto border-l border-border pl-3">
+          <h2 className="px-1 text-sm font-semibold tracking-tight">
+            {labels.manager.openSettingsPanel}
+          </h2>
+          <FloorPlanBuilderPanel
+            labels={labels.builder}
+            managerLabels={labels.manager}
+            {...builderPanelProps}
+            showActions={false}
+          />
+        </div>
       </div>
     );
 
     return (
-      <main
-        className={cn(
-          "flex flex-col",
-          isFocused ? "h-full min-h-0 gap-3 p-3 md:p-4" : "gap-6 p-4 md:p-6",
-        )}
-      >
-        {!isFocused ? <Header labels={labels} /> : null}
-        <div
-          className={cn(
-            "flex flex-wrap items-center gap-2",
-            isFocused ? "shrink-0" : "hidden",
-          )}
+      <>
+        <main className="flex flex-col gap-6 p-4 md:p-6 xl:hidden">
+          <Header labels={labels} />
+          <Card>
+            <CardHeader>
+              <CardTitle>{labels.responsive.largeScreenOnlyTitle}</CardTitle>
+              <CardDescription>
+                {labels.responsive.largeScreenOnlyDescription}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </main>
+        <main
+          className="hidden h-full min-h-0 flex-col gap-3 p-3 md:p-4 xl:flex"
         >
-          <FloorPlanExpandButton
-            expandLabel={labels.manager.expandCanvas}
-            collapseLabel={labels.manager.collapseCanvas}
-          />
-          <FloorPlanFloorSwitcher {...floorSwitcherProps} />
-          <Button
-            type="button"
-            size="sm"
-            variant={builderTool === "boundary" ? "default" : "secondary"}
-            onClick={() => setBuilderTool("boundary")}
-          >
-            {labels.builder.toolBoundary}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={builderTool === "tables" ? "default" : "secondary"}
-            data-floor-plan-tool-tables
-            onClick={() => {
-              dismissTablesModeOverlay();
-              dismissFloorPlanTablesModeGuide();
-              setBuilderTool("tables");
-              setSelectedVertexIndex(null);
-            }}
-          >
-            {labels.builder.toolTables}
-          </Button>
-          {builderTool === "boundary" ? (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  recordCurrentHistory();
-                  setDraft((current) => ({
-                    ...current,
-                    boundary: defaultRectangleBoundary(),
-                  }));
-                  setSelectedVertexIndex(null);
-                }}
-              >
-                {labels.builder.resetBoundary}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={removeLastVertex}
-                disabled={draft.boundary.length === 0}
-              >
-                {labels.builder.undoVertex}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={removeSelectedVertex}
-                disabled={selectedVertexIndex === null}
-              >
-                {labels.builder.removeVertex}
-              </Button>
-            </>
-          ) : null}
-          <div className="ml-auto flex flex-wrap gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <FloorPlanFloorSwitcher {...floorSwitcherProps} />
             <Button
               type="button"
               size="sm"
-              onClick={handleSave}
-              disabled={isSaving}
+              variant={builderTool === "boundary" ? "default" : "secondary"}
+              onClick={() => setBuilderTool("boundary")}
             >
-              {isSaving ? labels.builder.saving : labels.builder.save}
+              {labels.builder.toolBoundary}
             </Button>
-            {surfaces.length > 0 || draft.surfaceId ? (
+            <Button
+              type="button"
+              size="sm"
+              variant={builderTool === "tables" ? "default" : "secondary"}
+              data-floor-plan-tool-tables
+              onClick={() => {
+                dismissTablesModeOverlay();
+                dismissFloorPlanTablesModeGuide();
+                setBuilderTool("tables");
+                setSelectedVertexIndex(null);
+              }}
+            >
+              {labels.builder.toolTables}
+            </Button>
+            {builderTool === "boundary" ? (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    recordCurrentHistory();
+                    setDraft((current) => ({
+                      ...current,
+                      boundary: defaultRectangleBoundary(),
+                    }));
+                    setSelectedVertexIndex(null);
+                  }}
+                >
+                  {labels.builder.resetBoundary}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={removeLastVertex}
+                  disabled={draft.boundary.length === 0}
+                >
+                  {labels.builder.undoVertex}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={removeSelectedVertex}
+                  disabled={selectedVertexIndex === null}
+                >
+                  {labels.builder.removeVertex}
+                </Button>
+              </>
+            ) : null}
+            <div className="ml-auto flex flex-wrap gap-2">
               <Button
                 type="button"
                 size="sm"
-                variant="secondary"
-                onClick={() => {
-                  loadDraftForSurface(activeSurface);
-                  setIsEditing(false);
-                }}
+                onClick={handleSave}
+                disabled={isSaving}
               >
-                {labels.builder.cancel}
+                {isSaving ? labels.builder.saving : labels.builder.save}
               </Button>
-            ) : null}
+              {surfaces.length > 0 || draft.surfaceId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => loadDraftForSurface(activeSurface)}
+                >
+                  {labels.builder.cancel}
+                </Button>
+              ) : null}
+            </div>
           </div>
-        </div>
-        {!isFocused ? <FloorPlanFloorSwitcher {...floorSwitcherProps} /> : null}
-        {isDndReady ? (
-          <DndContext
-            sensors={tableDragSensors}
-            onDragStart={handlePaletteDragStart}
-            onDragEnd={handlePaletteDragEnd}
-            onDragCancel={handlePaletteDragCancel}
-          >
-            <div className={cn(isFocused && "flex min-h-0 flex-1 flex-col")}>
+          {isDndReady ? (
+            <DndContext
+              sensors={tableDragSensors}
+              onDragStart={handlePaletteDragStart}
+              onDragEnd={handlePaletteDragEnd}
+              onDragCancel={handlePaletteDragCancel}
+            >
+              <div className="flex min-h-0 flex-1 flex-col">
+                {builderGrid}
+              </div>
+              <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+                {isPaletteDragging ? <FloorPlanTablePaletteOverlay /> : null}
+              </DragOverlay>
+            </DndContext>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col">
               {builderGrid}
             </div>
-            <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
-              {isPaletteDragging ? <FloorPlanTablePaletteOverlay /> : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
-          <div className={cn(isFocused && "flex min-h-0 flex-1 flex-col")}>
-            {builderGrid}
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </>
     );
   }
 
-  if (surfaces.length === 0) {
-    return (
-      <main className="flex flex-col gap-6 p-4 md:p-6">
-        <Header labels={labels} />
-        <Card>
-          <CardHeader>
-            <CardTitle>{labels.empty.title}</CardTitle>
-            <CardDescription>{labels.empty.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button type="button" onClick={() => startEditing(null)}>
-              {labels.empty.cta}
-            </Button>
-          </CardContent>
-        </Card>
-      </main>
-    );
-  }
-
-  return (
-    <main
-      className={cn(
-        "flex flex-col",
-        isFocused ? "h-full min-h-0 gap-3 p-3 md:p-4" : "gap-6 p-4 md:p-6",
-      )}
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        {!isFocused ? <Header labels={labels} /> : null}
-        <div className="flex flex-wrap items-center gap-2">
-          <FloorPlanExpandButton
-            expandLabel={labels.manager.expandCanvas}
-            collapseLabel={labels.manager.collapseCanvas}
-          />
-          <FloorPlanFloorSwitcher {...floorSwitcherProps} />
-          {canEdit ? (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => startEditing(activeSurface)}
-            >
-              {labels.manager.editLayout}
-            </Button>
-          ) : null}
-        </div>
-      </div>
-
-      {activeSurface ? (
-        isFocused ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-3">
-            <div className="flex flex-wrap gap-4 text-sm">
-              <Legend color="#22c55e" label={labels.manager.legendFree} />
-              <Legend color="#f97316" label={labels.manager.legendOccupied} />
-              <Legend color="#2563eb" label={labels.manager.legendSelected} />
-            </div>
-            <div ref={canvasContainerRef} className="relative min-h-0 flex-1">
-              <FloorPlanCanvasContextMenu {...contextMenuProps}>
-                <FloorPlanCanvas
-                  boundary={activeSurface.boundary}
-                  tables={activeSurface.tables}
-                  occupiedTableNumbers={occupiedTableNumbers}
-                  selectedTableNumber={selectedTableNumber}
-                  canvasWidth={canvasSize.width}
-                  canvasHeight={canvasSize.height}
-                  fillContainer
-                  mode="view"
-                  onSelectTable={setSelectedTableNumber}
-                />
-              </FloorPlanCanvasContextMenu>
-            </div>
-            {selectedTableNumber ? (
-              <div className="flex shrink-0 flex-wrap items-center gap-3 rounded-3xl border border-border bg-muted/20 p-4">
-                <p className="font-medium">
-                  {labels.builder.tableNumber}: {selectedTableNumber} ·{" "}
-                  {labels.manager.floor} {activeSurface.floor}
-                </p>
-                <Button type="button" asChild>
-                  <a
-                    href={`/dashboard/orders/new?table=${encodeURIComponent(selectedTableNumber)}`}
-                  >
-                    {labels.manager.newOrderForTable}
-                  </a>
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>{activeSurface.name}</CardTitle>
-              <CardDescription>
-                {labels.manager.floor} {activeSurface.floor} ·{" "}
-                {labels.manager.surfaceArea}:{" "}
-                {activeSurface.surfaceAreaM2.toFixed(1)} m² ·{" "}
-                {labels.manager.tableCount}: {activeSurface.tables.length}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-4 text-sm">
-                <Legend color="#22c55e" label={labels.manager.legendFree} />
-                <Legend color="#f97316" label={labels.manager.legendOccupied} />
-                <Legend color="#2563eb" label={labels.manager.legendSelected} />
-              </div>
-              <FloorPlanCanvasContextMenu {...contextMenuProps}>
-                <FloorPlanCanvas
-                  boundary={activeSurface.boundary}
-                  tables={activeSurface.tables}
-                  occupiedTableNumbers={occupiedTableNumbers}
-                  selectedTableNumber={selectedTableNumber}
-                  canvasWidth={canvasSize.width}
-                  canvasHeight={canvasSize.height}
-                  mode="view"
-                  onSelectTable={setSelectedTableNumber}
-                />
-              </FloorPlanCanvasContextMenu>
-              {selectedTableNumber ? (
-                <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-border bg-muted/20 p-4">
-                  <p className="font-medium">
-                    {labels.builder.tableNumber}: {selectedTableNumber} ·{" "}
-                    {labels.manager.floor} {activeSurface.floor}
-                  </p>
-                  <Button type="button" asChild>
-                    <a
-                      href={`/dashboard/orders/new?table=${encodeURIComponent(selectedTableNumber)}`}
-                    >
-                      {labels.manager.newOrderForTable}
-                    </a>
-                  </Button>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-        )
-      ) : null}
-    </main>
-  );
+  return null;
 }
 
 function Header({ labels }: { labels: FloorPlanPageClientProps["labels"] }) {
@@ -1239,18 +985,5 @@ function Header({ labels }: { labels: FloorPlanPageClientProps["labels"] }) {
         {labels.header.subtitle}
       </p>
     </div>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span
-        className="size-3 rounded-full"
-        style={{ backgroundColor: color }}
-        aria-hidden
-      />
-      {label}
-    </span>
   );
 }
