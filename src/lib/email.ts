@@ -5,8 +5,6 @@ import { EmailAccessEmail } from "@/emails/email-access-email";
 import { MagicLinkEmail } from "@/emails/magic-link-email";
 import { OtpEmail, type OtpEmailType } from "@/emails/otp-email";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function getFromAddress() {
   return process.env.EMAIL_FROM ?? "Bocao <onboarding@resend.dev>";
 }
@@ -18,6 +16,10 @@ function ensureResendConfigured() {
   }
 
   return true;
+}
+
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
 function otpSubject(type: OtpEmailType) {
@@ -45,6 +47,8 @@ async function sendReactEmail({
   if (!ensureResendConfigured()) {
     return;
   }
+
+  const resend = getResendClient();
 
   const [html, text] = await Promise.all([
     render(react),

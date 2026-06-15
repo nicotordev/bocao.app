@@ -5,8 +5,6 @@ import { TeamInvitationEmail } from "@/emails/team-invitation-email";
 import { getTeamInvitationEmailLabels } from "@/lib/email/team-invitation-labels";
 import type { TeamRole } from "@/lib/team/permissions";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function getFromAddress() {
   return process.env.EMAIL_FROM ?? "Bocao <onboarding@resend.dev>";
 }
@@ -20,6 +18,10 @@ function ensureResendConfigured() {
   }
 
   return true;
+}
+
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
 export async function sendTeamInvitationEmail({
@@ -36,6 +38,8 @@ export async function sendTeamInvitationEmail({
   if (!ensureResendConfigured()) {
     return;
   }
+
+  const resend = getResendClient();
 
   const locale = await getLocale();
   const {
