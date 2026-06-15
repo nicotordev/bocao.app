@@ -27,8 +27,9 @@ import { FloorPlanBuilderPanel } from "@/components/dashboard/floor-plan/floor-p
 import { FloorPlanTableQuickControls } from "@/components/dashboard/floor-plan/floor-plan-table-quick-controls";
 import { FloorPlanCanvasContextMenu } from "@/components/dashboard/floor-plan/floor-plan-canvas-context-menu";
 import { FloorPlanCanvas } from "@/components/dashboard/floor-plan/floor-plan-canvas-loader";
-import { FloorPlanExpandButton } from "@/components/dashboard/floor-plan/floor-plan-expand-button";
+import { FloorPlanBackButton } from "@/components/dashboard/floor-plan/floor-plan-back-button";
 import { FloorPlanFloorSwitcher } from "@/components/dashboard/floor-plan/floor-plan-floor-switcher";
+import { FloorPlanPageSkeleton } from "@/components/dashboard/floor-plan/floor-plan-page-skeleton";
 import {
   FLOOR_PLAN_TABLE_PALETTE_ID,
   FloorPlanTablePaletteOverlay,
@@ -161,6 +162,7 @@ export function FloorPlanPageClient({
   const { recordHistory, undo, clearHistory } = useFloorPlanUndo<EditorDraft>();
   const { isFocused, enterFocus, exitFocus } = useDashboardFocusMode();
   const canvasSize = useFloorPlanCanvasSize(canvasContainerRef, true);
+  const isPageReady = canvasSize.isReady && isDndReady;
 
   useEffect(() => {
     return () => {
@@ -781,57 +783,58 @@ export function FloorPlanPageClient({
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_min(320px,32vw)] gap-3">
         <Card className="flex min-h-0 flex-1 flex-col border-0 shadow-none">
           <CardContent className="flex min-h-0 flex-1 flex-col p-0">
-            <div
-              ref={canvasContainerRef}
-              className="relative min-h-0 flex-1"
-            >
-              <FloorPlanCanvasContextMenu {...contextMenuProps}>
-                <FloorPlanCanvasDropZone
-                  dndEnabled={isDndReady}
-                  disabled={builderTool !== "tables"}
-                >
-                  <FloorPlanCanvas
-                    boundary={draft.boundary}
-                    tables={draft.tables}
-                    canvasWidth={canvasSize.width}
-                    canvasHeight={canvasSize.height}
-                    fillContainer
-                    focusedTableId={selectedTableId}
-                    mode={
-                      builderTool === "boundary"
-                        ? "builder-boundary"
-                        : "builder-tables"
-                    }
-                    onBoundaryChange={(boundary) =>
-                      setDraft((current) => ({ ...current, boundary }))
-                    }
-                    onTablesChange={(tables) =>
-                      setDraft((current) => ({ ...current, tables }))
-                    }
-                    onBoundaryEditStart={recordCurrentHistory}
-                    onTableEditStart={recordCurrentHistory}
-                    selectedVertexIndex={selectedVertexIndex}
-                    onSelectVertex={setSelectedVertexIndex}
-                    onRemoveVertex={removeVertexAt}
-                    onFocusTable={(tableId) => {
-                      setSelectedTableId(tableId);
-                      setSelectedVertexIndex(null);
-                    }}
-                    onBlurTable={() => setSelectedTableId(null)}
-                  />
-                </FloorPlanCanvasDropZone>
-              </FloorPlanCanvasContextMenu>
-              {selectedTable && builderTool === "tables" ? (
-                <FloorPlanTableQuickControls
-                  table={selectedTable}
-                  canvasWidth={canvasSize.width}
-                  canvasHeight={canvasSize.height}
-                  labels={tableQuickControlLabels}
-                  onUpdate={(patch) => {
-                    recordCurrentHistory();
-                    updateSelectedTable(patch);
-                  }}
-                />
+            <div ref={canvasContainerRef} className="relative min-h-0 flex-1">
+              {canvasSize.isReady ? (
+                <>
+                  <FloorPlanCanvasContextMenu {...contextMenuProps}>
+                    <FloorPlanCanvasDropZone
+                      dndEnabled={isDndReady}
+                      disabled={builderTool !== "tables"}
+                    >
+                      <FloorPlanCanvas
+                        boundary={draft.boundary}
+                        tables={draft.tables}
+                        canvasWidth={canvasSize.width}
+                        canvasHeight={canvasSize.height}
+                        fillContainer
+                        focusedTableId={selectedTableId}
+                        mode={
+                          builderTool === "boundary"
+                            ? "builder-boundary"
+                            : "builder-tables"
+                        }
+                        onBoundaryChange={(boundary) =>
+                          setDraft((current) => ({ ...current, boundary }))
+                        }
+                        onTablesChange={(tables) =>
+                          setDraft((current) => ({ ...current, tables }))
+                        }
+                        onBoundaryEditStart={recordCurrentHistory}
+                        onTableEditStart={recordCurrentHistory}
+                        selectedVertexIndex={selectedVertexIndex}
+                        onSelectVertex={setSelectedVertexIndex}
+                        onRemoveVertex={removeVertexAt}
+                        onFocusTable={(tableId) => {
+                          setSelectedTableId(tableId);
+                          setSelectedVertexIndex(null);
+                        }}
+                        onBlurTable={() => setSelectedTableId(null)}
+                      />
+                    </FloorPlanCanvasDropZone>
+                  </FloorPlanCanvasContextMenu>
+                  {selectedTable && builderTool === "tables" ? (
+                    <FloorPlanTableQuickControls
+                      table={selectedTable}
+                      canvasWidth={canvasSize.width}
+                      canvasHeight={canvasSize.height}
+                      labels={tableQuickControlLabels}
+                      onUpdate={(patch) => {
+                        recordCurrentHistory();
+                        updateSelectedTable(patch);
+                      }}
+                    />
+                  ) : null}
+                </>
               ) : null}
             </div>
           </CardContent>
@@ -864,10 +867,14 @@ export function FloorPlanPageClient({
             </CardHeader>
           </Card>
         </main>
-        <main
-          className="hidden h-full min-h-0 flex-col gap-3 p-3 md:p-4 xl:flex"
-        >
+        <main className="relative hidden h-full min-h-0 flex-col gap-3 p-3 md:p-4 xl:flex">
+          {!isPageReady ? (
+            <div className="absolute inset-0 z-10 bg-background">
+              <FloorPlanPageSkeleton embedded />
+            </div>
+          ) : null}
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <FloorPlanBackButton label={labels.manager.back} />
             <FloorPlanFloorSwitcher {...floorSwitcherProps} />
             <Button
               type="button"
@@ -928,15 +935,11 @@ export function FloorPlanPageClient({
                 </Button>
               </>
             ) : null}
-            <FloorPlanExpandButton
-             expandLabel={labels.manager.expandCanvas}
-             collapseLabel={labels.manager.collapseCanvas}
-            />
             <div className="ml-auto flex flex-wrap gap-2">
-             <Button
-               type="button"
-               size="sm"
-               onClick={handleSave}
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSave}
                 disabled={isSaving}
               >
                 {isSaving ? labels.builder.saving : labels.builder.save}
@@ -953,24 +956,22 @@ export function FloorPlanPageClient({
               ) : null}
             </div>
           </div>
-          {isDndReady ? (
+          {isPageReady ? (
             <DndContext
               sensors={tableDragSensors}
               onDragStart={handlePaletteDragStart}
               onDragEnd={handlePaletteDragEnd}
               onDragCancel={handlePaletteDragCancel}
             >
-              <div className="flex min-h-0 flex-1 flex-col">
-                {builderGrid}
-              </div>
-              <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
+              <div className="flex min-h-0 flex-1 flex-col">{builderGrid}</div>
+              <DragOverlay
+                dropAnimation={{ duration: 180, easing: "ease-out" }}
+              >
                 {isPaletteDragging ? <FloorPlanTablePaletteOverlay /> : null}
               </DragOverlay>
             </DndContext>
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col">
-              {builderGrid}
-            </div>
+            <div className="flex min-h-0 flex-1 flex-col">{builderGrid}</div>
           )}
         </main>
       </>

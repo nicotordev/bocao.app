@@ -1,9 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { TbBuildingStore, TbChevronDown, TbLayoutGrid } from "react-icons/tb";
+import {
+  TbBuildingStore,
+  TbChevronDown,
+  TbCirclePlus,
+  TbLayoutGrid,
+} from "react-icons/tb";
+import { CreateRestaurantDialog } from "@/components/dashboard/create-restaurant-dialog";
 import { useSwitchRestaurantMutation } from "@/lib/query/restaurant/restaurant.mutations";
 import type {
   DashboardOrganizationGroup,
@@ -23,27 +30,50 @@ import {
 const ORGANIZATIONS_OVERVIEW_PATH = "/dashboard/organizations";
 
 type TenantSwitcherProps = {
+  organizationId: string;
   organizationName: string;
   organizations: DashboardOrganizationGroup[];
   restaurants: DashboardRestaurant[];
   activeRestaurant: DashboardRestaurant | null;
+  canCreateRestaurant?: boolean;
   className?: string;
 };
 
 export function TenantSwitcher({
+  organizationId,
   organizationName,
   organizations,
   restaurants,
   activeRestaurant,
+  canCreateRestaurant = false,
   className,
 }: TenantSwitcherProps) {
   const t = useTranslations("dashboard.shell");
   const tTenant = useTranslations("dashboard.shell.tenantSwitcher");
   const pathname = usePathname();
   const switchRestaurantMutation = useSwitchRestaurantMutation();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const isOverviewActive = pathname === ORGANIZATIONS_OVERVIEW_PATH;
   const hasMultipleOrganizations = organizations.length > 1;
   const showOrganizationGroups = hasMultipleOrganizations;
+
+  const createDefaults = useMemo(() => {
+    const organizationRestaurants =
+      organizations.find((organization) => organization.id === organizationId)
+        ?.restaurants ?? restaurants;
+    const defaultRestaurant =
+      activeRestaurant ??
+      organizationRestaurants.find(
+        (restaurant) => restaurant.organizationId === organizationId,
+      ) ??
+      organizationRestaurants[0] ??
+      null;
+
+    return {
+      currency: defaultRestaurant?.currency,
+      timezone: defaultRestaurant?.timezone,
+    };
+  }, [activeRestaurant, organizationId, organizations, restaurants]);
 
   const handleSelect = (restaurantId: string) => {
     switchRestaurantMutation.mutate(restaurantId);
@@ -113,7 +143,7 @@ export function TenantSwitcher({
 
         {restaurants.length === 0 ? (
           <DropdownMenuItem disabled className="px-2.5 py-1.5 text-xs">
-            {tTenant("noRestaurants")}
+            {tTenant("noLocations")}
           </DropdownMenuItem>
         ) : showOrganizationGroups ? (
           organizations.map((organization) => (
@@ -141,7 +171,7 @@ export function TenantSwitcher({
         ) : (
           <>
             <DropdownMenuLabel className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
-              {tTenant("restaurants")}
+              {tTenant("locations")}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="opacity-50" />
             {restaurants.map((restaurant) => (
@@ -161,7 +191,34 @@ export function TenantSwitcher({
             ))}
           </>
         )}
+
+        {canCreateRestaurant ? (
+          <>
+            <DropdownMenuSeparator className="opacity-50" />
+            <DropdownMenuItem
+              onSelect={(event) => {
+                event.preventDefault();
+                setIsCreateOpen(true);
+              }}
+              className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-primary transition-colors cursor-pointer hover:bg-primary/10 hover:text-primary"
+            >
+              <TbCirclePlus className="size-3.5 shrink-0" aria-hidden />
+              <span>{tTenant("createLocation")}</span>
+            </DropdownMenuItem>
+          </>
+        ) : null}
       </DropdownMenuContent>
+
+      {canCreateRestaurant ? (
+        <CreateRestaurantDialog
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          organizationId={organizationId}
+          organizationName={organizationName}
+          defaultCurrency={createDefaults.currency}
+          defaultTimezone={createDefaults.timezone}
+        />
+      ) : null}
     </DropdownMenu>
   );
 }

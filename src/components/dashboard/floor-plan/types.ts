@@ -19,8 +19,7 @@ export type FloorPlanPageLabels = {
     tableCount: string;
     floor: string;
     newOrderForTable: string;
-    expandCanvas: string;
-    collapseCanvas: string;
+    back: string;
     openSettingsPanel: string;
     switchFloor: string;
     selectSurface: string;

@@ -258,16 +258,34 @@
         "settings": "Configuración"
       },
       "tenantSwitcher": {
-        "restaurants": "Restaurantes",
-        "noRestaurants": "No hay restaurantes configurados",
+        "locations": "Locales",
+        "noLocations": "No hay locales configurados",
         "allOrganizations": "Todas las ubicaciones",
-        "allOrganizationsHint": "Resumen de organizaciones"
+        "allOrganizationsHint": "Resumen de organizaciones",
+        "createLocation": "Crear local"
       }
     },
     "organizations": {
       "title": "Todas las ubicaciones",
       "subtitle": "Resumen de cada organización y restaurante al que tienes acceso.",
       "role": "Tu rol: {role}",
+      "createDialog": {
+        "open": "Crear local",
+        "title": "Crear local",
+        "description": "Agrega un nuevo local a {organization}.",
+        "name": "Nombre del local",
+        "namePlaceholder": "Sucursal principal",
+        "city": "Ciudad",
+        "cityPlaceholder": "Santiago",
+        "currency": "Moneda",
+        "timezone": "Zona horaria",
+        "submit": "Crear",
+        "creating": "Creando...",
+        "cancel": "Cancelar",
+        "createSuccess": "Local creado correctamente.",
+        "invalidForm": "Revisa los datos del formulario.",
+        "forbidden": "No tienes permisos para crear locales en esta organización."
+      },
       "restaurantsTitle": "Restaurantes",
       "noRestaurants": "No hay restaurantes configurados en esta organización.",
       "backToDashboard": "Volver al panel",
@@ -1093,8 +1111,7 @@
         "tableCount": "Mesas",
         "floor": "Piso",
         "newOrderForTable": "Nuevo pedido para esta mesa",
-        "expandCanvas": "Agrandar lienzo",
-        "collapseCanvas": "Salir de pantalla completa",
+        "back": "Volver al panel",
         "openSettingsPanel": "Superficie y mesas",
         "switchFloor": "Cambiar piso",
         "selectSurface": "Seleccionar superficie",

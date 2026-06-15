@@ -4,6 +4,7 @@ import { startOfDay } from "date-fns";
 import { loadUserMembershipsWithRestaurants } from "@/lib/dashboard/memberships";
 import { formatCurrency } from "@/lib/orders/currency";
 import { prisma } from "@/lib/prisma";
+import { PERMISSIONS, SYSTEM_ROLE_SLUGS } from "@/lib/rbac/permissions";
 
 export type OrganizationOverviewRestaurant = {
   id: string;
@@ -18,6 +19,7 @@ export type OrganizationOverviewItem = {
   name: string;
   slug: string;
   roleName: string;
+  canCreateRestaurant: boolean;
   restaurantCount: number;
   customerCount: number;
   activeOrders: number;
@@ -74,12 +76,20 @@ async function buildOrganizationOverview(
   ]);
 
   const todayRevenueCents = revenue._sum.totalCents ?? 0;
+  const rolePermissions = membership.role.rolePermissions.map(
+    (rolePermission) => rolePermission.permission.key,
+  );
+  const canCreateRestaurant =
+    membership.role.slug === SYSTEM_ROLE_SLUGS.OWNER ||
+    rolePermissions.includes(PERMISSIONS.RESTAURANT_WRITE) ||
+    rolePermissions.includes(PERMISSIONS.SETTINGS_WRITE);
 
   return {
     id: membership.organization.id,
     name: membership.organization.name,
     slug: membership.organization.slug,
     roleName: membership.role.name,
+    canCreateRestaurant,
     restaurantCount: restaurants.length,
     customerCount,
     activeOrders,

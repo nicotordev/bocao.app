@@ -258,16 +258,34 @@
         "settings": "Settings"
       },
       "tenantSwitcher": {
-        "restaurants": "Restaurants",
-        "noRestaurants": "No restaurants configured",
+        "locations": "Locations",
+        "noLocations": "No locations configured",
         "allOrganizations": "All locations",
-        "allOrganizationsHint": "Organizations overview"
+        "allOrganizationsHint": "Organizations overview",
+        "createLocation": "Create location"
       }
     },
     "organizations": {
       "title": "All locations",
       "subtitle": "Summary of every organization and restaurant you can access.",
       "role": "Your role: {role}",
+      "createDialog": {
+        "open": "Create location",
+        "title": "Create location",
+        "description": "Add a new location to {organization}.",
+        "name": "Location name",
+        "namePlaceholder": "Main location",
+        "city": "City",
+        "cityPlaceholder": "Santiago",
+        "currency": "Currency",
+        "timezone": "Timezone",
+        "submit": "Create",
+        "creating": "Creating...",
+        "cancel": "Cancel",
+        "createSuccess": "Location created successfully.",
+        "invalidForm": "Please review the form data.",
+        "forbidden": "You do not have permission to create locations in this organization."
+      },
       "restaurantsTitle": "Restaurants",
       "noRestaurants": "No restaurants configured in this organization.",
       "backToDashboard": "Back to dashboard",
@@ -1093,8 +1111,7 @@
         "tableCount": "Tables",
         "floor": "Floor",
         "newOrderForTable": "New order for this table",
-        "expandCanvas": "Expand canvas",
-        "collapseCanvas": "Exit fullscreen",
+        "back": "Back to dashboard",
         "openSettingsPanel": "Surface & tables",
         "switchFloor": "Switch floor",
         "selectSurface": "Select surface",

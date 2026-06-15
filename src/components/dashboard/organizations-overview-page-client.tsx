@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   TbBuildingStore,
   TbChefHat,
+  TbCirclePlus,
   TbUsers,
   TbBuildingSkyscraper,
 } from "react-icons/tb";
+import { CreateRestaurantDialog } from "@/components/dashboard/create-restaurant-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,10 +30,30 @@ export function OrganizationsOverviewPageClient({
   data,
 }: OrganizationsOverviewPageClientProps) {
   const t = useTranslations("dashboard.organizations");
+  const tCreate = useTranslations("dashboard.organizations.createDialog");
   const switchRestaurantMutation = useSwitchRestaurantMutation();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<
+    string | null
+  >(null);
+
+  const selectedOrganization = useMemo(
+    () =>
+      selectedOrganizationId
+        ? (data.organizations.find(
+            (org) => org.id === selectedOrganizationId,
+          ) ?? null)
+        : null,
+    [data.organizations, selectedOrganizationId],
+  );
 
   const handleSelectRestaurant = (restaurantId: string) => {
     switchRestaurantMutation.mutate(restaurantId);
+  };
+
+  const openCreateDialog = (organizationId: string) => {
+    setSelectedOrganizationId(organizationId);
+    setIsCreateOpen(true);
   };
 
   return (
@@ -94,6 +117,18 @@ export function OrganizationsOverviewPageClient({
                     {t("role", { role: organization.roleName })}
                   </CardDescription>
                 </div>
+                {organization.canCreateRestaurant ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => openCreateDialog(organization.id)}
+                  >
+                    <TbCirclePlus className="size-4" aria-hidden />
+                    {tCreate("open")}
+                  </Button>
+                ) : null}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -186,6 +221,17 @@ export function OrganizationsOverviewPageClient({
           <Link href="/dashboard">{t("backToDashboard")}</Link>
         </Button>
       </div>
+
+      {selectedOrganizationId ? (
+        <CreateRestaurantDialog
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          organizationId={selectedOrganizationId}
+          organizationName={selectedOrganization?.name ?? ""}
+          defaultCurrency={selectedOrganization?.restaurants[0]?.currency}
+          defaultTimezone={selectedOrganization?.restaurants[0]?.timezone}
+        />
+      ) : null}
     </main>
   );
 }

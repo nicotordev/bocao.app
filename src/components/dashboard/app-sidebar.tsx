@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { TbFlame } from "react-icons/tb";
 import type { DashboardContext } from "@/lib/dashboard/types";
+import { canCreateRestaurant } from "@/lib/dashboard/can-create-restaurant";
 import { DashboardNavItem } from "@/components/dashboard/nav-item";
 import { TenantSwitcher } from "@/components/dashboard/tenant-switcher";
 import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
@@ -56,6 +57,7 @@ export function AppSidebar({
           organizations={organizations}
           restaurants={restaurants}
           activeRestaurant={activeRestaurant}
+          membership={membership}
         />
       </Sidebar>
     );
@@ -100,10 +102,12 @@ export function AppSidebar({
         </Link>
         <div className="group-data-[collapsible=icon]:hidden">
           <TenantSwitcher
+            organizationId={organization.id}
             organizationName={organization.name}
             organizations={organizations}
             restaurants={restaurants}
             activeRestaurant={activeRestaurant}
+            canCreateRestaurant={canCreateRestaurant(membership)}
           />
         </div>
       </SidebarHeader>

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { DashboardContext } from "@/lib/dashboard/types";
+import { canCreateRestaurant } from "@/lib/dashboard/can-create-restaurant";
 import { DashboardNavItem } from "@/components/dashboard/nav-item";
 import { TenantSwitcher } from "@/components/dashboard/tenant-switcher";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +22,7 @@ type MobileSidebarProps = Pick<
   | "organizations"
   | "restaurants"
   | "activeRestaurant"
+  | "membership"
 >;
 
 export function MobileSidebar({
@@ -29,6 +31,7 @@ export function MobileSidebar({
   organizations,
   restaurants,
   activeRestaurant,
+  membership,
 }: MobileSidebarProps) {
   const pathname = usePathname();
   const t = useTranslations("dashboard.shell");
@@ -55,10 +58,12 @@ export function MobileSidebar({
     <div className="flex h-full flex-col">
       <div className="border-b border-sidebar-border p-4">
         <TenantSwitcher
+          organizationId={organization.id}
           organizationName={organization.name}
           organizations={organizations}
           restaurants={restaurants}
           activeRestaurant={activeRestaurant}
+          canCreateRestaurant={canCreateRestaurant(membership)}
         />
       </div>
       <ScrollArea className="flex-1 p-4">

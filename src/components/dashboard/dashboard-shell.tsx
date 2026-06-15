@@ -9,6 +9,7 @@ import {
 } from "@/components/dashboard/dashboard-focus-mode";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 type DashboardShellProps = {
   context: DashboardContext;
@@ -25,6 +26,14 @@ export function DashboardShell({ context, children }: DashboardShellProps) {
 
 function DashboardShellInner({ context, children }: DashboardShellProps) {
   const { isFocused } = useDashboardFocusMode();
+  const pathname = usePathname();
+
+  const isFloorPlanPage = pathname.startsWith("/dashboard/floor-plan");
+
+
+  if(isFloorPlanPage) {
+    return children;
+  }
 
   return (
     <SidebarProvider
