@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const onboardingBackgroundImage =
   "/img/auth/pexels-thien-binh-451964862-17264367.webp";
@@ -111,12 +112,34 @@ function FieldMessage({ message }: { message?: string }) {
   return <p className="text-sm text-destructive">{message}</p>;
 }
 
+function OnboardingWizardFormSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-44" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  );
+}
+
 export function OnboardingWizard({ user }: OnboardingWizardProps) {
   const router = useRouter();
   const t = useTranslations("onboarding");
   const tCommon = useTranslations("common");
   const step = useOnboardingWizardStore((state) => state.step);
   const values = useOnboardingWizardStore((state) => state.values);
+  const hasHydrated = useOnboardingWizardStore((state) => state.hasHydrated);
   const setStep = useOnboardingWizardStore((state) => state.setStep);
   const patchValues = useOnboardingWizardStore((state) => state.updateValues);
   const resetOnboardingDraft = useOnboardingWizardStore((state) => state.reset);
@@ -266,313 +289,330 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       />
 
       <div className="mt-8 space-y-5">
-        <div className="grid grid-cols-3 gap-2">
-          {STEP_IDS.map((item) => (
-            <div
-              key={item}
-              className={cn(
-                "rounded-xl border px-2 py-2 text-center text-xs font-medium transition-colors",
-                step === item
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : step > item
-                    ? "border-border bg-muted/40 text-foreground"
-                    : "border-border bg-background text-muted-foreground",
-              )}
-            >
-              {getStepTitle(t, item)}
-            </div>
-          ))}
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground">
-          {t("stepProgress", { current: step, total: STEP_IDS.length })}
-        </p>
-
-        {formError ? (
-          <Alert variant="destructive">
-            <AlertTitle>{tCommon("error")}</AlertTitle>
-            <AlertDescription>{formError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {step === 1 ? (
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label>{t("fields.language")}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t("fields.languageHint")}
-              </p>
-              <OnboardingLocalePicker disabled={isSubmitting} />
+        {!hasHydrated ? (
+          <OnboardingWizardFormSkeleton />
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              {STEP_IDS.map((item) => (
+                <div
+                  key={item}
+                  className={cn(
+                    "rounded-xl border px-2 py-2 text-center text-xs font-medium transition-colors",
+                    step === item
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : step > item
+                        ? "border-border bg-muted/40 text-foreground"
+                        : "border-border bg-background text-muted-foreground",
+                  )}
+                >
+                  {getStepTitle(t, item)}
+                </div>
+              ))}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="organizationName">
-                {t("fields.organizationName")}
-              </Label>
-              <Input
-                id="organizationName"
-                value={values.organizationName}
-                onChange={(event) =>
-                  updateValues({ organizationName: event.target.value })
-                }
-                placeholder={t("fields.organizationNamePlaceholder")}
-                aria-invalid={!!errors.organizationName}
-              />
-              <FieldMessage message={errors.organizationName} />
-            </div>
+            <p className="text-center text-xs text-muted-foreground">
+              {t("stepProgress", { current: step, total: STEP_IDS.length })}
+            </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="country">{t("fields.country")}</Label>
-              <Select
-                value={values.country}
-                onValueChange={(value) =>
-                  handleCountryChange(value as CountryCode)
-                }
-              >
-                <SelectTrigger id="country" className="w-full">
-                  <SelectValue placeholder={t("fields.countryPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRY_OPTIONS.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {t("fields.countryHint")}
-              </p>
-              <FieldMessage message={errors.country} />
-            </div>
-          </div>
-        ) : null}
+            {formError ? (
+              <Alert variant="destructive">
+                <AlertTitle>{tCommon("error")}</AlertTitle>
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            ) : null}
 
-        {step === 2 ? (
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="restaurantName">
-                {t("fields.restaurantName")}
-              </Label>
-              <Input
-                id="restaurantName"
-                value={values.restaurantName}
-                onChange={(event) =>
-                  updateValues({ restaurantName: event.target.value })
-                }
-                placeholder={t("fields.restaurantNamePlaceholder")}
-                aria-invalid={!!errors.restaurantName}
-              />
-              <FieldMessage message={errors.restaurantName} />
-            </div>
+            {step === 1 ? (
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label>{t("fields.language")}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("fields.languageHint")}
+                  </p>
+                  <OnboardingLocalePicker disabled={isSubmitting} />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">{t("fields.city")}</Label>
-              <Input
-                id="city"
-                value={values.city ?? ""}
-                onChange={(event) => updateValues({ city: event.target.value })}
-                placeholder={t("fields.cityPlaceholder")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t("fields.phone")}</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={values.phone ?? ""}
-                onChange={(event) =>
-                  updateValues({ phone: event.target.value })
-                }
-                placeholder={t("fields.phonePlaceholder")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">{t("fields.currency")}</Label>
-              <Select
-                value={values.currency}
-                onValueChange={(value) => updateValues({ currency: value })}
-              >
-                <SelectTrigger id="currency" className="w-full">
-                  <SelectValue placeholder={t("fields.currencyPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCY_OPTIONS.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldMessage message={errors.currency} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="timezone">{t("fields.timezone")}</Label>
-              <Select
-                value={values.timezone}
-                onValueChange={(value) => updateValues({ timezone: value })}
-              >
-                <SelectTrigger id="timezone" className="w-full">
-                  <SelectValue placeholder={t("fields.timezonePlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEZONE_OPTIONS.map((timezone) => (
-                    <SelectItem key={timezone} value={timezone}>
-                      {timezone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldMessage message={errors.timezone} />
-            </div>
-          </div>
-        ) : null}
-
-        {step === 3 ? (
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Label>{t("fields.primaryGoal")}</Label>
-              <p className="text-xs text-muted-foreground">
-                {t("fields.primaryGoalHint")}
-              </p>
-              <div className="space-y-2">
-                {PRIMARY_GOAL_VALUES.map((value) => {
-                  const selected = values.primaryGoal === value;
-                  const Icon = PRIMARY_GOAL_ICONS[value];
-
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() =>
-                        updateValues({
-                          primaryGoal: value as PrimaryGoalValue,
-                        })
-                      }
-                      className={cn(
-                        "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors",
-                        selected
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:bg-muted/40",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "flex size-9 shrink-0 items-center justify-center rounded-xl",
-                          selected
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        <Icon className="size-5" aria-hidden />
-                      </span>
-                      <span className="min-w-0">
-                        <p className="text-sm font-medium">
-                          {t(`primaryGoals.${value}.label`)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t(`primaryGoals.${value}.description`)}
-                        </p>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <FieldMessage message={errors.primaryGoal} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="businessType">{t("fields.businessType")}</Label>
-              <Select
-                value={values.businessType}
-                onValueChange={(value) =>
-                  updateValues({
-                    businessType: value as OnboardingFormValues["businessType"],
-                  })
-                }
-              >
-                <SelectTrigger id="businessType" className="w-full">
-                  <SelectValue
-                    placeholder={t("fields.businessTypePlaceholder")}
+                <div className="space-y-2">
+                  <Label htmlFor="organizationName">
+                    {t("fields.organizationName")}
+                  </Label>
+                  <Input
+                    id="organizationName"
+                    value={values.organizationName}
+                    onChange={(event) =>
+                      updateValues({ organizationName: event.target.value })
+                    }
+                    placeholder={t("fields.organizationNamePlaceholder")}
+                    aria-invalid={!!errors.organizationName}
                   />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUSINESS_TYPE_VALUES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {t(`businessTypes.${value}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <FieldMessage message={errors.organizationName} />
+                </div>
 
-            <div className="space-y-2">
-              <Label>{t("fields.serviceModes")}</Label>
-              <div className="space-y-2">
-                {SERVICE_MODE_VALUES.map((value) => {
-                  const checked = values.serviceModes.includes(value);
-
-                  return (
-                    <label
-                      key={value}
-                      className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5"
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(checkedValue) =>
-                          toggleServiceMode(value, checkedValue === true)
-                        }
+                <div className="space-y-2">
+                  <Label htmlFor="country">{t("fields.country")}</Label>
+                  <Select
+                    value={values.country}
+                    onValueChange={(value) =>
+                      handleCountryChange(value as CountryCode)
+                    }
+                  >
+                    <SelectTrigger id="country" className="w-full">
+                      <SelectValue
+                        placeholder={t("fields.countryPlaceholder")}
                       />
-                      <span className="text-sm">
-                        {t(`serviceModes.${value}`)}
-                      </span>
-                    </label>
-                  );
-                })}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRY_OPTIONS.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {t("fields.countryHint")}
+                  </p>
+                  <FieldMessage message={errors.country} />
+                </div>
               </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="restaurantName">
+                    {t("fields.restaurantName")}
+                  </Label>
+                  <Input
+                    id="restaurantName"
+                    value={values.restaurantName}
+                    onChange={(event) =>
+                      updateValues({ restaurantName: event.target.value })
+                    }
+                    placeholder={t("fields.restaurantNamePlaceholder")}
+                    aria-invalid={!!errors.restaurantName}
+                  />
+                  <FieldMessage message={errors.restaurantName} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">{t("fields.city")}</Label>
+                  <Input
+                    id="city"
+                    value={values.city ?? ""}
+                    onChange={(event) =>
+                      updateValues({ city: event.target.value })
+                    }
+                    placeholder={t("fields.cityPlaceholder")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t("fields.phone")}</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={values.phone ?? ""}
+                    onChange={(event) =>
+                      updateValues({ phone: event.target.value })
+                    }
+                    placeholder={t("fields.phonePlaceholder")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t("fields.currency")}</Label>
+                  <Select
+                    value={values.currency}
+                    onValueChange={(value) => updateValues({ currency: value })}
+                  >
+                    <SelectTrigger id="currency" className="w-full">
+                      <SelectValue
+                        placeholder={t("fields.currencyPlaceholder")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCY_OPTIONS.map((currency) => (
+                        <SelectItem key={currency} value={currency}>
+                          {currency}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldMessage message={errors.currency} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="timezone">{t("fields.timezone")}</Label>
+                  <Select
+                    value={values.timezone}
+                    onValueChange={(value) => updateValues({ timezone: value })}
+                  >
+                    <SelectTrigger id="timezone" className="w-full">
+                      <SelectValue
+                        placeholder={t("fields.timezonePlaceholder")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONE_OPTIONS.map((timezone) => (
+                        <SelectItem key={timezone} value={timezone}>
+                          {timezone}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldMessage message={errors.timezone} />
+                </div>
+              </div>
+            ) : null}
+
+            {step === 3 ? (
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label>{t("fields.primaryGoal")}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("fields.primaryGoalHint")}
+                  </p>
+                  <div className="space-y-2">
+                    {PRIMARY_GOAL_VALUES.map((value) => {
+                      const selected = values.primaryGoal === value;
+                      const Icon = PRIMARY_GOAL_ICONS[value];
+
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() =>
+                            updateValues({
+                              primaryGoal: value as PrimaryGoalValue,
+                            })
+                          }
+                          className={cn(
+                            "flex w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors",
+                            selected
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:bg-muted/40",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "flex size-9 shrink-0 items-center justify-center rounded-xl",
+                              selected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground",
+                            )}
+                          >
+                            <Icon className="size-5" aria-hidden />
+                          </span>
+                          <span className="min-w-0">
+                            <p className="text-sm font-medium">
+                              {t(`primaryGoals.${value}.label`)}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {t(`primaryGoals.${value}.description`)}
+                            </p>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <FieldMessage message={errors.primaryGoal} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="businessType">
+                    {t("fields.businessType")}
+                  </Label>
+                  <Select
+                    value={values.businessType}
+                    onValueChange={(value) =>
+                      updateValues({
+                        businessType:
+                          value as OnboardingFormValues["businessType"],
+                      })
+                    }
+                  >
+                    <SelectTrigger id="businessType" className="w-full">
+                      <SelectValue
+                        placeholder={t("fields.businessTypePlaceholder")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUSINESS_TYPE_VALUES.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {t(`businessTypes.${value}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t("fields.serviceModes")}</Label>
+                  <div className="space-y-2">
+                    {SERVICE_MODE_VALUES.map((value) => {
+                      const checked = values.serviceModes.includes(value);
+
+                      return (
+                        <label
+                          key={value}
+                          className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(checkedValue) =>
+                              toggleServiceMode(value, checkedValue === true)
+                            }
+                          />
+                          <span className="text-sm">
+                            {t(`serviceModes.${value}`)}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-3">
+              {step < STEP_IDS.length ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {t("continue")}
+                  <IconArrowRight className="size-4" aria-hidden />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    void handleSubmit();
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  {isSubmitting ? <Spinner /> : null}
+                  {t("createRestaurant")}
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                disabled={step === 1 || isSubmitting}
+                className="w-full"
+              >
+                <IconArrowLeft className="size-4" aria-hidden />
+                {t("back")}
+              </Button>
             </div>
-          </div>
-        ) : null}
-
-        <div className="flex flex-col gap-3">
-          {step < STEP_IDS.length ? (
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {t("continue")}
-              <IconArrowRight className="size-4" aria-hidden />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => {
-                void handleSubmit();
-              }}
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? <Spinner /> : null}
-              {t("createRestaurant")}
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleBack}
-            disabled={step === 1 || isSubmitting}
-            className="w-full"
-          >
-            <IconArrowLeft className="size-4" aria-hidden />
-            {t("back")}
-          </Button>
-        </div>
+          </>
+        )}
       </div>
     </AuthShell>
   );

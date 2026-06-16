@@ -22,11 +22,13 @@ export const defaultOnboardingValues: OnboardingFormValues = {
 };
 
 type OnboardingWizardStoreState = {
+  hasHydrated: boolean;
   step: StepId;
   values: OnboardingFormValues;
 };
 
 type OnboardingWizardStoreActions = {
+  setHasHydrated: (value: boolean) => void;
   setStep: (step: number) => void;
   updateValues: (patch: Partial<OnboardingFormValues>) => void;
   reset: () => void;
@@ -48,6 +50,7 @@ type OnboardingWizardStore = OnboardingWizardStoreState &
   OnboardingWizardStoreActions;
 
 const initialState: OnboardingWizardStoreState = {
+  hasHydrated: false,
   step: STEP_IDS[0],
   values: defaultOnboardingValues,
 };
@@ -56,6 +59,9 @@ export const useOnboardingWizardStore = create<OnboardingWizardStore>()(
   persist(
     (set) => ({
       ...initialState,
+      setHasHydrated: (value) => {
+        set({ hasHydrated: value });
+      },
       setStep: (step) => {
         set({ step: clampStep(step) });
       },
@@ -68,7 +74,10 @@ export const useOnboardingWizardStore = create<OnboardingWizardStore>()(
         }));
       },
       reset: () => {
-        set(initialState);
+        set((state) => ({
+          ...initialState,
+          hasHydrated: state.hasHydrated,
+        }));
       },
     }),
     {
@@ -78,6 +87,9 @@ export const useOnboardingWizardStore = create<OnboardingWizardStore>()(
         step: state.step,
         values: state.values,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );
