@@ -337,6 +337,10 @@ model Restaurant {
   currency       String        @default("CLP")
   /// BCP 47 / ISO 639-1 codes enabled for menu and flow translations
   contentLocales String[]      @default(["es", "en"])
+  /// Hex color code for brand identity, e.g. #E85D3B
+  brandColor     String?       @default("#E85D3B")
+  /// Public URL for the restaurant logo stored in R2
+  logoUrl        String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -361,8 +365,30 @@ model Restaurant {
   analyticsInsightSnapshots     AnalyticsInsightSnapshot[]
   customerSmartSegmentSnapshots CustomerSmartSegmentSnapshot[]
   whatsAppConfig                RestaurantWhatsAppConfig?
+  operatingHours                RestaurantOperatingHours[]
 
   @@index([organizationId])
+}
+
+/// Daily operating hours for a restaurant (one row per day of week).
+model RestaurantOperatingHours {
+  id           String   @id @default(cuid())
+  restaurantId String
+  /// 0 = Monday, 1 = Tuesday, ... 6 = Sunday
+  dayOfWeek    Int
+  /// Time in HH:MM format, e.g. "12:00", "08:00"
+  openTime     String
+  /// Time in HH:MM format, e.g. "23:00", "01:00"
+  closeTime    String
+  /// Flag to mark day as closed/non-operating
+  isClosed     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+  @@index([restaurantId])
 }
 
 /// Meta WhatsApp Cloud API credentials for a restaurant location.

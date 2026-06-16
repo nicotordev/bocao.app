@@ -74,16 +74,9 @@ export function buildSettingsMockData({
         status: "pending",
       },
     ],
-    billing: {
-      plan: "growth",
-      usage: {
-        whatsappMessages: { used: 1840, limit: 3000 },
-        aiCredits: { used: 420, limit: 1000 },
-        reservations: { used: 186, limit: 500 },
-      },
-    },
     appearance: {
       brandColor: "#E85D3B",
+      logoUrl: null,
     },
     security: {
       twoFactorEnabled: false,

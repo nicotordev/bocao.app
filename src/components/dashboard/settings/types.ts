@@ -4,7 +4,6 @@ export type SettingsSectionId =
   | "hours"
   | "whatsapp"
   | "team"
-  | "billing"
   | "appearance"
   | "security";
 
@@ -70,16 +69,9 @@ export type SettingsMockData = {
     role: TeamMemberRole;
     status: MemberStatus;
   }>;
-  billing: {
-    plan: BillingPlan;
-    usage: {
-      whatsappMessages: { used: number; limit: number };
-      aiCredits: { used: number; limit: number };
-      reservations: { used: number; limit: number };
-    };
-  };
   appearance: {
     brandColor: string;
+    logoUrl: string | null;
   };
   security: {
     twoFactorEnabled: boolean;
@@ -184,20 +176,6 @@ export type SettingsLabels = {
       roles: Record<TeamMemberRole, string>;
       statuses: Record<MemberStatus, string>;
     };
-    billing: {
-      title: string;
-      description: string;
-      currentPlan: string;
-      plans: Record<BillingPlan, string>;
-      usage: {
-        whatsapp: string;
-        aiCredits: string;
-        reservations: string;
-      };
-      managePlan: string;
-      viewHistory: string;
-      mockHint: string;
-    };
     appearance: {
       title: string;
       description: string;
@@ -210,6 +188,14 @@ export type SettingsLabels = {
         light: string;
         dark: string;
       };
+      logo: string;
+      logoHint: string;
+      uploadLogo: string;
+      uploadingLogo: string;
+      logoAlt: string;
+      invalidLogoType: string;
+      logoTooLarge: string;
+      logoUploadError: string;
       brandColor: string;
       brandColorHint: string;
       previewTitle: string;

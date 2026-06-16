@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -10,12 +11,13 @@ import {
   TbBrandWhatsapp,
   TbBuildingStore,
   TbClock,
-  TbCreditCard,
   TbLanguage,
   TbLock,
   TbPalette,
+  TbPhoto,
   TbShield,
   TbSparkles,
+  TbUpload,
   TbUsers,
 } from "react-icons/tb";
 import { toast } from "sonner";
@@ -23,6 +25,9 @@ import { setLocale } from "@/app/actions/locale";
 import {
   updateRestaurantProfileAction,
   updateSettingsContentLocalesAction,
+  updateRestaurantHoursAction,
+  updateRestaurantAppearanceAction,
+  uploadRestaurantLogoAction,
 } from "@/app/actions/settings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,7 +42,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -80,7 +84,6 @@ const SECTION_ICONS: Record<SettingsSectionId, typeof TbBuildingStore> = {
   hours: TbClock,
   whatsapp: TbBrandWhatsapp,
   team: TbUsers,
-  billing: TbCreditCard,
   appearance: TbPalette,
   security: TbLock,
 };
@@ -91,7 +94,6 @@ const SECTION_ORDER: SettingsSectionId[] = [
   "hours",
   "whatsapp",
   "team",
-  "billing",
   "appearance",
   "security",
 ];
@@ -181,10 +183,7 @@ export function SettingsPageClient({
 
   return (
     <main className="flex flex-col gap-6 p-4 md:p-6">
-      <SettingsHeader
-        labels={labels.header}
-        restaurantName={restaurantName}
-      />
+      <SettingsHeader labels={labels.header} restaurantName={restaurantName} />
 
       {!canEdit ? (
         <Alert className="border-border/50 bg-muted/20">
@@ -245,6 +244,7 @@ export function SettingsPageClient({
             <HoursSection
               labels={labels}
               data={data}
+              restaurantId={restaurantId}
               canEdit={canEdit}
               onChange={setData}
             />
@@ -271,27 +271,35 @@ export function SettingsPageClient({
             />
           </TabsContent>
 
-          <TabsContent value="billing" className="mt-0">
-            <BillingSection labels={labels} data={data} onAction={showComingSoon} />
-          </TabsContent>
-
           <TabsContent value="appearance" className="mt-0">
             <AppearanceSection
               labels={labels}
               data={data}
+              restaurantId={restaurantId}
               restaurantName={restaurantName}
               profileName={profile.name}
+              canEdit={canEdit}
               onBrandColorChange={(brandColor) =>
                 setData((current) => ({
                   ...current,
                   appearance: { ...current.appearance, brandColor },
                 }))
               }
+              onLogoChange={(logoUrl) =>
+                setData((current) => ({
+                  ...current,
+                  appearance: { ...current.appearance, logoUrl },
+                }))
+              }
             />
           </TabsContent>
 
           <TabsContent value="security" className="mt-0">
-            <SecuritySection labels={labels} data={data} onAction={showComingSoon} />
+            <SecuritySection
+              labels={labels}
+              data={data}
+              onAction={showComingSoon}
+            />
           </TabsContent>
 
           {activeSection === "profile" ? (
@@ -307,7 +315,6 @@ export function SettingsPageClient({
           ) : null}
         </div>
       </Tabs>
-
     </main>
   );
 }
@@ -701,164 +708,252 @@ function ContentLocalesSection({
 function HoursSection({
   labels,
   data,
+  restaurantId,
   canEdit,
   onChange,
 }: {
   labels: SettingsLabels;
   data: SettingsMockData;
+  restaurantId: string | null;
   canEdit: boolean;
   onChange: React.Dispatch<React.SetStateAction<SettingsMockData>>;
 }) {
   const section = labels.sections.hours;
+  const router = useRouter();
+  const [hours, setHours] = useState(data.hours);
+  const [isSaving, setIsSaving] = useState(false);
 
   const updateHours = (patch: Partial<SettingsMockData["hours"]>) => {
-    onChange((current) => ({
-      ...current,
-      hours: { ...current.hours, ...patch },
-    }));
+    setHours((current) => ({ ...current, ...patch }));
+  };
+
+  const updateScheduleDay = (
+    dayKey: string,
+    day: Partial<(typeof data.hours.weeklySchedule)[0]>,
+  ) => {
+    const updated = hours.weeklySchedule.map((item) =>
+      item.dayKey === dayKey ? { ...item, ...day } : item,
+    );
+    setHours({ ...hours, weeklySchedule: updated });
+  };
+
+  const handleSave = async () => {
+    if (!restaurantId || !canEdit) {
+      toast.message(labels.actions.readOnly);
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const result = await updateRestaurantHoursAction({
+        restaurantId,
+        weeklySchedule: hours.weeklySchedule,
+      });
+
+      if (!result.success) {
+        toast.error(labels.actions.saveError);
+        return;
+      }
+
+      onChange((current) => ({ ...current, hours }));
+      toast.success(labels.actions.saveSuccess);
+      router.refresh();
+    } catch {
+      toast.error(labels.actions.saveError);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <SectionCard title={section.title} description={section.description}>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-muted/20 p-4">
-          <div className="space-y-1">
-            <Label htmlFor="accept-orders" className="text-sm font-medium">
-              {section.acceptOrders}
-            </Label>
+    <div className="space-y-6">
+      <SectionCard title={section.title} description={section.description}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-muted/20 p-4">
+            <div className="space-y-1">
+              <Label htmlFor="accept-orders" className="text-sm font-medium">
+                {section.acceptOrders}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {section.acceptOrdersHint}
+              </p>
+            </div>
+            <Switch
+              id="accept-orders"
+              checked={hours.acceptOrders}
+              onCheckedChange={(checked) =>
+                updateHours({ acceptOrders: checked })
+              }
+              disabled={!canEdit}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-muted/20 p-4">
+            <div className="space-y-1">
+              <Label
+                htmlFor="accept-reservations"
+                className="text-sm font-medium"
+              >
+                {section.acceptReservations}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {section.acceptReservationsHint}
+              </p>
+            </div>
+            <Switch
+              id="accept-reservations"
+              checked={hours.acceptReservations}
+              onCheckedChange={(checked) =>
+                updateHours({ acceptReservations: checked })
+              }
+              disabled={!canEdit}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-medium">{section.weeklySchedule}</h3>
             <p className="text-xs text-muted-foreground">
-              {section.acceptOrdersHint}
+              {section.weeklyScheduleHint}
             </p>
           </div>
-          <Switch
-            id="accept-orders"
-            checked={data.hours.acceptOrders}
-            onCheckedChange={(checked) => updateHours({ acceptOrders: checked })}
-            disabled={!canEdit}
-          />
-        </div>
 
-        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-muted/20 p-4">
-          <div className="space-y-1">
-            <Label htmlFor="accept-reservations" className="text-sm font-medium">
-              {section.acceptReservations}
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              {section.acceptReservationsHint}
-            </p>
-          </div>
-          <Switch
-            id="accept-reservations"
-            checked={data.hours.acceptReservations}
-            onCheckedChange={(checked) =>
-              updateHours({ acceptReservations: checked })
-            }
-            disabled={!canEdit}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <div>
-          <h3 className="text-sm font-medium">{section.weeklySchedule}</h3>
-          <p className="text-xs text-muted-foreground">
-            {section.weeklyScheduleHint}
-          </p>
-        </div>
-
-        <div className="overflow-x-auto rounded-2xl border border-border/50">
-          <table className="w-full min-w-[32rem] text-left text-sm">
-            <thead className="border-b border-border/50 bg-muted/30">
-              <tr>
-                <th className="px-4 py-3 font-medium" scope="col">
-                  {section.day}
-                </th>
-                <th className="px-4 py-3 font-medium" scope="col">
-                  {section.open}
-                </th>
-                <th className="px-4 py-3 font-medium" scope="col">
-                  {section.close}
-                </th>
-                <th className="px-4 py-3 font-medium" scope="col">
-                  {section.closed}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.hours.weeklySchedule.map((row) => (
-                <tr
-                  key={row.dayKey}
-                  className="border-b border-border/40 last:border-0"
-                >
-                  <td className="px-4 py-3 font-medium">
-                    {section.days[row.dayKey]}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {row.closed ? "—" : row.open}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {row.closed ? "—" : row.close}
-                  </td>
-                  <td className="px-4 py-3">
-                    {row.closed ? (
-                      <Badge variant="outline">{section.closed}</Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
-                        {section.statusOpen}
-                      </Badge>
-                    )}
-                  </td>
+          <div className="overflow-x-auto rounded-2xl border border-border/50">
+            <table className="w-full min-w-[32rem] text-left text-sm">
+              <thead className="border-b border-border/50 bg-muted/30">
+                <tr>
+                  <th className="px-4 py-3 font-medium" scope="col">
+                    {section.day}
+                  </th>
+                  <th className="px-4 py-3 font-medium" scope="col">
+                    {section.open}
+                  </th>
+                  <th className="px-4 py-3 font-medium" scope="col">
+                    {section.close}
+                  </th>
+                  <th className="px-4 py-3 font-medium" scope="col">
+                    {section.closed}
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {hours.weeklySchedule.map((row) => (
+                  <tr
+                    key={row.dayKey}
+                    className="border-b border-border/40 last:border-0"
+                  >
+                    <td className="px-4 py-3 font-medium">
+                      {section.days[row.dayKey]}
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.closed ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <Input
+                          type="time"
+                          value={row.open}
+                          onChange={(e) =>
+                            updateScheduleDay(row.dayKey, {
+                              open: e.target.value,
+                            })
+                          }
+                          disabled={!canEdit || row.closed}
+                          className="w-24"
+                        />
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.closed ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <Input
+                          type="time"
+                          value={row.close}
+                          onChange={(e) =>
+                            updateScheduleDay(row.dayKey, {
+                              close: e.target.value,
+                            })
+                          }
+                          disabled={!canEdit || row.closed}
+                          className="w-24"
+                        />
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Switch
+                        checked={row.closed}
+                        onCheckedChange={(checked) =>
+                          updateScheduleDay(row.dayKey, { closed: checked })
+                        }
+                        disabled={!canEdit}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="avg-prep">{section.averagePrep}</Label>
+            <Input
+              id="avg-prep"
+              type="number"
+              min={1}
+              value={hours.averagePrepMinutes}
+              onChange={(e) =>
+                updateHours({
+                  averagePrepMinutes: parseInt(e.target.value) || 22,
+                })
+              }
+              disabled={!canEdit}
+            />
+            <p className="text-xs text-muted-foreground">
+              {section.averagePrepHint}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="table-capacity">{section.tableCapacity}</Label>
+            <Input
+              id="table-capacity"
+              type="number"
+              min={0}
+              value={hours.tableCapacity}
+              readOnly
+              disabled
+            />
+            <p className="text-xs text-muted-foreground">
+              {section.tableCapacityFromFloorPlan}
+            </p>
+          </div>
+
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="closed-message">{section.closedMessage}</Label>
+            <Textarea
+              id="closed-message"
+              value={hours.closedMessage}
+              onChange={(e) => updateHours({ closedMessage: e.target.value })}
+              rows={3}
+              disabled={!canEdit}
+            />
+            <p className="text-xs text-muted-foreground">
+              {section.closedMessageHint}
+            </p>
+          </div>
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={!canEdit || isSaving}>
+          {isSaving ? labels.actions.saving : labels.actions.save}
+        </Button>
       </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="avg-prep">{section.averagePrep}</Label>
-          <Input
-            id="avg-prep"
-            type="number"
-            min={1}
-            defaultValue={data.hours.averagePrepMinutes}
-            disabled={!canEdit}
-          />
-          <p className="text-xs text-muted-foreground">
-            {section.averagePrepHint}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="table-capacity">{section.tableCapacity}</Label>
-          <Input
-            id="table-capacity"
-            type="number"
-            min={0}
-            value={data.hours.tableCapacity}
-            readOnly
-            disabled
-          />
-          <p className="text-xs text-muted-foreground">
-            {section.tableCapacityFromFloorPlan}
-          </p>
-        </div>
-
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="closed-message">{section.closedMessage}</Label>
-          <Textarea
-            id="closed-message"
-            defaultValue={data.hours.closedMessage}
-            rows={3}
-            disabled={!canEdit}
-          />
-          <p className="text-xs text-muted-foreground">
-            {section.closedMessageHint}
-          </p>
-        </div>
-      </div>
-    </SectionCard>
+    </div>
   );
 }
 
@@ -926,7 +1021,9 @@ function WhatsAppSection({
           <Switch
             id="auto-reply"
             checked={data.whatsapp.autoReply}
-            onCheckedChange={(checked) => updateWhatsapp({ autoReply: checked })}
+            onCheckedChange={(checked) =>
+              updateWhatsapp({ autoReply: checked })
+            }
             disabled={!canEdit}
           />
         </div>
@@ -1096,98 +1193,34 @@ function TeamSection({
   );
 }
 
-function BillingSection({
-  labels,
-  data,
-  onAction,
-}: {
-  labels: SettingsLabels;
-  data: SettingsMockData;
-  onAction: () => void;
-}) {
-  const section = labels.sections.billing;
-  const usageItems = [
-    {
-      key: "whatsapp",
-      label: section.usage.whatsapp,
-      ...data.billing.usage.whatsappMessages,
-    },
-    {
-      key: "ai",
-      label: section.usage.aiCredits,
-      ...data.billing.usage.aiCredits,
-    },
-    {
-      key: "reservations",
-      label: section.usage.reservations,
-      ...data.billing.usage.reservations,
-    },
-  ] as const;
-
-  return (
-    <SectionCard title={section.title} description={section.description}>
-      <Alert className="border-border/50 bg-muted/20">
-        <AlertDescription>{section.mockHint}</AlertDescription>
-      </Alert>
-
-      <div className="flex flex-col gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {section.currentPlan}
-          </p>
-          <p className="font-heading text-2xl font-semibold">
-            {section.plans[data.billing.plan]}
-          </p>
-        </div>
-        <Badge className="w-fit bg-primary/20 text-primary hover:bg-primary/20">
-          {section.plans[data.billing.plan]}
-        </Badge>
-      </div>
-
-      <div className="space-y-5">
-        {usageItems.map((item) => (
-          <div key={item.key} className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span>{item.label}</span>
-              <span className="text-muted-foreground">
-                {item.used.toLocaleString()} / {item.limit.toLocaleString()}
-              </span>
-            </div>
-            <Progress value={usagePercent(item.used, item.limit)} />
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={onAction}>
-          {section.managePlan}
-        </Button>
-        <Button type="button" variant="outline" onClick={onAction}>
-          {section.viewHistory}
-        </Button>
-      </div>
-    </SectionCard>
-  );
-}
-
 function AppearanceSection({
   labels,
   data,
+  restaurantId,
   restaurantName,
   profileName,
+  canEdit,
   onBrandColorChange,
+  onLogoChange,
 }: {
   labels: SettingsLabels;
   data: SettingsMockData;
+  restaurantId: string | null;
   restaurantName: string;
   profileName: string;
+  canEdit: boolean;
   onBrandColorChange: (color: string) => void;
+  onLogoChange: (logoUrl: string) => void;
 }) {
   const section = labels.sections.appearance;
   const locale = useLocale();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [isPending, startTransition] = useTransition();
+  const [appearance, setAppearance] = useState(data.appearance);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isSavingColor, setIsSavingColor] = useState(false);
   const tUserMenu = useTranslations("dashboard.userMenu.preferencesDialog");
 
   const handleLocaleChange = (value: string) => {
@@ -1197,106 +1230,227 @@ function AppearanceSection({
     });
   };
 
+  const handleBrandColorChange = (brandColor: string) => {
+    setAppearance((current) => ({ ...current, brandColor }));
+    onBrandColorChange(brandColor);
+  };
+
+  const handleLogoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error(section.invalidLogoType);
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(section.logoTooLarge);
+      event.target.value = "";
+      return;
+    }
+
+    if (!restaurantId || !canEdit) {
+      toast.message(labels.actions.readOnly);
+      event.target.value = "";
+      return;
+    }
+
+    setIsUploadingLogo(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("restaurantId", restaurantId);
+      formData.append("file", file);
+
+      const result = await uploadRestaurantLogoAction(formData);
+
+      setAppearance((current) => ({ ...current, logoUrl: result.url }));
+      onLogoChange(result.url);
+      toast.success(labels.actions.saveSuccess);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error && error.message === "R2_NOT_CONFIGURED") {
+        toast.error(section.logoUploadError);
+      } else {
+        toast.error(section.logoUploadError);
+      }
+    } finally {
+      setIsUploadingLogo(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleSaveBrandColor = async () => {
+    if (!restaurantId || !canEdit) {
+      toast.message(labels.actions.readOnly);
+      return;
+    }
+
+    setIsSavingColor(true);
+
+    try {
+      const result = await updateRestaurantAppearanceAction({
+        restaurantId,
+        brandColor: appearance.brandColor,
+      });
+
+      if (!result.success) {
+        toast.error(labels.actions.saveError);
+        return;
+      }
+
+      toast.success(labels.actions.saveSuccess);
+      router.refresh();
+    } catch {
+      toast.error(labels.actions.saveError);
+    } finally {
+      setIsSavingColor(false);
+    }
+  };
+
   return (
-    <SectionCard title={section.title} description={section.description}>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="settings-language">{section.language}</Label>
-            <Select
-              value={locale}
-              onValueChange={handleLocaleChange}
-              disabled={isPending}
-            >
-              <SelectTrigger id="settings-language" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {locales.map((code) => (
-                  <SelectItem key={code} value={code}>
-                    {localeLabels[code]}
+    <div className="space-y-6">
+      <SectionCard title={section.title} description={section.description}>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="settings-language">{section.language}</Label>
+              <Select
+                value={locale}
+                onValueChange={handleLocaleChange}
+                disabled={isPending}
+              >
+                <SelectTrigger id="settings-language" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {locales.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {localeLabels[code]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {section.languageHint}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="settings-theme">{section.theme}</Label>
+              <Select value={theme} onValueChange={setTheme}>
+                <SelectTrigger id="settings-theme" className="w-full">
+                  <SelectValue placeholder={tUserMenu("themePlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="system">
+                    {section.themes.system}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {section.languageHint}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="settings-theme">{section.theme}</Label>
-            <Select value={theme} onValueChange={setTheme}>
-              <SelectTrigger id="settings-theme" className="w-full">
-                <SelectValue placeholder={tUserMenu("themePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="system">{section.themes.system}</SelectItem>
-                <SelectItem value="light">{section.themes.light}</SelectItem>
-                <SelectItem value="dark">{section.themes.dark}</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">{section.themeHint}</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="brand-color">{section.brandColor}</Label>
-            <div className="flex items-center gap-3">
-              <Input
-                id="brand-color"
-                type="color"
-                value={data.appearance.brandColor}
-                onChange={(event) => onBrandColorChange(event.target.value)}
-                className="h-11 w-16 cursor-pointer p-1"
-                aria-label={section.brandColor}
-              />
-              <Input
-                value={data.appearance.brandColor}
-                onChange={(event) => onBrandColorChange(event.target.value)}
-                className="font-mono uppercase"
-              />
+                  <SelectItem value="light">{section.themes.light}</SelectItem>
+                  <SelectItem value="dark">{section.themes.dark}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {section.themeHint}
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {section.brandColorHint}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {section.brandColorMockHint}
-            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="restaurant-logo-upload">{section.logo}</Label>
+              <div className="flex items-center gap-4 rounded-2xl border border-border/50 bg-muted/20 p-4">
+                <div className="flex size-16 items-center justify-center overflow-hidden rounded-xl border border-border/50 bg-card">
+                  {appearance.logoUrl ? (
+                    <Image
+                      src={appearance.logoUrl}
+                      alt={section.logoAlt}
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <TbPhoto
+                      className="size-6 text-muted-foreground"
+                      aria-hidden
+                    />
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={!canEdit || isUploadingLogo}
+                  >
+                    <TbUpload className="size-4" aria-hidden />
+                    {isUploadingLogo
+                      ? section.uploadingLogo
+                      : section.uploadLogo}
+                  </Button>
+                  <input
+                    id="restaurant-logo-upload"
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => void handleLogoUpload(event)}
+                    disabled={!canEdit || isUploadingLogo}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {section.logoHint}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brand-color">{section.brandColor}</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="brand-color"
+                  type="color"
+                  value={appearance.brandColor}
+                  onChange={(event) =>
+                    handleBrandColorChange(event.target.value)
+                  }
+                  disabled={!canEdit}
+                  className="h-11 w-16 cursor-pointer p-1"
+                  aria-label={section.brandColor}
+                />
+                <Input
+                  value={appearance.brandColor}
+                  onChange={(event) =>
+                    handleBrandColorChange(event.target.value)
+                  }
+                  disabled={!canEdit}
+                  className="font-mono uppercase"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {section.brandColorHint}
+              </p>
+            </div>
           </div>
         </div>
+      </SectionCard>
 
-        <div className="space-y-2">
-          <p className="text-sm font-medium">{section.previewTitle}</p>
-          <div
-            className="overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card to-muted/30 p-5 shadow-lg"
-            style={{
-              boxShadow: `0 20px 50px -24px ${data.appearance.brandColor}66`,
-            }}
-          >
-            <div
-              className="mb-4 inline-flex size-10 items-center justify-center rounded-2xl text-white"
-              style={{ backgroundColor: data.appearance.brandColor }}
-              aria-hidden
-            >
-              <TbBuildingStore className="size-5" />
-            </div>
-            <p className="font-heading text-lg font-semibold">
-              {restaurantName || profileName}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {section.previewSubtitle}
-            </p>
-            <Button
-              type="button"
-              className="mt-5 text-white hover:opacity-90"
-              style={{ backgroundColor: data.appearance.brandColor }}
-            >
-              {section.previewCta}
-            </Button>
-          </div>
-        </div>
+      <div className="flex justify-end">
+        <Button
+          onClick={handleSaveBrandColor}
+          disabled={!canEdit || isSavingColor}
+        >
+          {isSavingColor ? labels.actions.saving : labels.actions.save}
+        </Button>
       </div>
-    </SectionCard>
+    </div>
   );
 }
 

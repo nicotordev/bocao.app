@@ -31,7 +31,53 @@ function acceptsOrders(serviceModes: OrderType[]): boolean {
   return serviceModes.length > 0;
 }
 
-function buildDefaultHours(
+const DAY_NAMES = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+];
+
+const DEFAULT_SCHEDULE = [
+  { dayKey: "monday", open: "12:00", close: "23:00", closed: false },
+  { dayKey: "tuesday", open: "12:00", close: "23:00", closed: false },
+  { dayKey: "wednesday", open: "12:00", close: "23:00", closed: false },
+  { dayKey: "thursday", open: "12:00", close: "00:00", closed: false },
+  { dayKey: "friday", open: "12:00", close: "01:00", closed: false },
+  { dayKey: "saturday", open: "13:00", close: "01:00", closed: false },
+  { dayKey: "sunday", open: "13:00", close: "22:00", closed: false },
+];
+
+async function loadOrCreateOperatingHours(restaurantId: string) {
+  let hours = await prisma.restaurantOperatingHours.findMany({
+    where: { restaurantId },
+    orderBy: { dayOfWeek: "asc" },
+  });
+
+  if (hours.length === 0) {
+    hours = await Promise.all(
+      DEFAULT_SCHEDULE.map((day, index) =>
+        prisma.restaurantOperatingHours.create({
+          data: {
+            restaurantId,
+            dayOfWeek: index,
+            openTime: day.open,
+            closeTime: day.close,
+            isClosed: day.closed,
+          },
+        }),
+      ),
+    );
+  }
+
+  return hours;
+}
+
+function buildHoursFromDb(
+  dbHours: Awaited<ReturnType<typeof loadOrCreateOperatingHours>>,
   serviceModes: OrderType[],
   tableCapacity: number,
 ): SettingsMockData["hours"] {
@@ -42,15 +88,12 @@ function buildDefaultHours(
     tableCapacity,
     closedMessage:
       "Estamos cerrados por ahora. Puedes ver el menú y volver en nuestro horario de atención.",
-    weeklySchedule: [
-      { dayKey: "monday", open: "12:00", close: "23:00", closed: false },
-      { dayKey: "tuesday", open: "12:00", close: "23:00", closed: false },
-      { dayKey: "wednesday", open: "12:00", close: "23:00", closed: false },
-      { dayKey: "thursday", open: "12:00", close: "00:00", closed: false },
-      { dayKey: "friday", open: "12:00", close: "01:00", closed: false },
-      { dayKey: "saturday", open: "13:00", close: "01:00", closed: false },
-      { dayKey: "sunday", open: "13:00", close: "22:00", closed: false },
-    ],
+    weeklySchedule: dbHours.map((h) => ({
+      dayKey: DAY_NAMES[h.dayOfWeek],
+      open: h.openTime,
+      close: h.closeTime,
+      closed: h.isClosed,
+    })),
   };
 }
 
@@ -67,55 +110,63 @@ export async function loadSettingsPageData(
     PERMISSIONS.SETTINGS_WRITE,
   );
 
-  const [restaurant, tableCapacity, teamPage, sessionCount] = await Promise.all([
-    prisma.restaurant.findFirst({
-      where: {
-        id: restaurantId,
-        organizationId: context.organization.id,
-      },
-      select: {
-        id: true,
-        name: true,
-        city: true,
-        phone: true,
-        businessType: true,
-        timezone: true,
-        currency: true,
-        serviceModes: true,
-        contentLocales: true,
-        organization: {
-          select: {
-            country: true,
+  const [restaurant, tableCapacity, teamPage, sessionCount, dbHours] =
+    await Promise.all([
+      prisma.restaurant.findFirst({
+        where: {
+          id: restaurantId,
+          organizationId: context.organization.id,
+        },
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          phone: true,
+          businessType: true,
+          timezone: true,
+          currency: true,
+          brandColor: true,
+          logoUrl: true,
+          serviceModes: true,
+          contentLocales: true,
+          organization: {
+            select: {
+              country: true,
+            },
+          },
+          whatsAppConfig: {
+            select: {
+              displayPhoneNumber: true,
+            },
           },
         },
-        whatsAppConfig: {
-          select: {
-            displayPhoneNumber: true,
+      }),
+      prisma.diningTable.count({
+        where: {
+          surface: {
+            restaurantId,
           },
         },
-      },
-    }),
-    prisma.diningTable.count({
-      where: {
-        surface: {
-          restaurantId,
+      }),
+      getTeamPageData(context).catch(() => null),
+      prisma.session.count({
+        where: {
+          userId: context.user.id,
         },
-      },
-    }),
-    getTeamPageData(context).catch(() => null),
-    prisma.session.count({
-      where: {
-        userId: context.user.id,
-      },
-    }),
-  ]);
+      }),
+      loadOrCreateOperatingHours(restaurantId),
+    ]);
 
   if (!restaurant) {
     return null;
   }
 
   const whatsappConnected = Boolean(restaurant.whatsAppConfig);
-  const hours = buildDefaultHours(restaurant.serviceModes, tableCapacity);
+  const hours = buildHoursFromDb(
+    dbHours,
+    restaurant.serviceModes,
+    tableCapacity,
+  );
 
   const teamMembers =
     teamPage?.members
@@ -171,16 +222,9 @@ export async function loadSettingsPageData(
         "Eres el asistente del restaurante. Responde de forma cálida, confirma reservas y deriva pedidos complejos al equipo humano.",
     },
     team: [...teamMembers, ...pendingInvitations],
-    billing: {
-      plan: "growth",
-      usage: {
-        whatsappMessages: { used: 0, limit: 3000 },
-        aiCredits: { used: 0, limit: 1000 },
-        reservations: { used: 0, limit: 500 },
-      },
-    },
     appearance: {
-      brandColor: "#E85D3B",
+      brandColor: restaurant.brandColor ?? "#E85D3B",
+      logoUrl: restaurant.logoUrl,
     },
     security: {
       twoFactorEnabled: false,
