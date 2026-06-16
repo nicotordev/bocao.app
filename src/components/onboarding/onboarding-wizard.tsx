@@ -32,6 +32,7 @@ import {
   createOnboardingStepTwoSchema,
   type OnboardingFormValues,
 } from "@/lib/onboarding/schema";
+import { useOnboardingWizardStore } from "@/lib/onboarding/onboarding-wizard-store";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -88,19 +89,6 @@ type OnboardingWizardProps = {
 
 type FormErrors = Partial<Record<keyof OnboardingFormValues, string>>;
 
-const defaultValues: OnboardingFormValues = {
-  organizationName: "",
-  restaurantName: "",
-  country: "CL",
-  currency: "CLP",
-  timezone: "America/Santiago",
-  primaryGoal: "ORDERS",
-  city: "",
-  phone: "",
-  businessType: undefined,
-  serviceModes: [],
-};
-
 function mapZodErrors(
   fieldErrors: Record<string, string[] | undefined>,
 ): FormErrors {
@@ -127,8 +115,11 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   const router = useRouter();
   const t = useTranslations("onboarding");
   const tCommon = useTranslations("common");
-  const [step, setStep] = useState(1);
-  const [values, setValues] = useState<OnboardingFormValues>(defaultValues);
+  const step = useOnboardingWizardStore((state) => state.step);
+  const values = useOnboardingWizardStore((state) => state.values);
+  const setStep = useOnboardingWizardStore((state) => state.setStep);
+  const patchValues = useOnboardingWizardStore((state) => state.updateValues);
+  const resetOnboardingDraft = useOnboardingWizardStore((state) => state.reset);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,7 +156,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   }, [profileNameCompleted, t, user.name, user.needsProfileName]);
 
   const updateValues = (patch: Partial<OnboardingFormValues>) => {
-    setValues((current) => ({ ...current, ...patch }));
+    patchValues(patch);
     setErrors({});
     setFormError(null);
   };
@@ -212,13 +203,13 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
       return;
     }
 
-    setStep((current) => Math.min(current + 1, STEP_IDS.length));
+    setStep(Math.min(step + 1, STEP_IDS.length));
   };
 
   const handleBack = () => {
     setErrors({});
     setFormError(null);
-    setStep((current) => Math.max(current - 1, 1));
+    setStep(Math.max(step - 1, 1));
   };
 
   const toggleServiceMode = (mode: ServiceModeValue, checked: boolean) => {
@@ -252,6 +243,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     }
 
     toast.success(t("success"));
+    resetOnboardingDraft();
     router.push(result.redirectTo);
     router.refresh();
   };
