@@ -1,12 +1,23 @@
 import type { PrismaClient } from "@/generated/prisma/client";
+import { SYSTEM_ROLE_SLUGS } from "@/lib/rbac/permissions";
 import {
   TEAM_ROLE_DEFINITIONS,
   teamPermissionsToRbacKeys,
 } from "@/lib/team/permissions";
 
-type Db = Pick<PrismaClient, "permission" | "role" | "rolePermission" | "organization">;
+type Db = Pick<
+  PrismaClient,
+  "permission" | "role" | "rolePermission" | "organization"
+>;
 
-export async function syncTeamRolesForOrganization(db: Db, organizationId: string) {
+const SYSTEM_RBAC_ROLE_SLUGS = new Set<string>(
+  Object.values(SYSTEM_ROLE_SLUGS),
+);
+
+export async function syncTeamRolesForOrganization(
+  db: Db,
+  organizationId: string,
+) {
   const permissions = await db.permission.findMany({
     select: { id: true, key: true },
   });
@@ -18,6 +29,10 @@ export async function syncTeamRolesForOrganization(db: Db, organizationId: strin
   const rolesBySlug: Record<string, string> = {};
 
   for (const definition of TEAM_ROLE_DEFINITIONS) {
+    if (SYSTEM_RBAC_ROLE_SLUGS.has(definition.slug)) {
+      continue;
+    }
+
     const role = await db.role.upsert({
       where: {
         organizationId_slug: {

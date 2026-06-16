@@ -108,6 +108,11 @@ export type MenuPageLabels = {
     editDescription: string;
     name: string;
     namePlaceholder: string;
+    description: string;
+    descriptionPlaceholder: string;
+    image: string;
+    imageHint: string;
+    changeImage: string;
     successCreate: string;
     successUpdate: string;
     successDelete: string;

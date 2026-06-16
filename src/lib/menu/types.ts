@@ -21,6 +21,8 @@ export type MenuItemRecord = MenuItemOption & {
 export type MenuCategoryRecord = {
   id: string;
   name: string;
+  description: string | null;
+  imageUrl: string | null;
   sortOrder: number;
   isActive: boolean;
   itemCount: number;

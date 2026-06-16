@@ -343,24 +343,24 @@ model Restaurant {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  customers                 Customer[]
-  customerSavedSegments     CustomerSavedSegment[]
-  menuCategories            MenuCategory[]
-  menuItems                 MenuItem[]
-  orders                    Order[]
-  reservations              Reservation[]
-  diningSurfaces            DiningSurface[]
-  menuCustomTags            MenuCustomTag[]
-  dbTranslations            DbTranslation[]
-  productFlowBlocks         ProductFlowBlock[]
-  productFlowTemplates      ProductFlowTemplate[]
-  productPurchaseFlows      ProductPurchaseFlow[]
-  kitchenStations           KitchenStation[]
-  marketingCampaigns        MarketingCampaign[]
-  conversations             Conversation[]
-  analyticsInsightSnapshots       AnalyticsInsightSnapshot[]
-  customerSmartSegmentSnapshots   CustomerSmartSegmentSnapshot[]
-  whatsAppConfig                  RestaurantWhatsAppConfig?
+  customers                     Customer[]
+  customerSavedSegments         CustomerSavedSegment[]
+  menuCategories                MenuCategory[]
+  menuItems                     MenuItem[]
+  orders                        Order[]
+  reservations                  Reservation[]
+  diningSurfaces                DiningSurface[]
+  menuCustomTags                MenuCustomTag[]
+  dbTranslations                DbTranslation[]
+  productFlowBlocks             ProductFlowBlock[]
+  productFlowTemplates          ProductFlowTemplate[]
+  productPurchaseFlows          ProductPurchaseFlow[]
+  kitchenStations               KitchenStation[]
+  marketingCampaigns            MarketingCampaign[]
+  conversations                 Conversation[]
+  analyticsInsightSnapshots     AnalyticsInsightSnapshot[]
+  customerSmartSegmentSnapshots CustomerSmartSegmentSnapshot[]
+  whatsAppConfig                RestaurantWhatsAppConfig?
 
   @@index([organizationId])
 }
@@ -604,6 +604,9 @@ model MenuCategory {
   id           String   @id @default(cuid())
   restaurantId String
   name         String
+  description  String?
+  /// Public cover image URL for this category
+  imageUrl     String?
   sortOrder    Int      @default(0)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())

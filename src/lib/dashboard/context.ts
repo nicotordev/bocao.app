@@ -13,6 +13,7 @@ import {
 import { ensureDemoAdminMembershipForUser } from "@/lib/demo/ensure-admin-membership";
 import { prisma } from "@/lib/prisma";
 import type { SystemRoleSlug } from "@/lib/rbac/permissions";
+import { syncTeamRolesForOrganization } from "@/lib/team/sync-roles";
 import { userNeedsProfileName } from "@/lib/user-profile";
 
 const restaurantCookieSchema = z.string().cuid();
@@ -113,6 +114,16 @@ export const getDashboardContext = cache(
     if (memberships.length === 0) {
       return null;
     }
+
+    const organizationIds = [
+      ...new Set(memberships.map((membership) => membership.organizationId)),
+    ];
+    await Promise.all(
+      organizationIds.map((organizationId) =>
+        syncTeamRolesForOrganization(prisma, organizationId),
+      ),
+    );
+    memberships = await loadUserMembershipsWithRestaurants(session.user.id);
 
     const organizations = memberships.map((membership) => ({
       id: membership.organization.id,

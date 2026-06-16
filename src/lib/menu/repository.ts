@@ -181,18 +181,32 @@ export async function listMenuCategories(
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
 
-  return categories.map((category) => ({
+  return categories.map((category) => mapMenuCategoryRecord(category));
+}
+
+function mapMenuCategoryRecord(category: {
+  id: string;
+  name: string;
+  description: string | null;
+  imageUrl: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  _count: { items: number };
+}): MenuCategoryRecord {
+  return {
     id: category.id,
     name: category.name,
+    description: category.description,
+    imageUrl: category.imageUrl,
     sortOrder: category.sortOrder,
     isActive: category.isActive,
     itemCount: category._count.items,
-  }));
+  };
 }
 
 export async function createMenuCategory(
   restaurantId: string,
-  input: { name: string },
+  input: { name: string; description?: string; imageUrl?: string | null },
 ): Promise<MenuCategoryRecord> {
   const maxSortOrder = await prisma.menuCategory.aggregate({
     where: { restaurantId },
@@ -203,6 +217,8 @@ export async function createMenuCategory(
     data: {
       restaurantId,
       name: input.name.trim(),
+      description: input.description?.trim() || null,
+      imageUrl: input.imageUrl ?? null,
       sortOrder: (maxSortOrder._max.sortOrder ?? -1) + 1,
     },
     include: {
@@ -212,19 +228,18 @@ export async function createMenuCategory(
     },
   });
 
-  return {
-    id: category.id,
-    name: category.name,
-    sortOrder: category.sortOrder,
-    isActive: category.isActive,
-    itemCount: category._count.items,
-  };
+  return mapMenuCategoryRecord(category);
 }
 
 export async function updateMenuCategory(
   restaurantId: string,
   categoryId: string,
-  input: { name?: string; isActive?: boolean },
+  input: {
+    name?: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    isActive?: boolean;
+  },
 ): Promise<MenuCategoryRecord> {
   const existing = await prisma.menuCategory.findFirst({
     where: { id: categoryId, restaurantId },
@@ -238,6 +253,10 @@ export async function updateMenuCategory(
     where: { id: categoryId },
     data: {
       ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description?.trim() || null }
+        : {}),
+      ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
       ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
     },
     include: {
@@ -247,13 +266,7 @@ export async function updateMenuCategory(
     },
   });
 
-  return {
-    id: category.id,
-    name: category.name,
-    sortOrder: category.sortOrder,
-    isActive: category.isActive,
-    itemCount: category._count.items,
-  };
+  return mapMenuCategoryRecord(category);
 }
 
 export async function deleteMenuCategory(

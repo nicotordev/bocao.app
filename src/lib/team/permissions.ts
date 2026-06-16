@@ -15,6 +15,8 @@ export type TeamPermission =
   | "team.invite"
   | "team.update"
   | "team.remove"
+  | "menu.read"
+  | "menu.update"
   | "orders.read"
   | "orders.create"
   | "orders.update"
@@ -51,6 +53,8 @@ export const TEAM_PERMISSIONS = [
   "team.invite",
   "team.update",
   "team.remove",
+  "menu.read",
+  "menu.update",
   "orders.read",
   "orders.create",
   "orders.update",
@@ -76,6 +80,7 @@ const ALL_TEAM_PERMISSIONS: readonly TeamPermission[] = TEAM_PERMISSIONS;
 
 const READ_ONLY_PERMISSIONS: readonly TeamPermission[] = [
   "team.read",
+  "menu.read",
   "orders.read",
   "payments.read",
   "kitchen.read",
@@ -304,6 +309,8 @@ const TEAM_TO_RBAC_PERMISSION: Record<TeamPermission, PermissionKey | null> = {
   "team.invite": PERMISSIONS.STAFF_WRITE,
   "team.update": PERMISSIONS.STAFF_WRITE,
   "team.remove": PERMISSIONS.STAFF_WRITE,
+  "menu.read": PERMISSIONS.MENU_READ,
+  "menu.update": PERMISSIONS.MENU_WRITE,
   "orders.read": PERMISSIONS.ORDERS_READ,
   "orders.create": PERMISSIONS.ORDERS_WRITE,
   "orders.update": PERMISSIONS.ORDERS_WRITE,

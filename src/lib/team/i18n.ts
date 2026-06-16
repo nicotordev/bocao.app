@@ -5,6 +5,8 @@ export const TEAM_PERMISSION_MESSAGE_KEYS = {
   "team.invite": "permissionLabels.team.invite",
   "team.update": "permissionLabels.team.update",
   "team.remove": "permissionLabels.team.remove",
+  "menu.read": "permissionLabels.menu.read",
+  "menu.update": "permissionLabels.menu.update",
   "orders.read": "permissionLabels.orders.read",
   "orders.create": "permissionLabels.orders.create",
   "orders.update": "permissionLabels.orders.update",

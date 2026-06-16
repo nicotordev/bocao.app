@@ -1,8 +1,5 @@
 import type { PermissionKey, SystemRoleSlug } from "@/lib/rbac/permissions";
-import {
-  PERMISSION_CATALOG,
-  SYSTEM_ROLE_SLUGS,
-} from "@/lib/rbac/permissions";
+import { PERMISSION_CATALOG, SYSTEM_ROLE_SLUGS } from "@/lib/rbac/permissions";
 import {
   membershipHasPermission,
   getMembershipWithPermissions,

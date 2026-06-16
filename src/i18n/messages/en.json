@@ -2312,9 +2312,14 @@
         "createTitle": "New category",
         "editTitle": "Edit category",
         "createDescription": "Organize your menu with categories.",
-        "editDescription": "Update the category name or remove it.",
+        "editDescription": "Update the category name, description, image, or remove it.",
         "name": "Name",
         "namePlaceholder": "Category name",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional short description for this category",
+        "image": "Cover image",
+        "imageHint": "Optional. Helps guests recognize this category in the menu.",
+        "changeImage": "Change image",
         "successCreate": "Category created successfully",
         "successUpdate": "Category updated successfully",
         "successDelete": "Category deleted successfully",
@@ -2563,6 +2568,10 @@
         "invite": "Invite members",
         "update": "Edit members",
         "remove": "Remove members"
+      },
+      "menu": {
+        "read": "View menu",
+        "update": "Edit menu"
       },
       "orders": {
         "read": "View orders",

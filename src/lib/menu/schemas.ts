@@ -17,12 +17,33 @@ export const updateMenuItemImagesSchema = z.object({
 export const createMenuCategorySchema = z.object({
   restaurantId: menuEntityIdSchema,
   name: z.string().trim().min(1).max(80),
+  description: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : undefined)),
+  imageUrl: z.string().url().optional().nullable(),
 });
 
 export const updateMenuCategorySchema = z.object({
   restaurantId: menuEntityIdSchema,
   categoryId: menuEntityIdSchema,
   name: z.string().trim().min(1).max(80).optional(),
+  description: z
+    .string()
+    .trim()
+    .max(500)
+    .optional()
+    .nullable()
+    .transform((value) =>
+      value === undefined
+        ? undefined
+        : value && value.length > 0
+          ? value
+          : null,
+    ),
+  imageUrl: z.string().url().optional().nullable(),
   isActive: z.boolean().optional(),
 });
 

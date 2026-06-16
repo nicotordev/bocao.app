@@ -2312,9 +2312,14 @@
         "createTitle": "Nueva categoría",
         "editTitle": "Editar categoría",
         "createDescription": "Organiza tu menú con categorías.",
-        "editDescription": "Actualiza el nombre de la categoría o elimínala.",
+        "editDescription": "Actualiza el nombre, la descripción, la imagen o elimina la categoría.",
         "name": "Nombre",
         "namePlaceholder": "Nombre de la categoría",
+        "description": "Descripción",
+        "descriptionPlaceholder": "Descripción breve opcional para esta categoría",
+        "image": "Imagen de portada",
+        "imageHint": "Opcional. Ayuda a identificar la categoría en el menú.",
+        "changeImage": "Cambiar imagen",
         "successCreate": "Categoría creada con éxito",
         "successUpdate": "Categoría actualizada con éxito",
         "successDelete": "Categoría eliminada con éxito",
@@ -2563,6 +2568,10 @@
         "invite": "Invitar miembros",
         "update": "Editar miembros",
         "remove": "Remover miembros"
+      },
+      "menu": {
+        "read": "Ver menu",
+        "update": "Editar menu"
       },
       "orders": {
         "read": "Ver pedidos",

@@ -19,18 +19,12 @@ import {
   type MenuCustomTagRecord,
 } from "@/lib/menu/custom-tags.shared";
 import { collectMenuTagSuggestions } from "@/lib/menu/tag-utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { MenuCategoryRecord, MenuItemRecord } from "@/lib/menu/types";
 import { ImportProductsDialog } from "./import-products-dialog";
 import { MenuCategoryDialog } from "./menu-category-dialog";
+import { MenuEmptyState } from "./menu-empty-state";
 import { MenuFilters } from "./menu-filters";
 import { MenuHeader } from "./menu-header";
 import { MenuItemDialog } from "./menu-item-dialog";
@@ -417,19 +411,11 @@ function MenuPageClientBody({
       />
 
       {categories.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{labels.empty.title}</CardTitle>
-            <CardDescription>{labels.empty.description}</CardDescription>
-          </CardHeader>
-          {canEdit ? (
-            <CardContent>
-              <Button className="rounded-2xl" onClick={handleCreateCategory}>
-                {labels.empty.categoryCta}
-              </Button>
-            </CardContent>
-          ) : null}
-        </Card>
+        <MenuEmptyState
+          labels={labels.empty}
+          canEdit={canEdit}
+          onCreateCategory={handleCreateCategory}
+        />
       ) : (
         <div className="space-y-4">
           <MenuTreeBoard

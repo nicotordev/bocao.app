@@ -117,6 +117,44 @@ export async function uploadMenuItemImageAction(formData: FormData) {
   }
 }
 
+export async function uploadMenuCategoryImageAction(formData: FormData) {
+  const restaurantId = formData.get("restaurantId");
+
+  if (typeof restaurantId !== "string" || restaurantId.length === 0) {
+    throw new Error("INVALID_RESTAURANT");
+  }
+
+  await requireMenuWrite(restaurantId);
+
+  const file = formData.get("file");
+
+  if (!(file instanceof File)) {
+    throw new Error("NO_FILE");
+  }
+
+  try {
+    const url = await uploadImageToR2(file, `menu-categories/${restaurantId}`);
+
+    return { url };
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "INVALID_IMAGE_TYPE") {
+        throw new Error("INVALID_IMAGE_TYPE");
+      }
+
+      if (error.message === "IMAGE_TOO_LARGE") {
+        throw new Error("IMAGE_TOO_LARGE");
+      }
+
+      if (error.message === "R2_NOT_CONFIGURED") {
+        throw new Error("R2_NOT_CONFIGURED");
+      }
+    }
+
+    throw new Error("UPLOAD_FAILED");
+  }
+}
+
 export async function updateMenuItemImagesAction(input: {
   restaurantId: string;
   menuItemId: string;
@@ -142,6 +180,8 @@ export async function updateMenuItemImagesAction(input: {
 export async function createMenuCategoryAction(input: {
   restaurantId: string;
   name: string;
+  description?: string;
+  imageUrl?: string | null;
 }) {
   const parsed = createMenuCategorySchema.safeParse(input);
 
@@ -153,6 +193,8 @@ export async function createMenuCategoryAction(input: {
 
   const category = await createMenuCategory(parsed.data.restaurantId, {
     name: parsed.data.name,
+    description: parsed.data.description,
+    imageUrl: parsed.data.imageUrl,
   });
 
   return { category };
@@ -162,6 +204,8 @@ export async function updateMenuCategoryAction(input: {
   restaurantId: string;
   categoryId: string;
   name?: string;
+  description?: string | null;
+  imageUrl?: string | null;
   isActive?: boolean;
 }) {
   const parsed = updateMenuCategorySchema.safeParse(input);
@@ -177,6 +221,8 @@ export async function updateMenuCategoryAction(input: {
     parsed.data.categoryId,
     {
       name: parsed.data.name,
+      description: parsed.data.description,
+      imageUrl: parsed.data.imageUrl,
       isActive: parsed.data.isActive,
     },
   );
@@ -366,15 +412,21 @@ export async function refreshMenuPageAction(restaurantId: string) {
     listProductPurchaseFlows,
   } = await import("@/lib/product-flow/repository");
 
-  const [categories, items, customTagDefinitions, flowBlocks, flowTemplates, flows] =
-    await Promise.all([
-      listMenuCategories(restaurantId),
-      listMenuItemRecords(restaurantId, { availableOnly: false }),
-      listMenuCustomTags(restaurantId),
-      listProductFlowBlocks(restaurantId),
-      listProductFlowTemplates(restaurantId),
-      listProductPurchaseFlows(restaurantId),
-    ]);
+  const [
+    categories,
+    items,
+    customTagDefinitions,
+    flowBlocks,
+    flowTemplates,
+    flows,
+  ] = await Promise.all([
+    listMenuCategories(restaurantId),
+    listMenuItemRecords(restaurantId, { availableOnly: false }),
+    listMenuCustomTags(restaurantId),
+    listProductFlowBlocks(restaurantId),
+    listProductFlowTemplates(restaurantId),
+    listProductPurchaseFlows(restaurantId),
+  ]);
 
   const productFlowsByMenuItemId = Object.fromEntries(
     flows.map((flow) => [flow.menuItemId, flow]),
