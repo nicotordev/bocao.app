@@ -87,35 +87,42 @@ export function OrdersPageClient({
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const [manualOrder, setManualOrder] = useState<DashboardOrder | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [pendingDuplicateOrderId, setPendingDuplicateOrderId] = useState<string | null>(
-    null,
-  );
-  const [pendingCancelOrderId, setPendingCancelOrderId] = useState<string | null>(
-    null,
-  );
-  const [pendingDeleteOrderId, setPendingDeleteOrderId] = useState<string | null>(
-    null,
-  );
+  const [pendingDuplicateOrderId, setPendingDuplicateOrderId] = useState<
+    string | null
+  >(null);
+  const [pendingCancelOrderId, setPendingCancelOrderId] = useState<
+    string | null
+  >(null);
+  const [pendingDeleteOrderId, setPendingDeleteOrderId] = useState<
+    string | null
+  >(null);
   const [pendingBoardStatuses, setPendingBoardStatuses] = useState<
     Record<string, OrderStatus>
   >({});
   const dialogOrder = isManualDialogOpen ? manualOrder : deepLinkOrder;
   const isDialogOpen = isManualDialogOpen || deepLinkOrder !== null;
 
-  const handleSelectOrder = useCallback((order: DashboardOrder, edit?: boolean) => {
-    openedViaDeepLink.current = false;
-    setIsDeepLinkDismissed(false);
-    setManualOrder(order);
-    setIsManualDialogOpen(true);
-    setIsEditMode(!!edit);
-  }, []);
+  const handleSelectOrder = useCallback(
+    (order: DashboardOrder, edit?: boolean) => {
+      openedViaDeepLink.current = false;
+      setIsDeepLinkDismissed(false);
+      setManualOrder(order);
+      setIsManualDialogOpen(true);
+      setIsEditMode(!!edit);
+    },
+    [],
+  );
 
   const handleDuplicateOrder = useCallback(
     async (orderId: string) => {
       try {
         const result = await duplicateOrderMutation.mutateAsync(orderId);
-        toast.success(labels.realtime.connected ? "Order duplicated" : "Pedido duplicado");
-        setPendingDuplicateOrderId((current) => (current === orderId ? null : current));
+        toast.success(
+          labels.realtime.connected ? "Order duplicated" : "Pedido duplicado",
+        );
+        setPendingDuplicateOrderId((current) =>
+          current === orderId ? null : current,
+        );
         if (result.order) {
           router.push(
             buildOrdersListHref(filters, timezone, {
@@ -137,7 +144,9 @@ export function OrdersPageClient({
         toast.success("Order deleted");
         setManualOrder((current) => (current?.id === orderId ? null : current));
         setIsManualDialogOpen((current) => (current ? false : current));
-        setPendingDeleteOrderId((current) => (current === orderId ? null : current));
+        setPendingDeleteOrderId((current) =>
+          current === orderId ? null : current,
+        );
       } catch {
         toast.error("Error deleting order");
       }
@@ -153,7 +162,9 @@ export function OrdersPageClient({
           status: "cancelled",
         });
         toast.success("Order cancelled");
-        setPendingCancelOrderId((current) => (current === orderId ? null : current));
+        setPendingCancelOrderId((current) =>
+          current === orderId ? null : current,
+        );
       } catch {
         toast.error("Error cancelling order");
       }
@@ -191,10 +202,7 @@ export function OrdersPageClient({
     listFilters: filters,
     boardFilters: filters,
     kpiFilters,
-    enabled:
-      restaurantId.length > 0 &&
-      !ordersQuery.isError &&
-      isViewingToday,
+    enabled: restaurantId.length > 0 && !ordersQuery.isError && isViewingToday,
   });
 
   const listOrders = ordersQuery.data?.orders ?? [];
@@ -313,7 +321,11 @@ export function OrdersPageClient({
 
   const navigateFilters = useCallback(
     (next: OrdersListFilterPatch, options?: { page?: number }) => {
-      const targetFilters = buildTargetOrdersListFilters(filters, next, options);
+      const targetFilters = buildTargetOrdersListFilters(
+        filters,
+        next,
+        options,
+      );
 
       if (areOrdersListFiltersEqual(filters, targetFilters)) {
         return;
@@ -520,11 +532,9 @@ export function OrdersPageClient({
               isEditMode={isEditMode}
               onEditModeChange={setIsEditMode}
               onOpenChange={(open) => {
-                if (open || !isDialogOpen) {
-                  return;
+                if (!open) {
+                  handleCloseOrderDialog();
                 }
-
-                handleCloseOrderDialog();
               }}
             />
             <ConfirmDialog

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { headers } from "next/headers";
+import { cache } from "react";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { ACTIVE_RESTAURANT_COOKIE } from "@/lib/dashboard/constants";
@@ -10,11 +11,16 @@ import {
   getNavigationForMembership,
 } from "@/lib/permissions";
 import { ensureDemoAdminMembershipForUser } from "@/lib/demo/ensure-admin-membership";
+import { prisma } from "@/lib/prisma";
 import type { SystemRoleSlug } from "@/lib/rbac/permissions";
+import { userNeedsProfileName } from "@/lib/user-profile";
 
 const restaurantCookieSchema = z.string().cuid();
 
-function resolveUserDisplayName(name: string | null | undefined, email: string) {
+function resolveUserDisplayName(
+  name: string | null | undefined,
+  email: string,
+) {
   const trimmedName = name?.trim();
   if (trimmedName && trimmedName.length > 0) {
     return trimmedName;
@@ -65,13 +71,15 @@ function resolveActiveRestaurant(
   return match ?? restaurants[0] ?? null;
 }
 
-export async function requireDashboardSession() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export const requireDashboardSession = cache(
+  async function requireDashboardSession() {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-  return session;
-}
+    return session;
+  },
+);
 
 export async function hasUserMembership(userId: string): Promise<boolean> {
   const memberships = await loadUserMembershipsWithRestaurants(userId);
@@ -79,84 +87,99 @@ export async function hasUserMembership(userId: string): Promise<boolean> {
   return memberships.length > 0;
 }
 
-export async function getDashboardContext(): Promise<DashboardContext | null> {
-  const session = await requireDashboardSession();
+export const getDashboardContext = cache(
+  async function getDashboardContext(): Promise<DashboardContext | null> {
+    const session = await requireDashboardSession();
 
-  if (!session) {
-    return null;
-  }
-
-  let memberships = await loadUserMembershipsWithRestaurants(session.user.id);
-
-  if (memberships.length === 0) {
-    const attached = await ensureDemoAdminMembershipForUser(
-      session.user.id,
-      session.user.email,
-    );
-
-    if (!attached) {
+    if (!session) {
       return null;
     }
 
-    memberships = await loadUserMembershipsWithRestaurants(session.user.id);
-  }
+    let memberships = await loadUserMembershipsWithRestaurants(session.user.id);
 
-  if (memberships.length === 0) {
-    return null;
-  }
+    if (memberships.length === 0) {
+      const attached = await ensureDemoAdminMembershipForUser(
+        session.user.id,
+        session.user.email,
+      );
 
-  const organizations = memberships.map((membership) => ({
-    id: membership.organization.id,
-    name: membership.organization.name,
-    restaurants: membership.organization.restaurants.map((restaurant) =>
-      mapRestaurant(restaurant, membership.organization.name),
-    ),
-  }));
+      if (!attached) {
+        return null;
+      }
 
-  const restaurants = organizations.flatMap(
-    (organization) => organization.restaurants,
-  );
+      memberships = await loadUserMembershipsWithRestaurants(session.user.id);
+    }
 
-  const cookieStore = await cookies();
-  const activeRestaurant = resolveActiveRestaurant(
-    restaurants,
-    cookieStore.get(ACTIVE_RESTAURANT_COOKIE)?.value,
-  );
+    if (memberships.length === 0) {
+      return null;
+    }
 
-  const activeMembership =
-    memberships.find(
-      (membership) =>
-        membership.organizationId === activeRestaurant?.organizationId,
-    ) ?? memberships[0]!;
+    const organizations = memberships.map((membership) => ({
+      id: membership.organization.id,
+      name: membership.organization.name,
+      restaurants: membership.organization.restaurants.map((restaurant) =>
+        mapRestaurant(restaurant, membership.organization.name),
+      ),
+    }));
 
-  const membershipWithPermissions = {
-    ...activeMembership,
-    role: activeMembership.role,
-  };
+    const restaurants = organizations.flatMap(
+      (organization) => organization.restaurants,
+    );
 
-  const permissions = extractPermissionKeys(membershipWithPermissions);
+    const cookieStore = await cookies();
+    const activeRestaurant = resolveActiveRestaurant(
+      restaurants,
+      cookieStore.get(ACTIVE_RESTAURANT_COOKIE)?.value,
+    );
 
-  return {
-    user: {
-      id: session.user.id,
-      name: resolveUserDisplayName(session.user.name, session.user.email),
-      email: session.user.email,
-      image: session.user.image ?? null,
-    },
-    organization: {
-      id: activeMembership.organization.id,
-      name: activeMembership.organization.name,
-      slug: activeMembership.organization.slug,
-    },
-    organizations,
-    restaurants,
-    activeRestaurant,
-    membership: {
-      id: activeMembership.id,
-      roleSlug: activeMembership.role.slug as SystemRoleSlug,
-      roleName: activeMembership.role.name,
-      permissions: Array.from(permissions),
-    },
-    navigation: getNavigationForMembership(membershipWithPermissions),
-  };
-}
+    const activeMembership =
+      memberships.find(
+        (membership) =>
+          membership.organizationId === activeRestaurant?.organizationId,
+      ) ?? memberships[0]!;
+
+    const membershipWithPermissions = {
+      ...activeMembership,
+      role: activeMembership.role,
+    };
+
+    const permissions = extractPermissionKeys(membershipWithPermissions);
+
+    const userRecord = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true },
+    });
+    const rawUserName = userRecord?.name ?? session.user.name;
+    const needsProfileName = userNeedsProfileName(
+      rawUserName,
+      session.user.email,
+    );
+
+    return {
+      user: {
+        id: session.user.id,
+        name: needsProfileName
+          ? (rawUserName?.trim() ?? "")
+          : resolveUserDisplayName(rawUserName, session.user.email),
+        email: session.user.email,
+        image: session.user.image ?? null,
+        needsProfileName,
+      },
+      organization: {
+        id: activeMembership.organization.id,
+        name: activeMembership.organization.name,
+        slug: activeMembership.organization.slug,
+      },
+      organizations,
+      restaurants,
+      activeRestaurant,
+      membership: {
+        id: activeMembership.id,
+        roleSlug: activeMembership.role.slug as SystemRoleSlug,
+        roleName: activeMembership.role.name,
+        permissions: Array.from(permissions),
+      },
+      navigation: getNavigationForMembership(membershipWithPermissions),
+    };
+  },
+);

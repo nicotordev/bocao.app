@@ -7,13 +7,11 @@ import type { DashboardOrderPreview } from "@/lib/dashboard/data";
 import type { OrdersLabels } from "@/components/dashboard/orders/types";
 
 type RecentOrdersListProps = {
-  restaurantId: string;
   orders: DashboardOrderPreview[];
   relativeMinutes: string;
 };
 
 export async function RecentOrdersList({
-  restaurantId,
   orders,
   relativeMinutes,
 }: RecentOrdersListProps) {
@@ -54,11 +52,5 @@ export async function RecentOrdersList({
     },
   };
 
-  return (
-    <RecentOrdersListClient
-      restaurantId={restaurantId}
-      initialOrders={orders}
-      labels={labels}
-    />
-  );
+  return <RecentOrdersListClient initialOrders={orders} labels={labels} />;
 }

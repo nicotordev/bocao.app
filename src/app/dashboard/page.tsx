@@ -1,4 +1,3 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { enUS, es } from "date-fns/locale";
 import { getTranslations } from "next-intl/server";
@@ -13,9 +12,6 @@ import { WhatsappStatusCard } from "@/components/dashboard/whatsapp-status-card"
 import { getDashboardContext } from "@/lib/dashboard/context";
 import { getDashboardHomeFormatOptions } from "@/lib/dashboard/format-options";
 import { getDashboardHomeData } from "@/lib/dashboard/queries";
-import { RECENT_ORDERS_LIST_FILTERS } from "@/lib/dashboard/recent-orders-filters";
-import { getQueryClient } from "@/lib/query/get-query-client";
-import { ordersListQueryOptions } from "@/lib/query/orders/orders.queries";
 import { Badge } from "@/components/ui/badge";
 
 export default async function DashboardPage() {
@@ -25,13 +21,6 @@ export default async function DashboardPage() {
 
   const context = await getDashboardContext();
   const restaurantId = context?.activeRestaurant?.id ?? "";
-  const queryClient = getQueryClient();
-
-  if (restaurantId) {
-    await queryClient.prefetchQuery(
-      ordersListQueryOptions(restaurantId, RECENT_ORDERS_LIST_FILTERS),
-    );
-  }
 
   const data = await getDashboardHomeData(context?.activeRestaurant ?? null, {
     locale: homeFormat.locale,
@@ -45,8 +34,10 @@ export default async function DashboardPage() {
     locale: dateFnsLocale,
   });
 
-  const firstName =
-    context?.user.name.split(" ").filter(Boolean)[0] ?? t("greetingFallback");
+  const firstName = context?.user.needsProfileName
+    ? t("greetingFallback")
+    : (context?.user.name.split(" ").filter(Boolean)[0] ??
+      t("greetingFallback"));
 
   const hasRestaurant = Boolean(context?.activeRestaurant);
   const tMetrics = await getTranslations("dashboard.metrics");
@@ -107,13 +98,10 @@ export default async function DashboardPage() {
           </section>
 
           <section className="grid items-stretch gap-4 lg:grid-cols-2">
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              {await RecentOrdersList({
-                restaurantId,
-                orders: data.recentOrders,
-                relativeMinutes: homeFormat.metricLabels.relativeMinutes,
-              })}
-            </HydrationBoundary>
+            {await RecentOrdersList({
+              orders: data.recentOrders,
+              relativeMinutes: homeFormat.metricLabels.relativeMinutes,
+            })}
             {await UpcomingReservationsList({
               reservations: data.upcomingReservations,
             })}

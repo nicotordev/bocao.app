@@ -129,6 +129,7 @@
   },
   "onboarding": {
     "greeting": "Hola {name}.",
+    "greetingFallback": "equipo",
     "stepProgress": "Paso {current} de {total}",
     "continue": "Continuar",
     "back": "Atrás",
@@ -438,6 +439,24 @@
           "description": "Invita personal a tu organización para ver quién está en línea.",
           "cta": "Gestionar equipo"
         }
+      }
+    },
+    "completeProfileName": {
+      "title": "¿Cómo te llamamos?",
+      "description": "Cuéntanos tu nombre y apellido para que tu equipo te reconozca en el panel.",
+      "firstName": "Nombre",
+      "firstNamePlaceholder": "ej. Ana",
+      "lastName": "Apellido",
+      "lastNamePlaceholder": "ej. García",
+      "hint": "Usamos este nombre en saludos, actividad y vistas del equipo.",
+      "submit": "Continuar",
+      "saving": "Guardando...",
+      "toasts": {
+        "firstNameRequired": "El nombre es obligatorio",
+        "lastNameRequired": "El apellido es obligatorio",
+        "minLength": "Ingresa al menos 2 caracteres en cada campo",
+        "success": "Listo, guardamos tu nombre",
+        "error": "No se pudo guardar tu nombre"
       }
     },
     "userMenu": {

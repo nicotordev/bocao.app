@@ -8,6 +8,7 @@ import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { AuthPageHeader } from "@/components/auth/auth-page-header";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { OnboardingLocalePicker } from "@/components/onboarding/onboarding-locale-picker";
+import { CompleteProfileNameDialog } from "@/components/dashboard/complete-profile-name-dialog";
 import { completeOnboarding } from "@/app/actions/complete-onboarding";
 import type { DashboardUser } from "@/lib/dashboard/types";
 import {
@@ -131,6 +132,7 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profileNameCompleted, setProfileNameCompleted] = useState(false);
 
   const validationMessages = useMemo(
     () => ({
@@ -154,10 +156,13 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
     [validationMessages],
   );
 
-  const firstName = useMemo(
-    () => user.name.split(" ").filter(Boolean)[0] ?? user.name,
-    [user.name],
-  );
+  const firstName = useMemo(() => {
+    if (user.needsProfileName && !profileNameCompleted) {
+      return t("greetingFallback");
+    }
+
+    return user.name.split(" ").filter(Boolean)[0] ?? t("greetingFallback");
+  }, [profileNameCompleted, t, user.name, user.needsProfileName]);
 
   const updateValues = (patch: Partial<OnboardingFormValues>) => {
     setValues((current) => ({ ...current, ...patch }));
@@ -253,6 +258,11 @@ export function OnboardingWizard({ user }: OnboardingWizardProps) {
 
   return (
     <AuthShell sideImage={onboardingBackgroundImage}>
+      <CompleteProfileNameDialog
+        open={user.needsProfileName && !profileNameCompleted}
+        currentName={user.name}
+        onCompleted={() => setProfileNameCompleted(true)}
+      />
       <AuthPageHeader
         title={getStepTitle(t, step as StepId)}
         description={

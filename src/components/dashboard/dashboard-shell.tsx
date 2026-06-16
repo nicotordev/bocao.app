@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import type { DashboardContext } from "@/lib/dashboard/types";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { CompleteProfileNameDialog } from "@/components/dashboard/complete-profile-name-dialog";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
 import {
   DashboardFocusModeProvider,
@@ -27,12 +29,26 @@ export function DashboardShell({ context, children }: DashboardShellProps) {
 function DashboardShellInner({ context, children }: DashboardShellProps) {
   const { isFocused } = useDashboardFocusMode();
   const pathname = usePathname();
+  const [profileNameCompleted, setProfileNameCompleted] = useState(false);
 
   const isFloorPlanPage = pathname.startsWith("/dashboard/floor-plan");
+  const shouldPromptProfileName =
+    context.user.needsProfileName && !profileNameCompleted;
+  const profileNameDialog = (
+    <CompleteProfileNameDialog
+      open={shouldPromptProfileName}
+      currentName={context.user.name}
+      onCompleted={() => setProfileNameCompleted(true)}
+    />
+  );
 
-
-  if(isFloorPlanPage) {
-    return children;
+  if (isFloorPlanPage) {
+    return (
+      <>
+        {profileNameDialog}
+        {children}
+      </>
+    );
   }
 
   return (
@@ -44,6 +60,7 @@ function DashboardShellInner({ context, children }: DashboardShellProps) {
         } as React.CSSProperties
       }
     >
+      {profileNameDialog}
       {isFocused ? null : (
         <AppSidebar
           user={context.user}

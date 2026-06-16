@@ -6,6 +6,7 @@ export type DashboardUser = {
   name: string;
   email: string;
   image: string | null;
+  needsProfileName: boolean;
 };
 
 export type DashboardRestaurant = {

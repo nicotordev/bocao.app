@@ -7,9 +7,6 @@ import {
   type RecentOrderItemLabels,
 } from "@/components/dashboard/recent-order-item";
 import type { DashboardOrderPreview } from "@/lib/dashboard/data";
-import { mapOrderToDashboardPreview } from "@/lib/dashboard/map-recent-order";
-import { RECENT_ORDERS_LIST_FILTERS } from "@/lib/dashboard/recent-orders-filters";
-import { useOrdersListQuery } from "@/lib/query/orders/orders.queries";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,25 +38,15 @@ export type RecentOrdersListLabels = RecentOrderItemLabels & {
 };
 
 type RecentOrdersListClientProps = {
-  restaurantId: string;
   initialOrders: DashboardOrderPreview[];
   labels: RecentOrdersListLabels;
 };
 
 export function RecentOrdersListClient({
-  restaurantId,
   initialOrders,
   labels,
 }: RecentOrdersListClientProps) {
-  const ordersQuery = useOrdersListQuery(
-    restaurantId,
-    RECENT_ORDERS_LIST_FILTERS,
-  );
-
-  const orders =
-    ordersQuery.data?.orders.map((order) =>
-      mapOrderToDashboardPreview(order, labels.relativeMinutes),
-    ) ?? initialOrders;
+  const orders = initialOrders;
 
   return (
     <Card className="flex h-full flex-col border-border/60">

@@ -129,6 +129,7 @@
   },
   "onboarding": {
     "greeting": "Hi {name}.",
+    "greetingFallback": "there",
     "stepProgress": "Step {current} of {total}",
     "continue": "Continue",
     "back": "Back",
@@ -438,6 +439,24 @@
           "description": "Invite staff to your organization to see who is online.",
           "cta": "Manage team"
         }
+      }
+    },
+    "completeProfileName": {
+      "title": "What should we call you?",
+      "description": "Add your first and last name so your team can recognize you across the dashboard.",
+      "firstName": "First name",
+      "firstNamePlaceholder": "e.g. Ana",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "e.g. García",
+      "hint": "We use this name in greetings, activity, and team views.",
+      "submit": "Continue",
+      "saving": "Saving...",
+      "toasts": {
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "minLength": "Enter at least 2 characters in each field",
+        "success": "Great, your name is saved",
+        "error": "Could not save your name"
       }
     },
     "userMenu": {
