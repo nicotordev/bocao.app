@@ -24,6 +24,7 @@ export function buildSettingsMockData({
       timezone,
       currency,
     },
+    contentLocales: ["es", "en"],
     hours: {
       acceptOrders: true,
       acceptReservations: true,

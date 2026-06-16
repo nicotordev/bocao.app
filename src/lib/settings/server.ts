@@ -82,6 +82,7 @@ export async function loadSettingsPageData(
         timezone: true,
         currency: true,
         serviceModes: true,
+        contentLocales: true,
         organization: {
           select: {
             country: true,
@@ -155,6 +156,7 @@ export async function loadSettingsPageData(
       timezone: restaurant.timezone,
       currency: restaurant.currency,
     },
+    contentLocales: restaurant.contentLocales,
     hours,
     whatsapp: {
       status: whatsappConnected ? "connected" : "pending",

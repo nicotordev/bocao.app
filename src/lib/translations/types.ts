@@ -1,5 +1,3 @@
-import type { Locale } from "@/i18n/locales";
-
 export const DB_TRANSLATION_ENTITY = {
   MENU_CUSTOM_TAG: "menu_custom_tag",
   MENU_ITEM: "menu_item",
@@ -19,13 +17,13 @@ export type DbTranslationField =
 
 export type DbTranslationMap = Record<
   string,
-  Partial<Record<Locale, Partial<Record<DbTranslationField, string>>>>
+  Partial<Record<string, Partial<Record<DbTranslationField, string>>>>
 >;
 
 export type DbTranslationInput = {
   entityType: DbTranslationEntityType;
   entityKey: string;
-  locale: Locale;
+  locale: string;
   field: DbTranslationField;
   value: string;
 };
@@ -33,9 +31,9 @@ export type DbTranslationInput = {
 export function resolveDbTranslation(
   map: DbTranslationMap,
   entityKey: string,
-  locale: Locale,
+  locale: string,
   field: DbTranslationField,
-  fallbackLocale?: Locale,
+  fallbackLocale?: string,
 ) {
   const entry = map[entityKey];
   const value = entry?.[locale]?.[field]?.trim();
@@ -51,7 +49,7 @@ export function resolveDbTranslation(
   }
 
   for (const localeEntry of Object.values(entry ?? {})) {
-    const candidate = localeEntry[field]?.trim();
+    const candidate = localeEntry?.[field]?.trim();
     if (candidate) {
       return candidate;
     }
@@ -72,7 +70,7 @@ export function buildDbTranslationMap(
 
   for (const row of rows) {
     const entityKey = row.entityKey.trim();
-    const locale = row.locale.trim() as Locale;
+    const locale = row.locale.trim();
     const field = row.field.trim() as DbTranslationField;
     const value = row.value.trim();
 

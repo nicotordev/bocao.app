@@ -100,6 +100,24 @@ export type MenuPageLabels = {
     successUpdate: string;
     successDelete: string;
     confirmDelete: string;
+    wizard: {
+      skip: string;
+      stepProgress: string;
+      steps: {
+        identity: string;
+        placement: string;
+        photos: string;
+        tags: string;
+        flow: string;
+      };
+      stepDescriptions: {
+        identity: string;
+        placement: string;
+        photos: string;
+        tags: string;
+        flow: string;
+      };
+    };
   };
   categoryDialog: {
     createTitle: string;

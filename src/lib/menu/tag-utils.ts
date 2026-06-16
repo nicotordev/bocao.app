@@ -1,5 +1,4 @@
-import type { Locale } from "@/i18n/locales";
-import { locales } from "@/i18n/locales";
+import { isValidContentLocaleCode } from "@/i18n/iso-languages";
 import { isMenuTagIconId } from "@/lib/menu/tag-icons";
 import {
   isMenuTagCatalogKey,
@@ -76,14 +75,16 @@ export function normalizeMenuItemTagsForStorage(tags: MenuItemTag[]) {
 }
 
 function normalizeCustomTagTranslations(
-  translations?: Partial<Record<Locale, string>>,
+  translations?: Partial<Record<string, string>>,
 ) {
-  const normalized: Partial<Record<Locale, string>> = {};
+  const normalized: Partial<Record<string, string>> = {};
 
-  for (const locale of locales) {
-    const value = translations?.[locale]?.trim();
-    if (value) {
-      normalized[locale] = value;
+  for (const [locale, label] of Object.entries(translations ?? {})) {
+    const nextLocale = locale.trim().toLowerCase();
+    const value = label?.trim();
+
+    if (isValidContentLocaleCode(nextLocale) && value) {
+      normalized[nextLocale] = value;
     }
   }
 
@@ -150,12 +151,16 @@ function parseInlineTranslations(value: unknown) {
     return undefined;
   }
 
-  const translations: Partial<Record<Locale, string>> = {};
+  const translations: Partial<Record<string, string>> = {};
 
-  for (const locale of locales) {
-    const candidate = (value as Record<string, unknown>)[locale];
+  for (const [locale, candidate] of Object.entries(
+    value as Record<string, unknown>,
+  )) {
     if (typeof candidate === "string" && candidate.trim()) {
-      translations[locale] = candidate.trim();
+      const nextLocale = locale.trim().toLowerCase();
+      if (isValidContentLocaleCode(nextLocale)) {
+        translations[nextLocale] = candidate.trim();
+      }
     }
   }
 
@@ -184,7 +189,7 @@ function resolveLegacyCatalogKey(label: string) {
 }
 
 export function createCustomMenuTag(input: {
-  translations: Partial<Record<Locale, string>>;
+  translations: Partial<Record<string, string>>;
   icon?: MenuItemTag["icon"];
 }) {
   const translations = normalizeCustomTagTranslations(input.translations);
@@ -269,7 +274,7 @@ export function mergeMenuItemTagsWithCustomDefinitions(
   tags: MenuItemTag[],
   customTagsByKey: Record<
     string,
-    { icon?: MenuItemTag["icon"]; translations: Partial<Record<Locale, string>> }
+    { icon?: MenuItemTag["icon"]; translations: Partial<Record<string, string>> }
   >,
 ) {
   return tags.map((tag) => {

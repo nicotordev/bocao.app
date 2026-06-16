@@ -167,6 +167,24 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
       successUpdate: t("itemDialog.successUpdate"),
       successDelete: t("itemDialog.successDelete"),
       confirmDelete: t("itemDialog.confirmDelete"),
+      wizard: {
+        skip: t("itemDialog.wizard.skip"),
+        stepProgress: t.raw("itemDialog.wizard.stepProgress"),
+        steps: {
+          identity: t("itemDialog.wizard.steps.identity"),
+          placement: t("itemDialog.wizard.steps.placement"),
+          photos: t("itemDialog.wizard.steps.photos"),
+          tags: t("itemDialog.wizard.steps.tags"),
+          flow: t("itemDialog.wizard.steps.flow"),
+        },
+        stepDescriptions: {
+          identity: t("itemDialog.wizard.stepDescriptions.identity"),
+          placement: t("itemDialog.wizard.stepDescriptions.placement"),
+          photos: t("itemDialog.wizard.stepDescriptions.photos"),
+          tags: t("itemDialog.wizard.stepDescriptions.tags"),
+          flow: t("itemDialog.wizard.stepDescriptions.flow"),
+        },
+      },
     },
     categoryDialog: {
       createTitle: t("categoryDialog.createTitle"),

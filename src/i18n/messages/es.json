@@ -1848,6 +1848,7 @@
       },
       "nav": {
         "profile": "Perfil del restaurante",
+        "locales": "Idiomas del menú",
         "hours": "Horarios y operación",
         "whatsapp": "WhatsApp e IA",
         "team": "Equipo y permisos",
@@ -1881,6 +1882,20 @@
             "bar": "Bar",
             "bakery": "Panadería"
           }
+        },
+        "locales": {
+          "title": "Idiomas del menú",
+          "description": "Elige los idiomas disponibles al crear productos, etiquetas personalizadas y flujos de compra.",
+          "addLanguage": "Agregar idioma",
+          "addLanguagePlaceholder": "Selecciona un idioma",
+          "enabledLanguages": "Idiomas activos",
+          "empty": "No hay idiomas de menú configurados.",
+          "remove": "Quitar",
+          "save": "Guardar idiomas",
+          "saving": "Guardando...",
+          "success": "Idiomas del menú guardados.",
+          "error": "No se pudieron guardar los idiomas del menú.",
+          "minOne": "Mantén al menos un idioma de menú activo."
         },
         "hours": {
           "title": "Horarios y operación",
@@ -2306,7 +2321,25 @@
         "successCreate": "Producto creado con éxito",
         "successUpdate": "Producto actualizado con éxito",
         "successDelete": "Producto eliminado con éxito",
-        "confirmDelete": "¿Estás seguro de que deseas eliminar este producto?"
+        "confirmDelete": "¿Estás seguro de que deseas eliminar este producto?",
+        "wizard": {
+          "skip": "Omitir por ahora",
+          "stepProgress": "Paso {current} de {total}",
+          "steps": {
+            "identity": "Nombre",
+            "placement": "Precio",
+            "photos": "Fotos",
+            "tags": "Etiquetas",
+            "flow": "Flujo"
+          },
+          "stepDescriptions": {
+            "identity": "¿Cómo debería verse este producto para tus clientes?",
+            "placement": "Elige categoría, precio y disponibilidad.",
+            "photos": "Agrega fotos que verán en el menú.",
+            "tags": "Etiquetas opcionales como picante, vegano o más vendido.",
+            "flow": "Preguntas y agregados opcionales al pedir este producto."
+          }
+        }
       },
       "categoryDialog": {
         "createTitle": "Nueva categoría",

@@ -9,7 +9,7 @@ import {
 export type MenuCustomTagRecord = {
   key: string;
   icon?: MenuTagIconId;
-  translations: Partial<Record<Locale, string>>;
+  translations: Partial<Record<string, string>>;
 };
 
 export function buildMenuCustomTagLabelMap(

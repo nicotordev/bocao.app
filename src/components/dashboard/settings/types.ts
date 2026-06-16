@@ -1,5 +1,6 @@
 export type SettingsSectionId =
   | "profile"
+  | "locales"
   | "hours"
   | "whatsapp"
   | "team"
@@ -39,6 +40,7 @@ export type SettingsMockData = {
     timezone: string;
     currency: string;
   };
+  contentLocales: string[];
   hours: {
     acceptOrders: boolean;
     acceptReservations: boolean;
@@ -110,6 +112,20 @@ export type SettingsLabels = {
         currency: string;
       };
       businessTypes: Record<BusinessType, string>;
+    };
+    locales: {
+      title: string;
+      description: string;
+      addLanguage: string;
+      addLanguagePlaceholder: string;
+      enabledLanguages: string;
+      empty: string;
+      remove: string;
+      save: string;
+      saving: string;
+      success: string;
+      error: string;
+      minOne: string;
     };
     hours: {
       title: string;

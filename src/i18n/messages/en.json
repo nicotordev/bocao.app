@@ -1848,6 +1848,7 @@
       },
       "nav": {
         "profile": "Restaurant profile",
+        "locales": "Menu languages",
         "hours": "Hours & operations",
         "whatsapp": "WhatsApp & AI",
         "team": "Team & permissions",
@@ -1881,6 +1882,20 @@
             "bar": "Bar",
             "bakery": "Bakery"
           }
+        },
+        "locales": {
+          "title": "Menu languages",
+          "description": "Choose the languages available when creating products, custom tags, and purchase flows.",
+          "addLanguage": "Add language",
+          "addLanguagePlaceholder": "Select a language",
+          "enabledLanguages": "Enabled languages",
+          "empty": "No menu languages configured.",
+          "remove": "Remove",
+          "save": "Save languages",
+          "saving": "Saving...",
+          "success": "Menu languages saved.",
+          "error": "We couldn't save the menu languages.",
+          "minOne": "Keep at least one menu language enabled."
         },
         "hours": {
           "title": "Hours & operations",
@@ -2306,7 +2321,25 @@
         "successCreate": "Product created successfully",
         "successUpdate": "Product updated successfully",
         "successDelete": "Product deleted successfully",
-        "confirmDelete": "Are you sure you want to delete this product?"
+        "confirmDelete": "Are you sure you want to delete this product?",
+        "wizard": {
+          "skip": "Skip for now",
+          "stepProgress": "Step {current} of {total}",
+          "steps": {
+            "identity": "Name",
+            "placement": "Price",
+            "photos": "Photos",
+            "tags": "Tags",
+            "flow": "Flow"
+          },
+          "stepDescriptions": {
+            "identity": "How should this product appear to guests?",
+            "placement": "Choose a category, set the price, and availability.",
+            "photos": "Add photos customers will see on the menu.",
+            "tags": "Optional labels such as spicy, vegan, or bestseller.",
+            "flow": "Optional questions and add-ons when ordering this product."
+          }
+        }
       },
       "categoryDialog": {
         "createTitle": "New category",

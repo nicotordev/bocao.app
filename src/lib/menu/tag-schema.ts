@@ -1,12 +1,15 @@
 import { z } from "zod";
-import { locales } from "@/i18n/locales";
+import { isValidContentLocaleCode } from "@/i18n/iso-languages";
 import { MENU_TAG_ICON_IDS } from "@/lib/menu/tag-icons";
 import {
   normalizeMenuItemTags,
   normalizeMenuItemTagsForStorage,
 } from "@/lib/menu/tag-utils";
 
-const localeSchema = z.enum(locales);
+const localeSchema = z
+  .string()
+  .trim()
+  .refine((value) => isValidContentLocaleCode(value));
 
 const menuItemTagTranslationsSchema = z
   .record(localeSchema, z.string().trim().min(1).max(40))

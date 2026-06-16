@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -11,6 +11,7 @@ import {
   TbBuildingStore,
   TbClock,
   TbCreditCard,
+  TbLanguage,
   TbLock,
   TbPalette,
   TbShield,
@@ -19,7 +20,10 @@ import {
 } from "react-icons/tb";
 import { toast } from "sonner";
 import { setLocale } from "@/app/actions/locale";
-import { updateRestaurantProfileAction } from "@/app/actions/settings";
+import {
+  updateRestaurantProfileAction,
+  updateSettingsContentLocalesAction,
+} from "@/app/actions/settings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +50,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { localeLabels } from "@/i18n/locale-labels";
 import { locales } from "@/i18n/locales";
+import { ISO_LANGUAGE_CATALOG } from "@/i18n/iso-languages";
 import {
   COUNTRY_OPTIONS,
   CURRENCY_OPTIONS,
@@ -71,6 +76,7 @@ type SettingsPageClientProps = {
 
 const SECTION_ICONS: Record<SettingsSectionId, typeof TbBuildingStore> = {
   profile: TbBuildingStore,
+  locales: TbLanguage,
   hours: TbClock,
   whatsapp: TbBrandWhatsapp,
   team: TbUsers,
@@ -81,6 +87,7 @@ const SECTION_ICONS: Record<SettingsSectionId, typeof TbBuildingStore> = {
 
 const SECTION_ORDER: SettingsSectionId[] = [
   "profile",
+  "locales",
   "hours",
   "whatsapp",
   "team",
@@ -222,6 +229,18 @@ export function SettingsPageClient({
             />
           </TabsContent>
 
+          <TabsContent value="locales" className="mt-0">
+            <ContentLocalesSection
+              labels={labels}
+              restaurantId={restaurantId}
+              contentLocales={data.contentLocales}
+              canEdit={canEdit}
+              onSaved={(contentLocales) =>
+                setData((current) => ({ ...current, contentLocales }))
+              }
+            />
+          </TabsContent>
+
           <TabsContent value="hours" className="mt-0">
             <HoursSection
               labels={labels}
@@ -275,15 +294,17 @@ export function SettingsPageClient({
             <SecuritySection labels={labels} data={data} onAction={showComingSoon} />
           </TabsContent>
 
-          <div className="flex justify-end border-t border-border/50 pt-4">
-            <Button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={!canEdit || isSaving}
-            >
-              {isSaving ? labels.actions.saving : labels.actions.save}
-            </Button>
-          </div>
+          {activeSection === "profile" ? (
+            <div className="flex justify-end border-t border-border/50 pt-4">
+              <Button
+                type="button"
+                onClick={handleSaveProfile}
+                disabled={!canEdit || isSaving}
+              >
+                {isSaving ? labels.actions.saving : labels.actions.save}
+              </Button>
+            </div>
+          ) : null}
         </div>
       </Tabs>
 
@@ -508,6 +529,169 @@ function ProfileSection({
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function ContentLocalesSection({
+  labels,
+  restaurantId,
+  contentLocales,
+  canEdit,
+  onSaved,
+}: {
+  labels: SettingsLabels;
+  restaurantId: string | null;
+  contentLocales: string[];
+  canEdit: boolean;
+  onSaved: (contentLocales: string[]) => void;
+}) {
+  const section = labels.sections.locales;
+  const uiLocale = useLocale();
+  const router = useRouter();
+  const [selected, setSelected] = useState(contentLocales);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const availableLanguages = useMemo(
+    () =>
+      ISO_LANGUAGE_CATALOG.filter(
+        (language) => !selected.includes(language.code),
+      ),
+    [selected],
+  );
+
+  const selectedLanguages = useMemo(
+    () =>
+      selected.map((code) => {
+        const language = ISO_LANGUAGE_CATALOG.find(
+          (entry) => entry.code === code,
+        );
+
+        return {
+          code,
+          label: language
+            ? uiLocale.startsWith("en")
+              ? language.label
+              : language.nativeLabel
+            : code.toUpperCase(),
+        };
+      }),
+    [selected, uiLocale],
+  );
+
+  function addLanguage(code: string) {
+    setSelected((current) => [...new Set([...current, code])]);
+  }
+
+  function removeLanguage(code: string) {
+    setSelected((current) => {
+      const next = current.filter((entry) => entry !== code);
+      return next.length > 0 ? next : current;
+    });
+  }
+
+  async function handleSave() {
+    if (!restaurantId || !canEdit) {
+      toast.message(labels.actions.readOnly);
+      return;
+    }
+
+    if (selected.length === 0) {
+      toast.error(section.minOne);
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const result = await updateSettingsContentLocalesAction({
+        restaurantId,
+        contentLocales: selected,
+        uiLocale,
+      });
+
+      if (!result.success || !result.contentLocales) {
+        toast.error(section.error);
+        return;
+      }
+
+      onSaved(result.contentLocales);
+      toast.success(section.success);
+      router.refresh();
+    } catch {
+      toast.error(section.error);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <SectionCard title={section.title} description={section.description}>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="content-language">{section.addLanguage}</Label>
+          <Select
+            value=""
+            onValueChange={addLanguage}
+            disabled={!canEdit || availableLanguages.length === 0}
+          >
+            <SelectTrigger id="content-language" className="w-full">
+              <SelectValue placeholder={section.addLanguagePlaceholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {availableLanguages.map((language) => (
+                <SelectItem key={language.code} value={language.code}>
+                  {uiLocale.startsWith("en")
+                    ? language.label
+                    : language.nativeLabel}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-sm font-medium">{section.enabledLanguages}</p>
+          {selectedLanguages.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {selectedLanguages.map((language) => (
+                <Badge
+                  key={language.code}
+                  variant="secondary"
+                  className="gap-2 rounded-xl px-3 py-1.5"
+                >
+                  <span>{language.label}</span>
+                  <span className="text-xs uppercase text-muted-foreground">
+                    {language.code}
+                  </span>
+                  {canEdit && selectedLanguages.length > 1 ? (
+                    <button
+                      type="button"
+                      className="ml-1 rounded-sm text-muted-foreground hover:text-foreground"
+                      onClick={() => removeLanguage(language.code)}
+                      aria-label={`${section.remove} ${language.label}`}
+                    >
+                      x
+                    </button>
+                  ) : null}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{section.empty}</p>
+          )}
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={!canEdit || isSaving}
+          >
+            {isSaving ? section.saving : section.save}
+          </Button>
         </div>
       </div>
     </SectionCard>

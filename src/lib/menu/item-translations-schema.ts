@@ -1,19 +1,22 @@
 import { z } from "zod";
-import { locales } from "@/i18n/locales";
 import { defaultLocale } from "@/i18n/locales";
+import { isValidContentLocaleCode } from "@/i18n/iso-languages";
 import {
   extractCanonicalMenuItemFields,
   normalizeMenuItemTranslationInput,
 } from "@/lib/menu/item-translations";
 
-const localeSchema = z.enum(locales);
+const localeSchema = z
+  .string()
+  .trim()
+  .refine((value) => isValidContentLocaleCode(value));
 
 export const menuItemTranslationsInputSchema = z.object({
   name: z
-    .partialRecord(localeSchema, z.string().trim().min(1).max(120))
+    .record(localeSchema, z.string().trim().min(1).max(120))
     .default({}),
   description: z
-    .partialRecord(localeSchema, z.string().trim().max(500))
+    .record(localeSchema, z.string().trim().max(500))
     .default({}),
 });
 

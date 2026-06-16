@@ -11,6 +11,7 @@ import { loadSettingsPageData } from "@/lib/settings/server";
 
 const SECTION_IDS: SettingsSectionId[] = [
   "profile",
+  "locales",
   "hours",
   "whatsapp",
   "team",
@@ -68,6 +69,20 @@ function buildLabels(
           currency: t("sections.profile.fields.currency"),
         },
         businessTypes,
+      },
+      locales: {
+        title: t("sections.locales.title"),
+        description: t("sections.locales.description"),
+        addLanguage: t("sections.locales.addLanguage"),
+        addLanguagePlaceholder: t("sections.locales.addLanguagePlaceholder"),
+        enabledLanguages: t("sections.locales.enabledLanguages"),
+        empty: t("sections.locales.empty"),
+        remove: t("sections.locales.remove"),
+        save: t("sections.locales.save"),
+        saving: t("sections.locales.saving"),
+        success: t("sections.locales.success"),
+        error: t("sections.locales.error"),
+        minOne: t("sections.locales.minOne"),
       },
       hours: {
         title: t("sections.hours.title"),

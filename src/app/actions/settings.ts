@@ -6,10 +6,29 @@ import { toPrismaBusinessType } from "@/lib/settings/mappers";
 import { updateRestaurantProfileSchema } from "@/lib/settings/schema";
 import { prisma } from "@/lib/prisma";
 import { PERMISSIONS } from "@/lib/rbac/permissions";
+import { isValidContentLocaleCode } from "@/i18n/iso-languages";
+import {
+  buildRestaurantLocaleOptions,
+  updateRestaurantContentLocales,
+} from "@/lib/restaurant/content-locales";
+import { z } from "zod";
 
 export type UpdateRestaurantProfileResult =
   | { success: true }
   | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+const updateContentLocalesSchema = z.object({
+  restaurantId: z.string().cuid(),
+  contentLocales: z
+    .array(
+      z
+        .string()
+        .trim()
+        .refine((value) => isValidContentLocaleCode(value)),
+    )
+    .min(1),
+  uiLocale: z.string().trim().optional(),
+});
 
 async function requireSettingsWrite(restaurantId: string) {
   const context = await getDashboardContext();
@@ -35,6 +54,38 @@ async function requireSettingsWrite(restaurantId: string) {
   }
 
   return context;
+}
+
+export async function updateSettingsContentLocalesAction(input: unknown) {
+  const parsed = updateContentLocalesSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return { success: false, error: "INVALID_INPUT" };
+  }
+
+  try {
+    await requireSettingsWrite(parsed.data.restaurantId);
+
+    const contentLocales = await updateRestaurantContentLocales(
+      parsed.data.restaurantId,
+      parsed.data.contentLocales,
+    );
+    const localeOptions = buildRestaurantLocaleOptions(
+      contentLocales,
+      parsed.data.uiLocale ?? "es",
+    );
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/menu");
+
+    return { success: true, contentLocales, localeOptions };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: false, error: "UNKNOWN_ERROR" };
+  }
 }
 
 export async function updateRestaurantProfileAction(

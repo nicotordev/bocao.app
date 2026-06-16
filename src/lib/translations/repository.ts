@@ -1,5 +1,4 @@
-import type { Locale } from "@/i18n/locales";
-import { defaultLocale, locales } from "@/i18n/locales";
+import { defaultLocale } from "@/i18n/locales";
 import type { MenuItemFieldTranslations } from "@/lib/menu/item-translations";
 import { buildMenuItemTranslationInputs } from "@/lib/menu/item-translations";
 import { prisma } from "@/lib/prisma";
@@ -75,7 +74,7 @@ export async function deleteDbTranslationsForEntity(
   entityType: DbTranslationEntityType,
   entityKey: string,
   options?: {
-    locales?: Locale[];
+    locales?: string[];
     fields?: DbTranslationField[];
   },
 ) {
@@ -93,13 +92,13 @@ export async function deleteDbTranslationsForEntity(
 export async function syncMenuCustomTagTranslations(
   restaurantId: string,
   entityKey: string,
-  translations: Partial<Record<Locale, string>>,
+  translations: Partial<Record<string, string>>,
 ) {
   const inputs = Object.entries(translations)
     .map(([locale, value]) => ({
       entityType: DB_TRANSLATION_ENTITY.MENU_CUSTOM_TAG,
       entityKey,
-      locale: locale as Locale,
+      locale,
       field: DB_TRANSLATION_FIELD.LABEL,
       value: value?.trim() ?? "",
     }))
@@ -135,7 +134,6 @@ export async function syncMenuItemTranslations(
   translations: MenuItemFieldTranslations,
 ) {
   const inputs = buildMenuItemTranslationInputs(menuItemId, translations);
-  const nonDefaultLocales = locales.filter((locale) => locale !== defaultLocale);
 
   if (inputs.length === 0) {
     await prisma.dbTranslation.deleteMany({
@@ -159,25 +157,25 @@ export async function syncMenuItemTranslations(
       .map((entry) => entry.locale),
   );
 
-  for (const locale of nonDefaultLocales) {
-    if (!enabledNameLocales.has(locale)) {
-      await deleteDbTranslationsForEntity(
-        restaurantId,
-        DB_TRANSLATION_ENTITY.MENU_ITEM,
-        menuItemId,
-        { locales: [locale], fields: [DB_TRANSLATION_FIELD.NAME] },
-      );
-    }
+  await prisma.dbTranslation.deleteMany({
+    where: {
+      restaurantId,
+      entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
+      entityKey: menuItemId,
+      field: DB_TRANSLATION_FIELD.NAME,
+      locale: { notIn: [defaultLocale, ...enabledNameLocales] },
+    },
+  });
 
-    if (!enabledDescriptionLocales.has(locale)) {
-      await deleteDbTranslationsForEntity(
-        restaurantId,
-        DB_TRANSLATION_ENTITY.MENU_ITEM,
-        menuItemId,
-        { locales: [locale], fields: [DB_TRANSLATION_FIELD.DESCRIPTION] },
-      );
-    }
-  }
+  await prisma.dbTranslation.deleteMany({
+    where: {
+      restaurantId,
+      entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
+      entityKey: menuItemId,
+      field: DB_TRANSLATION_FIELD.DESCRIPTION,
+      locale: { notIn: [defaultLocale, ...enabledDescriptionLocales] },
+    },
+  });
 
   await upsertDbTranslations(restaurantId, inputs);
 }

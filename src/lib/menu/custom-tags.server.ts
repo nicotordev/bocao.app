@@ -1,4 +1,3 @@
-import type { Locale } from "@/i18n/locales";
 import { isMenuTagIconId, type MenuTagIconId } from "@/lib/menu/tag-icons";
 import type { MenuCustomTagRecord } from "@/lib/menu/custom-tags.shared";
 import { isMenuTagCatalogKey, type MenuItemTag } from "@/lib/menu/tag-types";
@@ -31,7 +30,7 @@ export async function listMenuCustomTags(
     translations: Object.fromEntries(
       Object.entries(translationMap[tag.key] ?? {}).map(([locale, fields]) => [
         locale,
-        fields[DB_TRANSLATION_FIELD.LABEL],
+        fields?.[DB_TRANSLATION_FIELD.LABEL],
       ]),
     ),
   }));
@@ -42,7 +41,7 @@ export async function upsertMenuCustomTag(
   input: {
     key: string;
     icon?: MenuTagIconId;
-    translations: Partial<Record<Locale, string>>;
+    translations: Partial<Record<string, string>>;
   },
 ) {
   await prisma.menuCustomTag.upsert({

@@ -160,7 +160,7 @@ export function buildMenuItemTranslationInputs(
   const inputs: Array<{
     entityType: typeof DB_TRANSLATION_ENTITY.MENU_ITEM;
     entityKey: string;
-    locale: Locale;
+    locale: string;
     field: typeof DB_TRANSLATION_FIELD.NAME | typeof DB_TRANSLATION_FIELD.DESCRIPTION;
     value: string;
   }> = [];
@@ -180,7 +180,7 @@ export function buildMenuItemTranslationInputs(
       inputs.push({
         entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
         entityKey: menuItemId,
-        locale: locale as Locale,
+        locale,
         field: DB_TRANSLATION_FIELD.NAME,
         value: name,
       });
@@ -191,7 +191,7 @@ export function buildMenuItemTranslationInputs(
       inputs.push({
         entityType: DB_TRANSLATION_ENTITY.MENU_ITEM,
         entityKey: menuItemId,
-        locale: locale as Locale,
+        locale,
         field: DB_TRANSLATION_FIELD.DESCRIPTION,
         value: description,
       });
