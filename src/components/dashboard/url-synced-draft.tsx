@@ -21,6 +21,10 @@ function DebouncedSearchDraftInner({
   }, [onDebouncedChange]);
 
   useEffect(() => {
+    setDraft(urlSearch);
+  }, [urlSearch]);
+
+  useEffect(() => {
     if (urlSearch === draft) {
       return;
     }
@@ -40,5 +44,5 @@ function DebouncedSearchDraftInner({
 }
 
 export function DebouncedSearchDraft(props: DebouncedSearchDraftProps) {
-  return <DebouncedSearchDraftInner key={props.urlSearch} {...props} />;
+  return <DebouncedSearchDraftInner {...props} />;
 }

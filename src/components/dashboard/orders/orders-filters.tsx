@@ -34,7 +34,10 @@ type OrdersFiltersProps = {
   restaurants: string[];
   timezone: string;
   value: OrdersFiltersState;
-  onChange: (value: OrdersFiltersState) => void;
+  onSearchChange: (search: string) => void;
+  onFiltersChange: (
+    value: Omit<OrdersFiltersState, "search" | "restaurant">,
+  ) => void;
   onClear: () => void;
 };
 
@@ -88,7 +91,8 @@ export function OrdersFilters({
   restaurants,
   timezone,
   value,
-  onChange,
+  onSearchChange,
+  onFiltersChange,
   onClear,
 }: OrdersFiltersProps) {
   const activeCount = countActiveFilters(value, timezone);
@@ -96,7 +100,24 @@ export function OrdersFilters({
   const update = <K extends keyof OrdersFiltersState>(
     key: K,
     nextValue: OrdersFiltersState[K],
-  ) => onChange({ ...value, [key]: nextValue });
+  ) => {
+    if (key === "restaurant") {
+      return;
+    }
+
+    if (key === "search") {
+      onSearchChange(String(nextValue));
+      return;
+    }
+
+    onFiltersChange({
+      status: key === "status" ? (nextValue as OrdersFiltersState["status"]) : value.status,
+      channel:
+        key === "channel" ? (nextValue as OrdersFiltersState["channel"]) : value.channel,
+      from: key === "from" ? (nextValue as OrdersFiltersState["from"]) : value.from,
+      to: key === "to" ? (nextValue as OrdersFiltersState["to"]) : value.to,
+    });
+  };
 
   return (
     <section className="sticky top-14 z-20 overflow-visible rounded-3xl border border-border/70 bg-background/90 p-3 shadow-sm backdrop-blur md:top-16">

@@ -63,6 +63,5 @@ export function useOrdersRealtime({
     restaurantId,
     enabled,
     onPayload: handleRealtimePayload,
-    onConnected: refetchOrders,
   });
 }

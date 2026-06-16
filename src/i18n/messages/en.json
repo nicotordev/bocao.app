@@ -214,6 +214,10 @@
     "summary": "Operational summary for {restaurant}",
     "summaryFallback": "your restaurant",
     "dateFormat": "EEEE, MMMM d",
+    "heroSummary": "You have {openOrders} open orders and {upcomingReservations} upcoming reservations today.",
+    "heroSummaryEmpty": "No active orders or reservations scheduled for today.",
+    "heroSummaryOrdersOnly": "You have {openOrders} open orders and no reservations today.",
+    "heroSummaryReservationsOnly": "You have no open orders and {upcomingReservations} upcoming reservations today.",
     "metrics": {
       "revenueToday": "Today's revenue",
       "openOrders": "Open orders",
@@ -304,6 +308,15 @@
       }
     },
     "home": {
+      "operationalOverview": {
+        "title": "Operational overview",
+        "description": "Here's what requires your attention today."
+      },
+      "liveOperations": {
+        "title": "Live operations",
+        "description": "Real-time updates on active orders and reservations."
+      },
+      "statusActive": "Live",
       "quickActions": {
         "newOrder": "New order",
         "newReservation": "New reservation"

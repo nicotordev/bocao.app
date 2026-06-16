@@ -106,8 +106,6 @@ export async function runCustomerSmartSegmentsCron(): Promise<CustomerSmartSegme
               timezone: restaurant.timezone,
               locale,
               neverLabel: locale === "es" ? "Sin visitas" : "No visits yet",
-              notAvailableLabel:
-                locale === "es" ? "Sin datos comparativos" : "No comparison data",
             },
           ),
         );
@@ -119,8 +117,6 @@ export async function runCustomerSmartSegmentsCron(): Promise<CustomerSmartSegme
             timezone: restaurant.timezone,
             locale,
             neverLabel: locale === "es" ? "Sin visitas" : "No visits yet",
-            notAvailableLabel:
-              locale === "es" ? "Sin datos comparativos" : "No comparison data",
           }),
         );
 

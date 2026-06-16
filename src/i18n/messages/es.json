@@ -214,6 +214,10 @@
     "summary": "Resumen operativo de {restaurant}",
     "summaryFallback": "tu restaurante",
     "dateFormat": "EEEE d 'de' MMMM",
+    "heroSummary": "Tienes {openOrders} pedidos abiertos y {upcomingReservations} reservas programadas hoy.",
+    "heroSummaryEmpty": "Sin pedidos activos ni reservas programadas para hoy.",
+    "heroSummaryOrdersOnly": "Tienes {openOrders} pedidos abiertos y ninguna reserva hoy.",
+    "heroSummaryReservationsOnly": "No tienes pedidos abiertos y tienes {upcomingReservations} reservas programadas hoy.",
     "metrics": {
       "revenueToday": "Ingresos de hoy",
       "openOrders": "Pedidos abiertos",
@@ -304,6 +308,15 @@
       }
     },
     "home": {
+      "operationalOverview": {
+        "title": "Resumen operativo",
+        "description": "Esto es lo que requiere tu atención hoy."
+      },
+      "liveOperations": {
+        "title": "Operaciones en vivo",
+        "description": "Actualizaciones en tiempo real de pedidos y reservas activas."
+      },
+      "statusActive": "En vivo",
       "quickActions": {
         "newOrder": "Nuevo pedido",
         "newReservation": "Nueva reserva"

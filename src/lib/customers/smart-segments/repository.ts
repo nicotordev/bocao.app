@@ -60,7 +60,7 @@ export function parseStoredSmartSegments(value: unknown): CustomerSmartSegment[]
       typeof item.name === "string" &&
       typeof item.description === "string" &&
       Array.isArray(item.customerIds) &&
-      item.customerIds.every((entry) => typeof entry === "string"),
+      item.customerIds.every((entry: unknown) => typeof entry === "string"),
   );
 }
 

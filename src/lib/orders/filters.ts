@@ -1,9 +1,11 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { z } from "zod";
+import { buildListUrl } from "@/lib/list-url";
 import {
   createDefaultOrdersDateRange,
   dateInputToUtcEnd,
   dateInputToUtcStart,
+  isOrdersDefaultDateRange,
 } from "@/lib/orders/date";
 import { mapUiStatusToDb } from "@/lib/orders/order-mapper";
 import {
@@ -86,6 +88,81 @@ export function toOrdersKpiFilters(
     from: filters.from,
     to: filters.to,
   };
+}
+
+export type OrdersListFilterPatch = Partial<
+  Pick<OrdersListFilters, "search" | "status" | "channel" | "from" | "to">
+>;
+
+export function areOrdersListFiltersEqual(
+  left: OrdersListFilters,
+  right: OrdersListFilters,
+): boolean {
+  return (
+    (left.search ?? "") === (right.search ?? "") &&
+    (left.status ?? "all") === (right.status ?? "all") &&
+    (left.channel ?? "all") === (right.channel ?? "all") &&
+    (left.from ?? "") === (right.from ?? "") &&
+    (left.to ?? "") === (right.to ?? "") &&
+    left.page === right.page &&
+    left.pageSize === right.pageSize
+  );
+}
+
+export function buildTargetOrdersListFilters(
+  current: OrdersListFilters,
+  next: OrdersListFilterPatch,
+  options?: { page?: number },
+): OrdersListFilters {
+  const hasFilterChange =
+    (next.search !== undefined &&
+      (next.search || undefined) !== (current.search || undefined)) ||
+    (next.status !== undefined &&
+      next.status !== (current.status ?? "all")) ||
+    (next.channel !== undefined &&
+      next.channel !== (current.channel ?? "all")) ||
+    (next.from !== undefined && next.from !== (current.from ?? "")) ||
+    (next.to !== undefined && next.to !== (current.to ?? ""));
+
+  return {
+    search:
+      next.search !== undefined ? next.search || undefined : current.search,
+    status: next.status ?? current.status ?? "all",
+    channel: next.channel ?? current.channel ?? "all",
+    from: next.from ?? current.from,
+    to: next.to ?? current.to,
+    page: options?.page ?? (hasFilterChange ? 1 : current.page),
+    pageSize: current.pageSize,
+  };
+}
+
+export function buildOrdersListHref(
+  filters: OrdersListFilters,
+  timezone: string,
+  extra?: { orderId?: string; created?: string },
+) {
+  const omitDefaultDates = isOrdersDefaultDateRange(
+    filters.from ?? "",
+    filters.to ?? "",
+    timezone,
+  );
+
+  return buildListUrl(
+    "/dashboard/orders",
+    {
+      search: filters.search,
+      status: filters.status === "all" ? undefined : filters.status,
+      channel: filters.channel === "all" ? undefined : filters.channel,
+      from: omitDefaultDates ? undefined : filters.from,
+      to: omitDefaultDates ? undefined : filters.to,
+      orderId: extra?.orderId,
+      created: extra?.created,
+    },
+    {
+      page: filters.page,
+      pageSize: filters.pageSize,
+    },
+  );
 }
 
 export function buildOrdersPrismaWhere(

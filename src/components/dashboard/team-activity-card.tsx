@@ -10,7 +10,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,9 +28,9 @@ type TeamActivityCardProps = {
 };
 
 const statusDotStyles: Record<DashboardTeamMember["status"], string> = {
-  online: "bg-emerald-400",
+  online: "bg-emerald-500",
   busy: "bg-primary",
-  offline: "bg-muted-foreground/50",
+  offline: "bg-muted-foreground/40",
 };
 
 function getInitials(name: string): string {
@@ -47,7 +46,7 @@ export async function TeamActivityCard({ members }: TeamActivityCardProps) {
   const t = await getTranslations("dashboard.home.teamActivity");
 
   return (
-    <Card className="border-border/60">
+    <Card className="border-border/40">
       <CardHeader>
         <CardTitle>{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
@@ -79,39 +78,41 @@ export async function TeamActivityCard({ members }: TeamActivityCardProps) {
             </EmptyContent>
           </Empty>
         ) : (
-          <ul className="space-y-3">
+          <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {members.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-muted/20 px-3 py-2.5"
+                className="flex items-center gap-3 rounded-2xl border border-border/40 bg-muted/10 p-3.5 transition-colors hover:bg-muted/20"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <Avatar size="sm">
+                <div className="relative shrink-0">
+                  <Avatar size="sm" className="ring-2 ring-background">
                     <AvatarImage
                       src={resolveUserProfileImage(member.image)}
                       alt={member.name}
                     />
-                    <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/5 text-primary font-medium text-xs">
+                      {getInitials(member.name)}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {member.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {member.role}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="gap-1.5">
                   <span
                     className={cn(
-                      "size-2 rounded-full",
+                      "absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background",
                       statusDotStyles[member.status],
                     )}
                     aria-hidden
                   />
-                  {t(`status.${member.status}`)}
-                </Badge>
+                </div>
+                <div className="min-w-0 space-y-0.5">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {member.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {member.role}
+                  </p>
+                  <span className="sr-only">
+                    {t(`status.${member.status}`)}
+                  </span>
+                </div>
               </li>
             ))}
           </ul>

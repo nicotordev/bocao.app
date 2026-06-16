@@ -1,6 +1,5 @@
 import {
   addHours,
-  differenceInMinutes,
   format,
   startOfDay,
   subDays,
@@ -11,15 +10,11 @@ import type { DashboardInsightLabels } from "@/lib/dashboard/compute-insights";
 import type {
   DashboardHomeData,
   DashboardMetric,
-  DashboardOrderPreview,
 } from "@/lib/dashboard/data";
+import { mapOrderToDashboardPreview } from "@/lib/dashboard/map-recent-order";
+import { RECENT_ORDERS_LIST_FILTERS } from "@/lib/dashboard/recent-orders-filters";
 import type { DashboardRestaurant } from "@/lib/dashboard/types";
-import {
-  formatOrderCustomerLabel,
-  getOrderCustomers,
-  orderCustomerInclude,
-} from "@/lib/orders/order-customers";
-import { mapDbStatusToUi } from "@/lib/orders/order-mapper";
+import { listOrders } from "@/lib/orders/repository";
 import { prisma } from "@/lib/prisma";
 
 type DashboardMetricLabels = {
@@ -66,11 +61,6 @@ function formatCurrency(
     currency,
     maximumFractionDigits: 0,
   }).format(amountCents / 100);
-}
-
-function formatRelativeMinutes(date: Date, template: string): string {
-  const minutes = Math.max(1, differenceInMinutes(new Date(), date));
-  return template.replace("{minutes}", String(minutes));
 }
 
 function formatPercentChange(
@@ -153,7 +143,7 @@ export async function getDashboardHomeData(
   const nextThreeHours = addHours(now, 3);
 
   const [
-    recentOrders,
+    recentOrdersResponse,
     reservations,
     teamMemberships,
     revenueTodayAgg,
@@ -164,12 +154,14 @@ export async function getDashboardHomeData(
     avgPrepPreviousAgg,
     reservationsNextThreeHours,
   ] = await Promise.all([
-    prisma.order.findMany({
-      where: { restaurantId: restaurant.id },
-      include: orderCustomerInclude,
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    }),
+    listOrders(
+      restaurant.id,
+      RECENT_ORDERS_LIST_FILTERS,
+      {
+        locale,
+        customerLabels: options.customerLabels,
+      },
+    ),
     prisma.reservation.findMany({
       where: {
         restaurantId: restaurant.id,
@@ -370,27 +362,9 @@ export async function getDashboardHomeData(
 
   return {
     metrics,
-    recentOrders: recentOrders.map((order) => {
-      const customerLabel = formatOrderCustomerLabel({
-        customers: getOrderCustomers(order),
-        tableNumber: order.tableNumber,
-        labels: options.customerLabels,
-      });
-
-      return {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        customerName: customerLabel.customerName,
-        status: mapDbStatusToUi(order.status),
-        channel: (order.channel ?? "web") as DashboardOrderPreview["channel"],
-        tableNumber: order.tableNumber ?? undefined,
-        total: formatCurrency(order.totalCents, restaurant.currency, locale),
-        createdAt: formatRelativeMinutes(
-          order.createdAt,
-          metricLabels.relativeMinutes,
-        ),
-      };
-    }),
+    recentOrders: recentOrdersResponse.orders.map((order) =>
+      mapOrderToDashboardPreview(order, metricLabels.relativeMinutes),
+    ),
     upcomingReservations: reservations.slice(0, 3).map((reservation) => ({
       id: reservation.id,
       guestName: reservation.guestName,

@@ -129,7 +129,6 @@ export function useKitchenChannelSubscription({
             }
 
             if (!isKitchenRealtimeEvent(parsed)) {
-              onConnectedRef.current?.();
               return;
             }
 
@@ -139,7 +138,7 @@ export function useKitchenChannelSubscription({
 
             onPayloadRef.current(parsed.payload);
           } catch {
-            onConnectedRef.current?.();
+            // Ignore malformed websocket payloads.
           }
         };
 

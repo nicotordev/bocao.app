@@ -40,3 +40,50 @@ export function searchParamsToRecord(
 
   return searchParams;
 }
+
+export function getCurrentListHref() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+export function isSameListHref(currentHref: string, nextHref: string) {
+  if (currentHref === nextHref) {
+    return true;
+  }
+
+  const [currentPath, currentQuery = ""] = currentHref.split("?");
+  const [nextPath, nextQuery = ""] = nextHref.split("?");
+
+  if (currentPath !== nextPath) {
+    return false;
+  }
+
+  const currentParams = new URLSearchParams(currentQuery);
+  const nextParams = new URLSearchParams(nextQuery);
+  currentParams.sort();
+  nextParams.sort();
+
+  return currentParams.toString() === nextParams.toString();
+}
+
+type ListRouter = {
+  replace: (href: string) => void;
+};
+
+export function replaceListHrefIfChanged(router: ListRouter, href: string) {
+  if (typeof window === "undefined") {
+    router.replace(href);
+    return;
+  }
+
+  const currentHref = getCurrentListHref();
+
+  if (isSameListHref(currentHref, href)) {
+    return;
+  }
+
+  router.replace(href);
+}

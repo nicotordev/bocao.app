@@ -215,7 +215,6 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <OrdersPageClient
-        key={orderId ?? "list"}
         labels={labels}
         restaurantId={restaurantId}
         timezone={timezone}

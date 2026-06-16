@@ -7,7 +7,6 @@ import { ListPagination } from "@/components/dashboard/list-pagination";
 import { QueryResultState } from "@/components/query/query-result-state";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { buildListUrl } from "@/lib/list-url";
 import { computeOrdersKpis } from "@/lib/orders/compute-kpis";
 import { computeOrdersKpiTrends } from "@/lib/orders/compute-kpi-trends";
 import {
@@ -15,8 +14,12 @@ import {
   isOrdersDefaultDateRange,
 } from "@/lib/orders/date";
 import {
+  areOrdersListFiltersEqual,
+  buildOrdersListHref,
+  buildTargetOrdersListFilters,
   parseOrdersListSearchParams,
   toOrdersKpiFilters,
+  type OrdersListFilterPatch,
   type OrdersListFilters,
 } from "@/lib/orders/filters";
 import {
@@ -36,6 +39,7 @@ import {
   useOrdersListQuery,
 } from "@/lib/query/orders/orders.queries";
 import { DebouncedSearchDraft } from "@/components/dashboard/url-synced-draft";
+import { replaceListHrefIfChanged } from "@/lib/list-url";
 import { AiOrderInsights } from "./ai-order-insights";
 import { OrderDetailsDialog } from "./order-details-dialog";
 import { OrdersFilters, type OrdersFiltersState } from "./orders-filters";
@@ -63,21 +67,24 @@ export function OrdersPageClient({
 }: OrdersPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
   const openedViaDeepLink = useRef(Boolean(initialOrder));
   const urlOrderId = searchParams.get("orderId") || searchParams.get("created");
+  const [isDeepLinkDismissed, setIsDeepLinkDismissed] = useState(false);
 
   const updateOrderStatusMutation = useUpdateOrderStatusMutation(restaurantId);
   const duplicateOrderMutation = useDuplicateOrderMutation(restaurantId);
   const deleteOrderMutation = useDeleteOrderMutation(restaurantId);
 
   const deepLinkOrder = useMemo(() => {
-    if (!urlOrderId || !initialOrder) {
+    if (isDeepLinkDismissed || !urlOrderId || !initialOrder) {
       return null;
     }
 
     return initialOrder.id === urlOrderId ? initialOrder : null;
-  }, [initialOrder, urlOrderId]);
+  }, [initialOrder, isDeepLinkDismissed, urlOrderId]);
 
+  const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const [manualOrder, setManualOrder] = useState<DashboardOrder | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [pendingDuplicateOrderId, setPendingDuplicateOrderId] = useState<string | null>(
@@ -92,11 +99,14 @@ export function OrdersPageClient({
   const [pendingBoardStatuses, setPendingBoardStatuses] = useState<
     Record<string, OrderStatus>
   >({});
-  const selectedOrder = manualOrder ?? deepLinkOrder;
+  const dialogOrder = isManualDialogOpen ? manualOrder : deepLinkOrder;
+  const isDialogOpen = isManualDialogOpen || deepLinkOrder !== null;
 
   const handleSelectOrder = useCallback((order: DashboardOrder, edit?: boolean) => {
     openedViaDeepLink.current = false;
+    setIsDeepLinkDismissed(false);
     setManualOrder(order);
+    setIsManualDialogOpen(true);
     setIsEditMode(!!edit);
   }, []);
 
@@ -107,7 +117,11 @@ export function OrdersPageClient({
         toast.success(labels.realtime.connected ? "Order duplicated" : "Pedido duplicado");
         setPendingDuplicateOrderId((current) => (current === orderId ? null : current));
         if (result.order) {
-          router.push(`/dashboard/orders?created=${encodeURIComponent(result.order.id)}`);
+          router.push(
+            buildOrdersListHref(filters, timezone, {
+              created: result.order.id,
+            }),
+          );
         }
       } catch {
         toast.error("Error duplicating order");
@@ -122,6 +136,7 @@ export function OrdersPageClient({
         await deleteOrderMutation.mutateAsync(orderId);
         toast.success("Order deleted");
         setManualOrder((current) => (current?.id === orderId ? null : current));
+        setIsManualDialogOpen((current) => (current ? false : current));
         setPendingDeleteOrderId((current) => (current === orderId ? null : current));
       } catch {
         toast.error("Error deleting order");
@@ -150,11 +165,15 @@ export function OrdersPageClient({
   const filters = useMemo(
     () =>
       parseOrdersListSearchParams(
-        Object.fromEntries(searchParams.entries()),
+        Object.fromEntries(new URLSearchParams(searchParamsString).entries()),
         timezone,
       ),
-    [searchParams, timezone],
+    [searchParamsString, timezone],
   );
+
+  useEffect(() => {
+    setIsDeepLinkDismissed(false);
+  }, [urlOrderId]);
 
   const urlSearch = filters.search ?? "";
 
@@ -229,17 +248,27 @@ export function OrdersPageClient({
       search: filters.search,
       status: filters.status === "all" ? undefined : filters.status,
       channel: filters.channel === "all" ? undefined : filters.channel,
-      from: filters.from,
-      to: filters.to,
     };
+
+    if (
+      !isOrdersDefaultDateRange(filters.from ?? "", filters.to ?? "", timezone)
+    ) {
+      params.from = filters.from;
+      params.to = filters.to;
+    }
 
     const orderId = searchParams.get("orderId");
     if (orderId) {
       params.orderId = orderId;
     }
 
+    const created = searchParams.get("created");
+    if (created) {
+      params.created = created;
+    }
+
     return params;
-  }, [filters, searchParams]);
+  }, [filters, searchParams, timezone]);
 
   const clearDeepLinkFromUrl = useCallback(() => {
     if (!searchParams.get("orderId") && !searchParams.get("created")) {
@@ -247,23 +276,28 @@ export function OrdersPageClient({
     }
 
     openedViaDeepLink.current = false;
-    router.replace(
-      buildListUrl(
-        "/dashboard/orders",
-        {
-          search: filters.search,
-          status: filters.status === "all" ? undefined : filters.status,
-          channel: filters.channel === "all" ? undefined : filters.channel,
-          from: filters.from,
-          to: filters.to,
-        },
-        {
-          page: filters.page,
-          pageSize: filters.pageSize,
-        },
-      ),
-    );
-  }, [filters, router, searchParams]);
+    replaceListHrefIfChanged(router, buildOrdersListHref(filters, timezone));
+  }, [filters, router, searchParams, timezone]);
+
+  const handleCloseOrderDialog = useCallback(() => {
+    const closingManualDialog = isManualDialogOpen;
+
+    setIsManualDialogOpen(false);
+    setManualOrder(null);
+    setIsEditMode(false);
+
+    if (closingManualDialog) {
+      return;
+    }
+
+    if (!urlOrderId) {
+      return;
+    }
+
+    setIsDeepLinkDismissed(true);
+    openedViaDeepLink.current = false;
+    clearDeepLinkFromUrl();
+  }, [clearDeepLinkFromUrl, isManualDialogOpen, urlOrderId]);
 
   const kpiValues = useMemo(() => {
     const kpiOrders = kpiQuery.data?.orders ?? [];
@@ -278,34 +312,19 @@ export function OrdersPageClient({
   }, [kpiQuery.data?.orders, labels.kpis]);
 
   const navigateFilters = useCallback(
-    (
-      next: Partial<OrdersListFilters & OrdersFiltersState>,
-      options?: { page?: number },
-    ) => {
-      router.push(
-        buildListUrl(
-          "/dashboard/orders",
-          {
-            search: next.search ?? filters.search,
-            status:
-              (next.status ?? filters.status) === "all"
-                ? undefined
-                : (next.status ?? filters.status),
-            channel:
-              (next.channel ?? filters.channel) === "all"
-                ? undefined
-                : (next.channel ?? filters.channel),
-            from: next.from ?? filters.from,
-            to: next.to ?? filters.to,
-          },
-          {
-            page: options?.page ?? 1,
-            pageSize: filters.pageSize,
-          },
-        ),
+    (next: OrdersListFilterPatch, options?: { page?: number }) => {
+      const targetFilters = buildTargetOrdersListFilters(filters, next, options);
+
+      if (areOrdersListFiltersEqual(filters, targetFilters)) {
+        return;
+      }
+
+      replaceListHrefIfChanged(
+        router,
+        buildOrdersListHref(targetFilters, timezone),
       );
     },
-    [filters, router],
+    [filters, router, timezone],
   );
 
   const handleDebouncedSearch = useCallback(
@@ -357,7 +376,6 @@ export function OrdersPageClient({
 
   return (
     <DebouncedSearchDraft
-      key={urlSearch}
       urlSearch={urlSearch}
       onDebouncedChange={handleDebouncedSearch}
     >
@@ -404,10 +422,9 @@ export function OrdersPageClient({
                     restaurants={restaurants}
                     timezone={timezone}
                     value={filterState}
-                    onChange={(value) => {
-                      setSearchDraft(value.search);
+                    onSearchChange={setSearchDraft}
+                    onFiltersChange={(value) => {
                       navigateFilters({
-                        search: value.search,
                         status: value.status,
                         channel: value.channel,
                         from: value.from,
@@ -498,21 +515,16 @@ export function OrdersPageClient({
             <OrderDetailsDialog
               labels={labels}
               restaurantId={restaurantId}
-              order={selectedOrder}
-              open={selectedOrder !== null}
+              order={dialogOrder}
+              open={isDialogOpen}
               isEditMode={isEditMode}
               onEditModeChange={setIsEditMode}
               onOpenChange={(open) => {
-                if (open) {
+                if (open || !isDialogOpen) {
                   return;
                 }
 
-                setManualOrder(null);
-                setIsEditMode(false);
-
-                if (openedViaDeepLink.current) {
-                  clearDeepLinkFromUrl();
-                }
+                handleCloseOrderDialog();
               }}
             />
             <ConfirmDialog

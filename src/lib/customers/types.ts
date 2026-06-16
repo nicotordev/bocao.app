@@ -1,10 +1,15 @@
 import type { CustomerSavedSegmentSummary } from "@/lib/customers/saved-segments.types";
 import type {
+  CustomerSmartSegmentCard,
+  CustomerSmartSegmentsMeta,
+} from "@/lib/customers/smart-segments/types";
+import type {
   CustomerTagAssignmentSummary,
   CustomerTagSummary,
 } from "@/lib/customers/tags.types";
 
 export type { CustomerSavedSegmentSummary, CustomerTagSummary };
+export type { CustomerSmartSegmentCard, CustomerSmartSegmentsMeta };
 
 export type CustomerOption = {
   id: string;
@@ -149,8 +154,6 @@ export type CustomerSegmentCard = {
   averageTicket: string;
   lastActivityRelative: string;
 };
-
-export type { CustomerSmartSegmentCard, CustomerSmartSegmentsMeta } from "@/lib/customers/smart-segments/types";
 
 export type CustomersKpiTrend = {
   change: string;
