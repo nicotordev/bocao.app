@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ export function CompleteProfileNameDialog({
   currentName,
   onCompleted,
 }: CompleteProfileNameDialogProps) {
+  const router = useRouter();
   const t = useTranslations("dashboard.completeProfileName");
   const initialValues = useMemo(
     () => parseProfileNameParts(currentName),
@@ -70,6 +72,7 @@ export function CompleteProfileNameDialog({
 
       onCompleted?.();
       toast.success(t("toasts.success"));
+      router.refresh();
     } catch (error: unknown) {
       console.error(error);
       toast.error(

@@ -1,5 +1,9 @@
 import type { PermissionKey, SystemRoleSlug } from "@/lib/rbac/permissions";
 import {
+  PERMISSION_CATALOG,
+  SYSTEM_ROLE_SLUGS,
+} from "@/lib/rbac/permissions";
+import {
   membershipHasPermission,
   getMembershipWithPermissions,
 } from "@/lib/rbac/can";
@@ -25,6 +29,10 @@ export type MembershipWithPermissions = NonNullable<
 export function extractPermissionKeys(
   membership: MembershipWithPermissions,
 ): Set<PermissionKey> {
+  if (membership.role.slug === SYSTEM_ROLE_SLUGS.OWNER) {
+    return new Set(PERMISSION_CATALOG.map((permission) => permission.key));
+  }
+
   const keys = membership.role.rolePermissions.map(
     (rolePermission) => rolePermission.permission.key as PermissionKey,
   );
