@@ -30,7 +30,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "7.8.0",
+    "@prisma/client": "7.9.1",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.8",
     "@tabler/icons-react": "^3.44.0",
@@ -82,7 +82,7 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
-    "prisma": "7.8.0",
+    "prisma": "7.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.20.5",
     "typescript": "^5"
